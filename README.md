@@ -18,9 +18,47 @@ no additional javascript must be loaded.
 ```
 import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
 
+facebookLogin() {
+    OAuth2Client.authenticate({
+        appId: environment.fbAppId,
+        authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
+        redirectUrl: this.getRedirectUrl(),
+        resourceUrl: "https://graph.facebook.com/v2.11/me"
+    }).then(result => {
+        this.authenticateBackend("FACEBOOK", result);
+    }).catch(reason => {
+    
+    });
+}
+
+googleLogin() {
+    OAuth2Client.authenticate({
+        appId: environment.googleAppId,
+        authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+        scope: 'https://www.googleapis.com/auth/userinfo.profile',
+        redirectUrl: this.getRedirectUrl(),
+        resourceUrl: "https://www.googleapis.com/userinfo/v2/me"
+    }).then(result => {
+        this.authenticateBackend("GOOGLE", result);
+    }).catch(reason => {
+    
+    });
+}
+
+getRedirectUrl(): string {
+    return window.location.protocol+"//"+window.location.hostname+":"+window.location.port; //+ "/auth/login"
+}
+
+authenticateBackend(provider: string, result: OAuth2AuthenticateResult) {
+
+}
+
 ```
 
 ## Android
+
+The simple [ScribeJava](https://github.com/scribejava/scribejava) OAuth client library for android is used as only dependency.
+ 
 
 ## iOS
 
