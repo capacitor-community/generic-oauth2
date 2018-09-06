@@ -1,47 +1,48 @@
 {
-  "name": "capacitor-oauth2",
-  "version": "1.0.0-beta.1",
-  "description": "Capacitor OAuth2 client plugin",
-  "main": "dist/esm/index.js",
-  "types": "dist/esm/index.d.ts",
-  "scripts": {
-    "build": "npm run clean && tsc",
-    "clean": "rm -rf ./dist",
-    "watch": "tsc --watch",
-    "prepublishOnly": "npm run build"
-  },
-  "author": "Michael Oberwasserlechner",
-  "license": "MIT",
-  "dependencies": {
-    "@capacitor/core": "latest"
-  },
-  "devDependencies": {
-    "typescript": "2.9.1"
-  },
-  "files": [
-    "dist/",
-    "ios/",
-    "android/",
-    "CapacitorOauth2.podspec"
-  ],
-  "keywords": [
-    "capacitor",
-    "plugin",
-    "native"
-  ],
-  "capacitor": {
-    "ios": {
-      "src": "ios"
+    "name": "@teamconductor/capacitor-oauth2",
+    "version": "1.0.0-alpha.0",
+    "description": "Simple Capacitor OAuth 2 client plugin",
+    "author": "Michael Oberwasserlechner",
+    "homepage": "https://team-conductor.com/en/",
+    "license": "MIT",
+    "main": "dist/esm/index.js",
+    "types": "dist/esm/index.d.ts",
+    "scripts": {
+        "build": "npm run clean && tsc",
+        "clean": "rm -rf ./dist",
+        "watch": "tsc --watch",
+        "prepublishOnly": "npm run build"
     },
-    "android": {
-      "src": "android"
+    "files": [
+        "dist/",
+        "ios/",
+        "android/"
+    ],
+    "keywords": [
+        "capacitor",
+        "plugin",
+        "oauth2",
+        "sociallogin"
+    ],
+    "capacitor": {
+        "ios": {
+            "src": "ios"
+        },
+        "android": {
+            "src": "android"
+        }
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/moberwasserlechner/capacitor-oauth2"
+    },
+    "bugs": {
+        "url": "https://github.com/moberwasserlechner/capacitor-oauth2/issues"
+    },
+    "dependencies": {
+        "@capacitor/core": "latest"
+    },
+    "devDependencies": {
+        "typescript": "2.9.1"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/moberwasserlechner/capacitor-oauth2"
-  },
-  "bugs": {
-    "url": "https://github.com/moberwasserlechner/capacitor-oauth2/issues"
-  }
 }

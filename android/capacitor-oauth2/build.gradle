@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.github.scribejava:scribejava-core:5.5.0'
     implementation 'com.ionicframework.capacitor:capacitor-android:1.0.0-beta.7'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
