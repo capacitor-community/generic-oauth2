@@ -55,7 +55,7 @@ dependencies {
 // ### Prepare publishing ###
 // ##########################
 
-project.version = (project.hasProperty('pluginVersion') ? capacitorVersion : project.version)
+project.version = (project.hasProperty('pluginVersion') ? pluginVersion : project.version)
 
 // ###################################
 // ### Publish to local maven repo ###
@@ -135,12 +135,12 @@ publishing {
 // ### Publish to bintray ###
 // ##########################
 
-// ./gradlew clean build bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PcapacitorVersion=$LERNA_VERSION -PdryRun=true
+// ./gradlew clean build bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PpluginVersion=$LERNA_VERSION -PdryRun=true
 
 // for publishToMavenLocal to work we have to use bintray's gradle plugin instead of novoda
 bintray {
-    user = project.hasProperty('BINTRAY_USER') ? BINTRAY_USER : null //this usually comes from gradle.properties file in ~/.gradle
-    key = project.hasProperty('BINTRAY_API_KEY') ? BINTRAY_API_KEY : null //this usually comes from gradle.properties file in ~/.gradle
+    user = project.hasProperty('bintrayUser') ? bintrayUser : null //this usually comes from gradle.properties file in ~/.gradle
+    key = project.hasProperty('bintrayKey') ? bintrayKey : null //this usually comes from gradle.properties file in ~/.gradle
 
     // configurations = ['archives'] //When uploading configuration files
     // - OR -
