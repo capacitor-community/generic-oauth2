@@ -22,7 +22,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     async authenticate(options: OAuth2AuthenticateOptions): Promise<OAuth2AuthenticateResult> {
         let loopCount = this.loopCount;
         // open window
-        this.windowHandle = window.open(this.getAuthorizationUrl(options), "auth", "width=500,height=600,left=0,top=0");
+        let windowOptions = "width=500,height=600,left=0,top=0";
+        this.windowHandle = window.open(this.getAuthorizationUrl(options), "capacitor-oauth");
         // wait for redirect and resolve the
         this.intervalId = setInterval(() => {
             if (loopCount-- < 0) {
@@ -30,7 +31,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 // this.emitAuthStatus(false);
                 this.windowHandle.close();
             } else {
-                var href: string;
+                let href: string;
                 try {
                     href = this.windowHandle.location.href;
                 } catch (ignore) {
@@ -42,7 +43,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     let accessTokenFound = href.match(re);
                     if (accessTokenFound) {
                         clearInterval(this.intervalId);
+                        alert(href);
                         let parsed = this.getUrlParams(href.substr(options.redirectUrl.length + 1));
+                        alert(JSON.stringify(parsed));
 
                         this.token = parsed.access_token;
                         if (this.token) {
@@ -53,7 +56,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             this.expires = this.expires.setSeconds(this.expires.getSeconds() + expiresSeconds);
                             this.windowHandle.close();
                             // this.emitAuthStatus(true);
-                            this.fetchUserInfo();
+                            return this.getUserInfo(options);
                         } else {
                             this.authenticated = false; // we got the login callback just fine, but there was no token
                             // this.emitAuthStatus(false); // so we are still going to fail the login
@@ -68,17 +71,19 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             // this.emitAuthStatusError(false, parsed);
                         }
                     }
+                } else {
+
                 }
             }
         }, this.intervalLength);
 
-        return Promise.reject();
+        return Promise.reject(new Error("Not found"));
     }
 
     private getAuthorizationUrl(options: OAuth2AuthenticateOptions): string {
         let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id="+options.appId;
         if (options.redirectUrl) {
-            baseUrl += "&redirect_url="+options.redirectUrl;
+            baseUrl += "&redirect_uri="+options.redirectUrl;
         }
         if (options.scope) {
             baseUrl += "&scope="+options.scope;
@@ -90,14 +95,20 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     private getUrlParams(search: string): any {
-        const hashes = search.slice(search.indexOf(`?`) + 1).split(`&`);
+
+        let idx = search.indexOf("?");
+        if (idx == -1) {
+            idx = search.indexOf("#");
+        }
+
+        const hashes = search.slice(idx + 1).split(`&`);
         return hashes.reduce((acc, hash) => {
             const [key, val] = hash.split(`=`);
             return {
                 ...acc,
                 key: decodeURIComponent(val)
             }
-        }, {})
+        }, {});
     }
 
     private startExpiresTimer(seconds: number) {
@@ -120,18 +131,29 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         console.log('Session has been cleared');
     }
 
-    private fetchUserInfo() {
-        if (this.token != null) {
-            let headers = new Headers();
-            headers.append('Authorization', `Bearer ${this.token}`);
-            //noinspection TypeScriptUnresolvedFunction
-            // this.http.get(this.oAuthUserUrl, {headers: headers})
-            //     .subscribe(info => {
-            //         this.userInfo = info;
-            //     }, err => {
-            //         console.error("Failed to fetch user info:", err);
-            //     });
-        }
+    getUserInfo(options: OAuth2AuthenticateOptions): Promise<OAuth2AuthenticateResult> {
+        let tkn = this.token;
+        return new Promise<OAuth2AuthenticateResult>(
+            function (resolve, reject) {
+                const request = new XMLHttpRequest();
+                request.setRequestHeader('Authorization', `Bearer ${tkn}`);
+                request.onload = function () {
+                    if (this.status === 200) {
+                        let result: OAuth2AuthenticateResult = {
+                            id: this.response.id,
+                            data: this.response
+                        };
+                        resolve(result);
+                    } else {
+                        reject(new Error(this.statusText));
+                    }
+                };
+                request.onerror = function () {
+                    reject(new Error('XMLHttpRequest Error: ' + this.statusText));
+                };
+                request.open(options.resourcePostRequest ? "POST" : "GET", options.resourceUrl, true);
+                request.send();
+            });
     }
 }
 

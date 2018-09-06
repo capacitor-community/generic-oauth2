@@ -24,9 +24,13 @@ export interface OAuth2AuthenticateOptions {
      */
     authorizationBaseUrl: string;
     /**
-     * not needed because response type is always token
+     * protected resource url. normally the user detail url
      */
-    accessTokenEndpoint: string,
+    resourceUrl: string;
+    /**
+     * default to false == GET
+     */
+    resourcePostRequest?: boolean;
     /**
      * Url to which the provider redirects after login
      */
