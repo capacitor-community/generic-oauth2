@@ -16,21 +16,17 @@ export interface OAuth2ClientPlugin {
 
 export interface OAuth2AuthenticateOptions {
     /**
-     * Your api key
+     * The app id (client id) you get from the oauth provider like facebook
      */
-    apiKey: string;
+    appId: string;
     /**
      *
      */
     authorizationBaseUrl: string;
     /**
-     *
+     * not needed because response type is always token
      */
     accessTokenEndpoint: string,
-    /**
-     * Your api secret
-     */
-    apiSecret?: string;
     /**
      * Url to which the provider redirects after login
      */
@@ -43,14 +39,6 @@ export interface OAuth2AuthenticateOptions {
      *
      */
     state?: string;
-    /**
-     * defaults to token
-     */
-    responseType?: string;
-    /**
-     *
-     */
-    userAgent?: string;
 }
 
 export interface OAuth2AuthenticateResult {

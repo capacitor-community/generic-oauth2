@@ -2,6 +2,7 @@ package com.byteowls.capacitor.oauth2;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
@@ -47,6 +48,7 @@ public class OAuth2ClientPlugin extends Plugin {
         if (PLUGIN_RESULT_CODE == resultCode) {
             Uri url = data.getData();
             if (url != null) {
+                Log.i(getLogTag(), url.toString());
                 JSObject response = new JSObject();
                 response.put("url", url.toString());
                 savedCall.resolve(response);

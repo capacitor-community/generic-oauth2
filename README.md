@@ -15,7 +15,8 @@ no additional javascript must be loaded.
 
 ## Web
 
-```typescript
+```
+import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
 
 ```
 
