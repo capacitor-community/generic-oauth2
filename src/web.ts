@@ -4,11 +4,10 @@ import {OAuth2AuthenticateOptions, OAuth2AuthenticateResult, OAuth2ClientPlugin}
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
     constructor() {
         super({
-            name: 'OAuth2ClientPluginWeb',
+            name: 'OAuth2Client',
             platforms: ['web']
         });
     }
-
     async authenticate(options: OAuth2AuthenticateOptions): Promise<OAuth2AuthenticateResult> {
         // open window
         let windowHandle = window.open(options.authorizationBaseUrl, "OAuth2");
@@ -17,9 +16,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
         return undefined;
     }
-
 }
 
-const oAuth2ClientPluginWeb = new OAuth2ClientPluginWeb();
+const OAuth2Client = new OAuth2ClientPluginWeb();
 
-export { oAuth2ClientPluginWeb };
+export { OAuth2Client };

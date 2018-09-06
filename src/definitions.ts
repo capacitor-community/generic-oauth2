@@ -7,7 +7,7 @@ declare global {
 export interface OAuth2ClientPlugin {
 
     /**
-     * Authenicate against a OAuth 2 server.
+     * Authenicate against a OAuth 2 provider.
      * @param {OAuth2AuthenticateOptions} options
      * @returns {Promise<OAuth2AuthenticateResult>}
      */
@@ -20,13 +20,21 @@ export interface OAuth2AuthenticateOptions {
      */
     apiKey: string;
     /**
+     *
+     */
+    authorizationBaseUrl: string;
+    /**
+     *
+     */
+    accessTokenEndpoint: string,
+    /**
      * Your api secret
      */
     apiSecret?: string;
     /**
-     * Callback url to which the provider redirects
+     * Url to which the provider redirects after login
      */
-    callbackUrl: string;
+    redirectUrl: string;
     /**
      *
      */
@@ -36,20 +44,18 @@ export interface OAuth2AuthenticateOptions {
      */
     state?: string;
     /**
-     *
+     * defaults to token
      */
-    responseType: string;
+    responseType?: string;
     /**
      *
      */
-    userAgent: string;
-    /**
-     *
-     */
-    authorizationBaseUrl: string;
-    accessTokenEndpoint: string,
+    userAgent?: string;
 }
 
 export interface OAuth2AuthenticateResult {
+
+    id: string;
+    data: any;
 
 }
