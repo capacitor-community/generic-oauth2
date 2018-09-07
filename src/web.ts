@@ -3,12 +3,12 @@ import {OAuth2AuthenticateOptions, OAuth2AuthenticateResult, OAuth2ClientPlugin}
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
 
-    private authenticated: boolean = false;
-    private token: string;
-    private expires: any = 0;
+    // private authenticated: boolean = false;
+    // private expires: any = 0;
+    // private expiresTimerId: any = null;
+    // private token: string;
     private windowHandle: any = null;
     private intervalId: any = null;
-    private expiresTimerId: any = null;
     private loopCount = 600;
     private intervalLength = 100;
 
@@ -44,13 +44,14 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             if (accessTokenFound) {
                                 clearInterval(this.intervalId);
                                 this.windowHandle.close();
-                                this.token = urlParamObj.access_token;
-                                if (this.token) {
-                                    this.authenticated = true;
-                                    let expiresSeconds = +urlParamObj.expires_in || 1800;
-                                    this.startExpiresTimer(expiresSeconds);
-                                    this.expires = new Date();
-                                    this.expires = this.expires.setSeconds(this.expires.getSeconds() + expiresSeconds);
+                                let token = urlParamObj.access_token;
+                                if (token) {
+                                    // TODO save token somewhere or hand it over to the caller
+                                    // this.authenticated = true;
+                                    //let expiresSeconds = +urlParamObj.expires_in || 1800;
+                                    // this.startExpiresTimer(expiresSeconds);
+                                    // this.expires = new Date();
+                                    // this.expires = this.expires.setSeconds(this.expires.getSeconds() + expiresSeconds);
 
                                     const request = new XMLHttpRequest();
                                     request.onload = function () {
@@ -65,11 +66,11 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                         reject(new Error('XMLHttpRequest Error: ' + this.statusText));
                                     };
                                     request.open("GET", options.resourceUrl, true);
-                                    request.setRequestHeader('Authorization', `Bearer ${this.token}`);
+                                    request.setRequestHeader('Authorization', `Bearer ${token}`);
                                     request.send();
                                 } else {
-                                    this.authenticated = false; // we got the login callback just fine, but there was no token
-                                    reject(new Error("Authentication failed"));
+                                    // this.authenticated = false; // we got the login callback just fine, but there was no token
+                                    reject(new Error("No token! Authentication failed!"));
                                 }
                             } else {
                                 if (href.indexOf(options.web.redirectUrl) == 0) {
@@ -82,7 +83,6 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     }
                 }, this.intervalLength);
             }
-
         });
     }
 
@@ -116,21 +116,21 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         }, {});
     }
 
-    private startExpiresTimer(seconds: number) {
-        if (this.expiresTimerId != null) {
-            clearTimeout(this.expiresTimerId);
-        }
-        this.expiresTimerId = setTimeout(() => {
-            this.doLogout();
-        }, seconds * 1000); // seconds * 1000
-    }
+    // private startExpiresTimer(seconds: number) {
+    //     if (this.expiresTimerId != null) {
+    //         clearTimeout(this.expiresTimerId);
+    //     }
+    //     this.expiresTimerId = setTimeout(() => {
+    //         this.doLogout();
+    //     }, seconds * 1000); // seconds * 1000
+    // }
 
-    public doLogout() {
-        this.authenticated = false;
-        this.expiresTimerId = null;
-        this.expires = 0;
-        this.token = null;
-    }
+    // public doLogout() {
+    //     this.authenticated = false;
+    //     this.expiresTimerId = null;
+    //     this.expires = 0;
+    //     this.token = null;
+    // }
 }
 
 const OAuth2Client = new OAuth2ClientPluginWeb();

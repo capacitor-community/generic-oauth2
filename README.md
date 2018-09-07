@@ -15,20 +15,27 @@ no additional javascript must be loaded.
 
 ## Web
 
-```
+The following code was taken from a **Angular 6** application authenticating against Facebook and Google OAuth APIs.
+
+For authentification minimal data is needed.
+
+```typescript
 import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
 
 facebookLogin() {
     OAuth2Client.authenticate({
         appId: environment.fbAppId,
         authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
-        redirectUrl: this.getRedirectUrl(),
-        resourceUrl: "https://graph.facebook.com/v2.11/me"
-    }).then(result => {
+        resourceUrl: "https://graph.facebook.com/v2.11/me",
+        web: {
+            redirectUrl: this.getRedirectUrl(),
+            windowOptions: this.OAUTH_WINDOW_OPTIONS
+        }
+  }).then(result => {
         this.authenticateBackend("FACEBOOK", result);
-    }).catch(reason => {
-    
-    });
+  }).catch(reason => {
+        console.error("FB OAuth rejected", reason);
+  });
 }
 
 googleLogin() {
@@ -36,21 +43,41 @@ googleLogin() {
         appId: environment.googleAppId,
         authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
         scope: 'https://www.googleapis.com/auth/userinfo.profile',
-        redirectUrl: this.getRedirectUrl(),
-        resourceUrl: "https://www.googleapis.com/userinfo/v2/me"
+        resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+        web: {
+            redirectUrl: this.getRedirectUrl(),
+            windowOptions: this.OAUTH_WINDOW_OPTIONS
+        },
     }).then(result => {
         this.authenticateBackend("GOOGLE", result);
     }).catch(reason => {
-    
+        console.error("Google OAuth rejected", reason);
     });
 }
 
-getRedirectUrl(): string {
-    return window.location.protocol+"//"+window.location.hostname+":"+window.location.port; //+ "/auth/login"
+private authenticateBackend(provider: string, result: OAuth2AuthenticateResult) {
+    let oauthData = new DemoLoginData();
+    oauthData.provider = provider;
+    oauthData.oauthId = result.id;
+    oauthData.name = result.name;
+    if ("GOOGLE" === provider) {
+        oauthData.email = result["email"];
+        oauthData.fn = result["given_name"];
+        oauthData.ln = result["family_name"];
+    }
+    
+    this.backendService.processOAuth(oauthData).subscribe(
+        jwtToken => {
+        
+        },
+        error => {
+            this.loginFailed = true;
+        }
+    );
 }
 
-authenticateBackend(provider: string, result: OAuth2AuthenticateResult) {
-
+private getRedirectUrl(): string {
+  return window.location.protocol+"//"+window.location.hostname+":"+window.location.port;
 }
 
 ```
