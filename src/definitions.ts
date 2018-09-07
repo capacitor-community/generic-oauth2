@@ -28,14 +28,6 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl: string;
     /**
-     * Url or customScheme to which the provider redirects after login
-     */
-    redirectUrl: string;
-    /**
-     * default to false == GET
-     */
-    resourcePostRequest?: boolean;
-    /**
      *
      */
     scope?: string;
@@ -43,6 +35,20 @@ export interface OAuth2AuthenticateOptions {
      *
      */
     state?: string;
+
+    /**
+     * Custom options for the platform "web"
+     */
+    web: {
+        /**
+         * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
+         */
+        windowOptions: string;
+        /**
+         * Url to  which the oauth provider redirects after authentication
+         */
+        redirectUrl: string;
+    }
 }
 
 export interface OAuth2AuthenticateResult {
