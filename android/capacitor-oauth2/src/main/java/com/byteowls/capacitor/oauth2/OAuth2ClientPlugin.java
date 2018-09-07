@@ -27,7 +27,8 @@ public class OAuth2ClientPlugin extends Plugin {
         String endpoint = call.getString(PARAM_ACCESS_TOKEN_ENDPOINT);
         String baseUrl = call.getString(PARAM_AUTHORIZATION_BASE_URL);
 
-        ServiceBuilder serviceBuilder = new ServiceBuilder(apiKey);
+        ServiceBuilder serviceBuilder = new ServiceBuilder(apiKey)
+            .responseType("token");
         GenericApi20 genericApi20 = new GenericApi20(endpoint, baseUrl);
         this.service = serviceBuilder.build(genericApi20);
 

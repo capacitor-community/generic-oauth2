@@ -3,91 +3,119 @@
 [![npm](https://img.shields.io/npm/v/@teamconductor/capacitor-oauth2.svg)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2) 
 [![npm](https://img.shields.io/npm/dt/@teamconductor/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2)
 
-This is a simple OAuth 2 client letting you configure everything instead of using 
-the OAuth providers SDKs in favor of better performance because especially on the web 
-no additional javascript must be loaded.
+This is a simple OAuth 2 client plugin. 
+
+It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
 ## Installation
 
 `npm i @teamconductor/capacitor-oauth2`
 
-## Api
+## Configuration
 
-## Web
+This example shows the common process of configuring this plugin. 
 
-The following example is part of a **Angular 6** application authenticating against Facebook and Google.
+Although it was taken from a Angular 6 application, it should work in other frameworks as well. 
 
 ```typescript
 import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
 
-facebookLogin() {
-    OAuth2Client.authenticate({
-        appId: environment.fbAppId,
-        authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
-        resourceUrl: "https://graph.facebook.com/v2.11/me",
-        web: {
-            redirectUrl: this.getRedirectUrl(),
-            windowOptions: this.OAUTH_WINDOW_OPTIONS
-        }
-  }).then(result => {
-        this.authenticateBackend("FACEBOOK", result);
-  }).catch(reason => {
-        console.error("FB OAuth rejected", reason);
-  });
-}
-
-googleLogin() {
-    OAuth2Client.authenticate({
-        appId: environment.googleAppId,
-        authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
-        scope: 'https://www.googleapis.com/auth/userinfo.profile',
-        resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
-        web: {
-            redirectUrl: this.getRedirectUrl(),
-            windowOptions: this.OAUTH_WINDOW_OPTIONS
-        },
-    }).then(result => {
-        this.authenticateBackend("GOOGLE", result);
-    }).catch(reason => {
-        console.error("Google OAuth rejected", reason);
-    });
-}
-
-private authenticateBackend(provider: string, result: OAuth2AuthenticateResult) {
-    let oauthData = new DemoLoginData();
-    oauthData.provider = provider;
-    oauthData.oauthId = result.id;
-    oauthData.name = result.name;
-    if ("GOOGLE" === provider) {
-        oauthData.email = result["email"];
-        oauthData.fn = result["given_name"];
-        oauthData.ln = result["family_name"];
+@Component({
+  template: '<button (click)="onFacebookBtnClick()">Login with Facebook</button>',
+})
+export class SignupComponent {
+    onFacebookBtnClick() {
+        OAuth2Client.authenticate({
+            appId: "YOUR_FACEBOOK_APP_ID",
+            authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
+            resourceUrl: "https://graph.facebook.com/v2.11/me",
+            web: {
+                redirectUrl: "http://localhost:4200/",
+                // https://www.w3schools.com/jsref/met_win_open.asp
+                windowOptions: "height=600,left=0,top=0"
+            }
+        }).then(resourceUrlResponse => {
+            let oauthUserId = resourceUrlResponse["id"];
+            let name = resourceUrlResponse["name"];
+            // go to backend
+        }).catch(reason => {
+            console.error("OAuth rejected", reason);
+        });
     }
-    
-    this.backendService.processOAuth(oauthData).subscribe(
-        jwtToken => {
-        
-        },
-        error => {
-            this.loginFailed = true;
-        }
-    );
 }
+```
 
-private getRedirectUrl(): string {
-  return window.location.protocol+"//"+window.location.hostname+":"+window.location.port;
-}
+Other working examples are:
+
+**Google**
+
+```typescript
+OAuth2Client.authenticate({
+    appId: "YOUR_GOOGLE_APP_ID",
+    authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+    scope: "email profile",
+    resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+    web: {
+        redirectUrl: "http://localhost:4200/"
+    },
+}).then(resourceUrlResponse => {
+    let oauthUserId = resourceUrlResponse["id"];
+    let name = resourceUrlResponse["name"];
+    let email = resourceUrlResponse["email"];
+    let fn = resourceUrlResponse["given_name"];
+    let ln = resourceUrlResponse["family_name"];
+    // go to backend
+}).catch(reason => {
+    console.error("Google OAuth rejected", reason);
+});
+```
+
+**Amazon**
+
+```typescript
+OAuth2Client.authenticate({
+    appId: "YOUR_AMAZON_APP_ID",
+    authorizationBaseUrl: "https://www.amazon.com/ap/oa",
+    scope: "profile:user_id",
+    resourceUrl: "https://api.amazon.com/user/profile",
+    web: {
+        redirectUrl: "http://localhost:4200/"
+    },
+}).then(resourceUrlResponse => {
+    let oauthUserId = resourceUrlResponse["user_id"];
+    // go to backend
+}).catch(reason => {
+    console.error("Amazon OAuth rejected", reason);
+});
+``` 
+
+
+## Platform: Web/PWA
+
+This implementation just opens a browser window to let users enter their credentials.
+
+As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance 
+impact using this plugin in a web applications.
+
+- Available since version: **1.0.0-alpha.16**
+
+## Platform: Android
+
+Add the following to your `androidManifest.xml`
+
+```xml
 
 ```
 
-## Android
+- Available since version: **Work in progress**
 
-The simple [ScribeJava](https://github.com/scribejava/scribejava) OAuth client library for android is used as only dependency.
+## Platform: iOS
+
+- ETA November 2018
  
-
-## iOS
-
- - ETA October 2018
+## Platform: Electron
+ 
+- No ETA yet
  
 ## Contribute
 
@@ -116,5 +144,5 @@ MIT. Please see [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2
 
 ## Team Condcutor
 
-This feature is powered by [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
+This plugin is powered by [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
 

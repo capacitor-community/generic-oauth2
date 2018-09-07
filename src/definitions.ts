@@ -9,9 +9,9 @@ export interface OAuth2ClientPlugin {
     /**
      * Authenicate against a OAuth 2 provider.
      * @param {OAuth2AuthenticateOptions} options
-     * @returns {Promise<OAuth2AuthenticateResult>}
+     * @returns {Promise<any>} the resource url response
      */
-    authenticate(options: OAuth2AuthenticateOptions): Promise<OAuth2AuthenticateResult>;
+    authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
 }
 
 export interface OAuth2AuthenticateOptions {
@@ -48,11 +48,4 @@ export interface OAuth2AuthenticateOptions {
          */
         windowOptions?: string;
     }
-}
-
-export interface OAuth2AuthenticateResult {
-
-    id: string;
-    name: string;
-
 }
