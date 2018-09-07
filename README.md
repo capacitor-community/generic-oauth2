@@ -15,9 +15,7 @@ no additional javascript must be loaded.
 
 ## Web
 
-The following code was taken from a **Angular 6** application authenticating against Facebook and Google OAuth APIs.
-
-For authentification minimal data is needed.
+The following example is part of a **Angular 6** application authenticating against Facebook and Google.
 
 ```typescript
 import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
