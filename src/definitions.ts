@@ -28,13 +28,13 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl: string;
     /**
+     * Url or customScheme to which the provider redirects after login
+     */
+    redirectUrl: string;
+    /**
      * default to false == GET
      */
     resourcePostRequest?: boolean;
-    /**
-     * Url to which the provider redirects after login
-     */
-    redirectUrl: string;
     /**
      *
      */
@@ -48,6 +48,6 @@ export interface OAuth2AuthenticateOptions {
 export interface OAuth2AuthenticateResult {
 
     id: string;
-    data: any;
+    name: string;
 
 }
