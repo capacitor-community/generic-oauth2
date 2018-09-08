@@ -23,6 +23,11 @@ export interface OAuth2AuthenticateOptions {
      * The base url for retrieving the access_token from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
      */
     authorizationBaseUrl: string;
+
+    /**
+     * Url for retrieving the access_token by the code. TODO maybe not needed
+     */
+    accessTokenEndpoint?: string;
     /**
      * Protected resource url. For authentification you only need the basic user details.
      */
@@ -47,5 +52,11 @@ export interface OAuth2AuthenticateOptions {
          * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
          */
         windowOptions?: string;
+    },
+    android?: {
+        /**
+         * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
+         */
+        customScheme: string;
     }
 }

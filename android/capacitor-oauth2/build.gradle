@@ -24,10 +24,10 @@ repositories {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 27
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 28
+        targetSdkVersion 27
         versionCode 1
         versionName project.version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -44,12 +44,22 @@ android {
 }
 
 dependencies {
-    implementation 'com.github.scribejava:scribejava-core:5.5.0'
+    implementation 'net.openid:appauth:0.7.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.7.0'
+//    compile 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.ionicframework.capacitor:capacitor-android:1.0.0-beta.7'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
+
+// ###############
+// ### AppAuth ###
+// ###############
+
+android.defaultConfig.manifestPlaceholders = [
+    'appAuthRedirectScheme': 'com.byteowls.capacitorapp'
+]
 
 // ##########################
 // ### Prepare publishing ###
