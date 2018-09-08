@@ -25,8 +25,8 @@ import org.json.JSONException;
 
 import static android.content.Context.MODE_PRIVATE;
 
-@NativePlugin(requestCodes = { OAuth2Client.RC_OAUTH })
-public class OAuth2Client extends Plugin {
+@NativePlugin(requestCodes = { OAuth2ClientPlugin.RC_OAUTH }, name = "OAuth2Client")
+public class OAuth2ClientPlugin extends Plugin {
 
     public static final int RC_OAUTH = 654788;
 

@@ -14,6 +14,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             platforms: ['web']
         });
     }
+
     async authenticate(options: OAuth2AuthenticateOptions): Promise<any> {
         return new Promise<any>((resolve, reject) => {
             if (!options.web || !options.web.redirectUrl) {

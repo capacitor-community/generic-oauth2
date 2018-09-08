@@ -1,11 +1,10 @@
 declare global {
     interface PluginRegistry {
-        OAuth2ClientPlugin?: OAuth2ClientPlugin;
+        OAuth2Client?: OAuth2ClientPlugin;
     }
 }
 
 export interface OAuth2ClientPlugin {
-
     /**
      * Authenicate against a OAuth 2 provider.
      * @param {OAuth2AuthenticateOptions} options
