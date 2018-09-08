@@ -1,4 +1,4 @@
-import { WebPlugin } from '@capacitor/core';
+import {WebPlugin} from '@capacitor/core';
 import {OAuth2AuthenticateOptions, OAuth2ClientPlugin} from "./definitions";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {

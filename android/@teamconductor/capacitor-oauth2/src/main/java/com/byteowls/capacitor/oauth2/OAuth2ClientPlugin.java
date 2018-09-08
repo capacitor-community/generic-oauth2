@@ -22,6 +22,7 @@ import net.openid.appauth.ResponseTypeValues;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -42,10 +43,10 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @PluginMethod()
     public void authenticate(PluginCall call) {
-        String appId = call.getString(PARAM_APP_ID);
-        String baseUrl = call.getString(PARAM_AUTHORIZATION_BASE_URL);
-        String accessTokenEndpoint = call.getString(PARAM_ACCESS_TOKEN_ENDPOINT, "https://idp.example.com/token"); // placeholder
-        String customScheme = call.getString(PARAM_CUSTOM_SCHEME);
+        String appId = getCallString(call, PARAM_APP_ID);
+        String baseUrl = getCallString(call, PARAM_AUTHORIZATION_BASE_URL);
+        String accessTokenEndpoint = getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT, "https://idp.example.com/token"); // placeholder
+        String customScheme = getCallString(call, PARAM_CUSTOM_SCHEME);
 
         AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(
             Uri.parse(baseUrl), // authorization endpoint
@@ -106,6 +107,44 @@ public class OAuth2ClientPlugin extends Plugin {
             .edit()
             .putString("stateJson", state.jsonSerializeString())
             .apply();
+    }
+
+    private String getCallString(PluginCall call, String key) {
+        return getCallString(call, key, null);
+    }
+
+    private String getCallString(PluginCall call, String key, String defaultValue) {
+        String k = getDeepestKey(key);
+        try {
+            JSONObject o = getDeepestObject(call.getData(), key);
+
+            String value = o.getString(k);
+            if (value == null) {
+                return defaultValue;
+            }
+            return value;
+        } catch (Exception ignore) {}
+        return defaultValue;
+
+    }
+
+    private String getDeepestKey(String key) {
+        String[] parts = key.split("\\.");
+        if (parts.length > 0) {
+            return parts[parts.length - 1];
+        }
+        return null;
+    }
+
+    private JSObject getDeepestObject(JSObject o, String key) throws JSONException {
+        // Split on periods
+        String[] parts = key.split("\\.");
+        // Search until the second to last part of the key
+        for (int i = 0; i < parts.length-1; i++) {
+            String k = parts[i];
+            o = o.getJSObject(k);
+        }
+        return o;
     }
 
 
