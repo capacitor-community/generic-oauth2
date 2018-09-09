@@ -17,15 +17,38 @@ This example shows the common process of configuring this plugin.
 
 Although it was taken from a Angular 6 application, it should work in other frameworks as well. 
 
+### Register plugin
+
+Find the init component of your app, which is in Angular `app.component.ts` and register this plugin by
+
+```
+import {registerWebPlugin} from "@capacitor/core";
+import {OAuth2Client} from '@teamconductor/capacitor-oauth2';
+
+@Component()
+export class AppComponent implements OnInit {
+
+    ngOnInit() {
+        console.log("Register custom capacitor plugins");
+        registerWebPlugin(OAuth2Client);
+        // other stuff
+    }
+}
+```
+
+### Use it
+
 ```typescript
-import {OAuth2AuthenticateResult, OAuth2Client} from '@teamconductor/capacitor-oauth2';
+import {
+  Plugins
+} from '@capacitor/core';
 
 @Component({
   template: '<button (click)="onFacebookBtnClick()">Login with Facebook</button>',
 })
 export class SignupComponent {
     onFacebookBtnClick() {
-        OAuth2Client.authenticate({
+        Plugins.OAuth2Client.authenticate({
             appId: "YOUR_FACEBOOK_APP_ID",
             authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
             resourceUrl: "https://graph.facebook.com/v2.11/me",
@@ -50,7 +73,7 @@ Other working examples are:
 **Google**
 
 ```typescript
-OAuth2Client.authenticate({
+Plugins.OAuth2Client.authenticate({
     appId: "YOUR_GOOGLE_APP_ID",
     authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
     scope: "email profile",
@@ -73,7 +96,7 @@ OAuth2Client.authenticate({
 **Amazon**
 
 ```typescript
-OAuth2Client.authenticate({
+Plugins.OAuth2Client.authenticate({
     appId: "YOUR_AMAZON_APP_ID",
     authorizationBaseUrl: "https://www.amazon.com/ap/oa",
     scope: "profile:user_id",
