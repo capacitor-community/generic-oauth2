@@ -29,7 +29,7 @@ import static android.content.Context.MODE_PRIVATE;
 @NativePlugin(requestCodes = { OAuth2ClientPlugin.RC_OAUTH }, name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
 
-    public static final int RC_OAUTH = 654788;
+    static final int RC_OAUTH = 2000;
 
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_ANDROID_APP_ID = "android.appId";
