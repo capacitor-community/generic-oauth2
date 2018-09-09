@@ -32,6 +32,7 @@ public class OAuth2ClientPlugin extends Plugin {
     public static final int RC_OAUTH = 654788;
 
     private static final String PARAM_APP_ID = "appId";
+    private static final String PARAM_ANDROID_APP_ID = "android.appId";
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
     private static final String PARAM_CUSTOM_SCHEME = "android.customScheme";
@@ -44,6 +45,10 @@ public class OAuth2ClientPlugin extends Plugin {
     @PluginMethod()
     public void authenticate(PluginCall call) {
         String appId = getCallString(call, PARAM_APP_ID);
+        String androidAppId = getCallString(call, PARAM_ANDROID_APP_ID);
+        if (androidAppId != null && !androidAppId.isEmpty()) {
+            appId = androidAppId;
+        }
         String baseUrl = getCallString(call, PARAM_AUTHORIZATION_BASE_URL);
         String accessTokenEndpoint = getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT, "https://idp.example.com/token"); // placeholder
         String customScheme = getCallString(call, PARAM_CUSTOM_SCHEME);

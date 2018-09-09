@@ -44,6 +44,11 @@ export interface OAuth2AuthenticateOptions {
      */
     web?: {
         /**
+         * Parameter for overwriting the root app id.
+         * This is useful for Google OAuth because you have different client ids for web, android, ios
+         */
+        appId?: string;
+        /**
          * Url to  which the oauth provider redirects after authentication
          */
         redirectUrl: string;
@@ -53,6 +58,11 @@ export interface OAuth2AuthenticateOptions {
         windowOptions?: string;
     },
     android?: {
+        /**
+         * Parameter for overwriting the root app id.
+         * This is useful for Google OAuth because you have different client ids for web, android, ios
+         */
+        appId?: string;
         /**
          * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
          */

@@ -22,7 +22,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             } else {
                 let loopCount = this.loopCount;
                 // open window
-                this.windowHandle = window.open(this.getAuthorizationUrl(options), "_blank", options.web.windowOptions);
+
+                let winOptions = null;
+                if (options.web) {
+                    winOptions = options.web.windowOptions;
+                }
+                this.windowHandle = window.open(this.getAuthorizationUrl(options), "_blank", winOptions);
                 // wait for redirect and resolve the
                 this.intervalId = setInterval(() => {
                     if (loopCount-- < 0) {
@@ -77,7 +82,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     private getAuthorizationUrl(options: OAuth2AuthenticateOptions): string {
-        let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id="+options.appId;
+        let appId = options.appId;
+        if (options.web && options.web.appId && options.web.appId.length > 0) {
+            appId = options.web.appId;
+        }
+
+        let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id="+appId;
         if (options.web.redirectUrl) {
             baseUrl += "&redirect_uri="+options.web.redirectUrl;
         }
