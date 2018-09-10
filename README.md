@@ -51,6 +51,7 @@ export class SignupComponent {
         Plugins.OAuth2Client.authenticate({
             appId: "YOUR_FACEBOOK_APP_ID",
             authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
+            accessTokenEndpoint:  "https://graph.facebook.com/v2.11/oauth/access_token",
             resourceUrl: "https://graph.facebook.com/v2.11/me",
             web: {
                 redirectUrl: "http://localhost:4200/",
@@ -76,6 +77,7 @@ Other working examples are:
 Plugins.OAuth2Client.authenticate({
     appId: "YOUR_GOOGLE_APP_ID",
     authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+    accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
     scope: "email profile",
     resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
     web: {
@@ -99,6 +101,7 @@ Plugins.OAuth2Client.authenticate({
 Plugins.OAuth2Client.authenticate({
     appId: "YOUR_AMAZON_APP_ID",
     authorizationBaseUrl: "https://www.amazon.com/ap/oa",
+    accessTokenEndpoint: "https://api.amazon.com/auth/o2/token",
     scope: "profile:user_id",
     resourceUrl: "https://api.amazon.com/user/profile",
     web: {
@@ -124,11 +127,40 @@ impact using this plugin in a web applications.
 
 ## Platform: Android
 
-Add the following to your `androidManifest.xml`
-
-```xml
+Register the plugin in `your.domain.app.MainActivity#onCreate` 
 
 ```
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        List<Class<? extends Plugin>> additionalPlugins = new ArrayList<>();
+        // Additional plugins you've installed go here
+        // Ex: additionalPlugins.add(TotallyAwesomePlugin.class);
+        additionalPlugins.add(OAuth2ClientPlugin.class);
+
+        // Initializes the Bridge
+        this.init(savedInstanceState, additionalPlugins);
+    }
+```
+
+For redirecting we use a customScheme on Android to configure it add it to the plugins options.
+
+```
+android: {
+    customScheme: "your.domain.app:/"
+}
+```
+
+and add the following your app `android/app/build.gradle` 
+
+```gradle
+android.defaultConfig.manifestPlaceholders = [
+  'appAuthRedirectScheme': 'your.domain.app'
+]
+```
+
+Until now it was not needed to change anything else.
 
 - Available since version: **Work in progress**
 

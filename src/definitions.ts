@@ -22,11 +22,10 @@ export interface OAuth2AuthenticateOptions {
      * The base url for retrieving the access_token from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
      */
     authorizationBaseUrl: string;
-
     /**
-     * Url for retrieving the access_token by the code. TODO maybe not needed
+     * Url for retrieving the access_token by the authorization code.
      */
-    accessTokenEndpoint?: string;
+    accessTokenEndpoint: string;
     /**
      * Protected resource url. For authentification you only need the basic user details.
      */
@@ -66,6 +65,11 @@ export interface OAuth2AuthenticateOptions {
         /**
          * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
          */
-        customScheme: string;
+        customScheme?: string;
+        /**
+         * Some oauth provider especially Facebook does not support the standard oauth flow. Therefore a custom implementation
+         * using the provider's SDK is needed. Provide a class implementing the '' interface
+         */
+        customHandlerClass?: string;
     }
 }

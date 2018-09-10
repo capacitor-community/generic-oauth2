@@ -44,10 +44,8 @@ android {
 }
 
 dependencies {
-    implementation 'net.openid:appauth:0.7.1'
-    implementation 'com.squareup.okhttp3:okhttp:3.7.0'
-//    compile 'com.squareup.picasso:picasso:2.5.2'
     implementation 'com.ionicframework.capacitor:capacitor-android:1.0.0-beta.7'
+    implementation 'net.openid:appauth:0.7.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
