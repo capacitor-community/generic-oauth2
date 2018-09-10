@@ -139,7 +139,7 @@ and add the following your app `android/app/build.gradle`
 
 ```gradle
 android.defaultConfig.manifestPlaceholders = [
-    'appAuthRedirectScheme': 'your.domain.app'
+    'appAuthRedirectScheme': 'com.companyname.appname'
 ]
 ```
 
@@ -148,7 +148,8 @@ android.defaultConfig.manifestPlaceholders = [
 Facebook is special. They do not allow a standard oauth flow on Android. Instead they force us to use their SDK for Android.
 
 Therefore this plugin can load a handler class from your app to retrieve the accessToken and hand it back to the plugin.
-You configure that in the plugin options like that:
+
+To configure that use the following plugins option:
 
 ```
 android: {
@@ -156,9 +157,9 @@ android: {
 }
 ```
 
-This handler class `com.companyname.appname.FacebookOAuth2Handler`
-has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
-and handles the login.
+This example handler class `com.companyname.appname.FacebookOAuth2Handler`
+implements `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
+and handles the login like Facebook wants.
 
 See https://developers.facebook.com/docs/facebook-login/android/ for details.
 
