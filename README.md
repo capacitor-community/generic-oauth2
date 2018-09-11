@@ -44,21 +44,13 @@ import {
 } from '@capacitor/core';
 
 @Component({
-  template: '<button (click)="onFacebookBtnClick()">Login with Facebook</button>',
+  template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>',
 })
 export class SignupComponent {
-    onFacebookBtnClick() {
-        Plugins.OAuth2Client.authenticate({
-            appId: "YOUR_FACEBOOK_APP_ID",
-            authorizationBaseUrl: "https://www.facebook.com/v2.11/dialog/oauth",
-            accessTokenEndpoint:  "https://graph.facebook.com/v2.11/oauth/access_token",
-            resourceUrl: "https://graph.facebook.com/v2.11/me",
-            web: {
-                redirectUrl: "http://localhost:4200/",
-                // https://www.w3schools.com/jsref/met_win_open.asp
-                windowOptions: "height=600,left=0,top=0"
-            }
-        }).then(resourceUrlResponse => {
+    onOAuthBtnClick() {
+        Plugins.OAuth2Client.authenticate(
+            oauth2Options
+        ).then(resourceUrlResponse => {
             let oauthUserId = resourceUrlResponse["id"];
             let name = resourceUrlResponse["name"];
             // go to backend
@@ -69,31 +61,9 @@ export class SignupComponent {
 }
 ```
 
-Other working examples are:
+### Options
 
-**Google**
-
-```typescript
-Plugins.OAuth2Client.authenticate({
-    appId: "YOUR_GOOGLE_APP_ID",
-    authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
-    accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
-    scope: "email profile",
-    resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
-    web: {
-        redirectUrl: "http://localhost:4200/"
-    },
-}).then(resourceUrlResponse => {
-    let oauthUserId = resourceUrlResponse["id"];
-    let name = resourceUrlResponse["name"];
-    let email = resourceUrlResponse["email"];
-    let fn = resourceUrlResponse["given_name"];
-    let ln = resourceUrlResponse["family_name"];
-    // go to backend
-}).catch(reason => {
-    console.error("Google OAuth rejected", reason);
-});
-```
+See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L16
 
 ## Platform: Web/PWA
 
@@ -106,7 +76,7 @@ impact using this plugin in a web applications.
 
 ## Platform: Android
 
-Register the plugin in `your.domain.app.MainActivity#onCreate`
+**Register the plugin** in `com.companyname.appname.MainActivity#onCreate`
 
 ```
     @Override
@@ -123,47 +93,17 @@ Register the plugin in `your.domain.app.MainActivity#onCreate`
     }
 ```
 
-**Google**
+**Custom Handler for SDK us**
 
-For Google and hopefully most other providers we use a customScheme on Android to configure it add it to the plugins options.
+Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
-```
-android: {
-    // overwrite your default appId with a android specific. e.g. Google needs that.
-    appId: "your_android_client_id"
-    customScheme: "com.companyname.appname:/"
-}
-```
+This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
-and add the following your app `android/app/build.gradle`
+Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. Simply configure a full qualified classname in the option property `android.customHandlerClass`. This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
 
-```gradle
-android.defaultConfig.manifestPlaceholders = [
-    'appAuthRedirectScheme': 'com.companyname.appname'
-]
-```
+See a full working example below!
 
-**Facebook**
-
-Facebook is special. They do not allow a standard oauth flow on Android. Instead they force us to use their SDK for Android.
-
-Therefore this plugin can load a handler class from your app to retrieve the accessToken and hand it back to the plugin.
-
-To configure that use the following plugins option:
-
-```
-android: {
-    customHandlerClass: "com.companyname.appname.FacebookOAuth2Handler",
-}
-```
-
-This example handler class `com.companyname.appname.FacebookOAuth2Handler`
-implements `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
-and handles the login like Facebook wants.
-
-See https://developers.facebook.com/docs/facebook-login/android/ for details.
-
-- Available since version: **Work in progress**
+- Available since version: **1.0.0-alpha.38**
 
 ## Platform: iOS
 
@@ -172,6 +112,198 @@ See https://developers.facebook.com/docs/facebook-login/android/ for details.
 ## Platform: Electron
 
 - No ETA yet
+
+## Full examples
+
+### Google
+
+**PWA**
+```typescript
+googleLogin() {
+    Plugins.OAuth2Client.authenticate({
+      appId: environment.oauthAppId.google.web,
+      authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+      accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+      scope: "email profile",
+      resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+      web: {
+        redirectUrl: "http://localhost:4200",
+        windowOptions: "height=600,left=0,top=0"
+      },
+      android: {
+        appId: environment.oauthAppId.google.android,
+        customScheme: "com.companyname.appname:/"
+      }
+    }).then(resourceUrlResponse => {
+      this.authenticateBackend("GOOGLE", resourceUrlResponse);
+    }).catch(reason => {
+      console.error("Google OAuth rejected", reason);
+    });
+  }
+```
+**Android**
+
+Add customScheme in `android/app/build.gradle` as well. Without `:/`.
+
+```
+android.defaultConfig.manifestPlaceholders = [
+  'appAuthRedirectScheme': 'com.companyname.appname'
+]
+```
+
+### Facebook
+
+**PWA**
+
+```typescript
+facebookLogin() {
+    let fbApiVersion = "2.11";
+    Plugins.OAuth2Client.authenticate({
+      appId: "YOUR_FACEBOOK_APP_ID",
+      authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
+      accessTokenEndpoint:  "https://graph.facebook.com/v" + fbApiVersion + "/oauth/access_token",
+      resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
+      web: {
+        redirectUrl: "http://localhost:4200",
+        windowOptions: "height=600,left=0,top=0"
+      },
+      android: {
+        customHandlerClass: "com.companyname.appname.YourFacebookOAuth2Handler",
+      }
+    }).then(resourceUrlResponse => {
+      // check with your backend
+    }).catch(reason => {
+      console.error("FB OAuth rejected", reason);
+    });
+  }
+```
+
+**Android**
+
+Facebook forces us to use their SDK and as I don't want to have a dependency to facebook for users, who dont need Facebook OAuth. I created the `customHandlerClass` integration.
+
+See https://developers.facebook.com/docs/facebook-login/android/ for more background on how to configure Facebook in your Android app.
+
+Here is what I did, which seems like a lot but it's basically the same you would have to I you do not use the plugin at all.
+
+1) Add `implementation 'com.facebook.android:facebook-login:4.36.0'` to `android/app/build.gradle` as dependency.
+
+2) Add to `string.xml`
+
+```xml
+    <string name="facebook_app_id"><YOUR_FACEBOOK_APP_ID></string>
+    <string name="fb_login_protocol_scheme">fb<YOUR_FACEBOOK_APP_ID></string>
+```
+
+3) Add to `AndroidManifest.xml`
+
+```xml
+<meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+
+<activity android:name="com.facebook.FacebookActivity"
+  android:configChanges=
+    "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+  android:label="@string/app_name" />
+
+<activity android:name="com.facebook.CustomTabActivity" android:exported="true">
+  <intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="@string/fb_login_protocol_scheme" />
+  </intent-filter>
+</activity>
+```
+4) Create a custom handler class
+
+```java
+
+package com.companyname.appname;
+
+import android.app.Activity;
+
+import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
+import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
+import com.byteowls.teamconductor.MainActivity;
+import com.facebook.AccessToken;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+import com.getcapacitor.PluginCall;
+
+public class YourFacebookOAuth2Handler implements OAuth2CustomHandler {
+
+  public static final String TAG = "appname";
+
+  @Override
+  public void getAccessToken(Activity activity, PluginCall pluginCall, final AccessTokenCallback callback) {
+    AccessToken accessToken = AccessToken.getCurrentAccessToken();
+    if (AccessToken.isCurrentAccessTokenActive()) {
+      callback.onSuccess(accessToken.getToken());
+    } else {
+      LoginManager.getInstance().logInWithReadPermissions(activity, null);
+
+      LoginManager.getInstance().registerCallback(((MainActivity) activity).getCallbackManager(), new FacebookCallback<LoginResult>() {
+        @Override
+        public void onSuccess(LoginResult loginResult) {
+          callback.onSuccess(loginResult.getAccessToken().getToken());
+        }
+
+        @Override
+        public void onCancel() {
+          callback.onCancel();
+        }
+
+        @Override
+        public void onError(FacebookException error) {
+          callback.onCancel();
+        }
+      });
+    }
+  }
+}
+
+```
+5) Change your MainActivity like
+
+```java
+public class MainActivity extends BridgeActivity {
+
+  private CallbackManager callbackManager;
+
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    FacebookSdk.sdkInitialize(this.getApplicationContext());
+
+    callbackManager = CallbackManager.Factory.create();
+
+    // add my plugins here
+    List<Class<? extends Plugin>> additionalPlugins = new ArrayList<>();
+    // Additional plugins you've installed go here
+    additionalPlugins.add(OAuth2ClientPlugin.class);
+    // Ex: additionalPlugins.add(TotallyAwesomePlugin.class);
+
+    // Initializes the Bridge
+    this.init(savedInstanceState, additionalPlugins);
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (callbackManager.onActivityResult(requestCode, resultCode, data)) {
+      return;
+    }
+  }
+
+  public CallbackManager getCallbackManager() {
+    return callbackManager;
+  }
+
+}
+```
 
 ## Contribute
 
