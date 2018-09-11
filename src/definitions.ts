@@ -15,7 +15,7 @@ export interface OAuth2ClientPlugin {
 
 export interface OAuth2AuthenticateOptions {
     /**
-     * The app id (client id) you get from the oauth provider like Google
+     * The app id (client id) you get from the oauth provider like Google, Facebook,...
      */
     appId: string;
     /**
@@ -44,7 +44,7 @@ export interface OAuth2AuthenticateOptions {
     web?: {
         /**
          * Parameter for overwriting the root app id.
-         * This is useful for Google OAuth because you have different client ids for web, android, ios
+         * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
          */
         appId?: string;
         /**
@@ -56,6 +56,9 @@ export interface OAuth2AuthenticateOptions {
          */
         windowOptions?: string;
     },
+    /**
+     * Custom options for the platform "android"
+     */
     android?: {
         /**
          * Parameter for overwriting the root app id.
@@ -68,7 +71,9 @@ export interface OAuth2AuthenticateOptions {
         customScheme?: string;
         /**
          * Some oauth provider especially Facebook does not support the standard oauth flow. Therefore a custom implementation
-         * using the provider's SDK is needed. Provide a class implementing the '' interface
+         * using the provider's SDK is needed.
+         *
+         * Provide a class name implementing the 'com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler' interface.
          */
         customHandlerClass?: string;
     }
