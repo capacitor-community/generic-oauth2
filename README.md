@@ -93,7 +93,7 @@ impact using this plugin in a web applications.
     }
 ```
 
-**Custom Handler for SDK us**
+**Custom OAuth Handler**
 
 Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
@@ -233,8 +233,6 @@ import com.facebook.login.LoginResult;
 import com.getcapacitor.PluginCall;
 
 public class YourFacebookOAuth2Handler implements OAuth2CustomHandler {
-
-  public static final String TAG = "appname";
 
   @Override
   public void getAccessToken(Activity activity, PluginCall pluginCall, final AccessTokenCallback callback) {
