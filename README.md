@@ -107,7 +107,7 @@ See a full working example below!
 
 ## Platform: iOS
 
-- ETA November 2018
+- ETA October 2018
 
 ## Platform: Electron
 
