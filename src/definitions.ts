@@ -76,5 +76,19 @@ export interface OAuth2AuthenticateOptions {
          * Provide a class name implementing the 'com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler' interface.
          */
         customHandlerClass?: string;
+    },
+    /**
+     * Custom options for the platform "ios"
+     */
+    ios?: {
+        /**
+         * Parameter for overwriting the root app id.
+         * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
+         */
+        appId?: string;
+        /**
+         * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
+         */
+        customScheme?: string;
     }
 }
