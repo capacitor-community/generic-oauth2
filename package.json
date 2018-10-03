@@ -15,7 +15,9 @@
     },
     "files": [
         "dist/",
-        "android/"
+        "ios/",
+        "android/",
+        "TeamConductorCapacitorOAuth2.podspec"
     ],
     "keywords": [
         "capacitor",
@@ -25,6 +27,9 @@
         "social-login"
     ],
     "capacitor": {
+        "ios": {
+            "src": "ios"
+        },
         "android": {
             "src": "android"
         }
@@ -40,7 +45,7 @@
         "access": "public"
     },
     "dependencies": {
-        "@capacitor/core": "1.0.0-beta.7"
+        "@capacitor/core": "1.0.0-beta.8"
     },
     "devDependencies": {
         "typescript": "2.9.1"
