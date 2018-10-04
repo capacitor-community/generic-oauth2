@@ -1,6 +1,6 @@
 
   Pod::Spec.new do |s|
-    s.name = 'TeamconductorCapacitorOAuth2'
+    s.name = 'TeamconductorCapacitorOauth2'
     s.version = '1.4.0'
     s.summary = 'Capacitor OAuth2 plugin'
     s.license = 'MIT'
