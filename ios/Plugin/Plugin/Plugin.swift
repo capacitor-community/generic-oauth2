@@ -17,17 +17,34 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_RESOURCE_URL = "resourceUrl";
 
     @objc func authenticate(_ call: CAPPluginCall) {
-        var appId = getString(call, PARAM_APP_ID)!
-        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
+        var appId = getString(call, PARAM_APP_ID)
+        let iosAppId = getString(call, PARAM_IOS_APP_ID)
         if iosAppId != nil {
-            appId = iosAppId!
+            appId = iosAppId
         }
-        let baseUrl: String! = getString(call, PARAM_AUTHORIZATION_BASE_URL)
-        let accessTokenEndpoint: String! = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT)
-        let customScheme: String! = getString(call, PARAM_IOS_CUSTOM_SCHEME)
+        guard let finalAppId = appId, appId != nil else {
+            call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
+            return
+        }
+        guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
+            call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
+            return
+        }
+        guard let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT) else {
+            call.reject("Option '\(PARAM_ACCESS_TOKEN_ENDPOINT)' is required!")
+            return
+        }
+        guard let customScheme = getString(call, PARAM_IOS_CUSTOM_SCHEME) else {
+            call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
+            return
+        }
+        guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
+            call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
+            return
+        }
         
         let oauthSwift = OAuth2Swift(
-            consumerKey: appId,
+            consumerKey: finalAppId,
             consumerSecret: "",
             authorizeUrl: baseUrl,
             accessTokenUrl: accessTokenEndpoint,
@@ -46,7 +63,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
             scope: getString(call, PARAM_SCOPE)!,
             state: getString(call, PARAM_STATE) ?? "",
             success: { credential, response, parameters in
-                let resourceUrl: String! = self.getString(call, self.PARAM_RESOURCE_URL)
                 oauthSwift.client.get(
                     resourceUrl,
                     parameters: parameters,
