@@ -117,4 +117,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
         return value as? String
     }
     
+    // Handle callback url which contains now token information
+    public static func handleRedirectUrl(_ url: URL) {
+        OAuthSwift.handle(url: url)
+    }
+    
 }
