@@ -15,6 +15,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_SCOPE = "scope";
     let PARAM_STATE = "state";
     let PARAM_RESOURCE_URL = "resourceUrl";
+    
+    var oauthSwift: OAuth2Swift
 
     @objc func authenticate(_ call: CAPPluginCall) {
         var appId = getString(call, PARAM_APP_ID)
@@ -43,7 +45,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return
         }
         
-        let oauthSwift = OAuth2Swift(
+        self.oauthSwift = OAuth2Swift(
             consumerKey: finalAppId,
             consumerSecret: "",
             authorizeUrl: baseUrl,
@@ -51,16 +53,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
             responseType: "code"
         )
         
-        oauthSwift.allowMissingStateCheck = true
-        
         oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
         
-        oauthSwift.authorize(
+        let defaultState = generateState(withLength: 20)
+        let _ = oauthSwift.authorize(
             withCallbackURL: customScheme,
             scope: getString(call, PARAM_SCOPE) ?? "",
-            state: getString(call, PARAM_STATE) ?? "",
+            state: getString(call, PARAM_STATE) ?? defaultState,
             success: { credential, response, parameters in
-                oauthSwift.client.get(
+                let _ = self.oauthSwift.client.get(
                     resourceUrl,
                     parameters: parameters,
                     success: { (response) in
