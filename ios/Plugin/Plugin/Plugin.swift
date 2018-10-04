@@ -18,7 +18,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
 
     @objc func authenticate(_ call: CAPPluginCall) {
         var appId = getString(call, PARAM_APP_ID)
-        let iosAppId = getString(call, PARAM_IOS_APP_ID)
+        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
         if iosAppId != nil {
             appId = iosAppId
         }
@@ -55,12 +55,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
         
-        guard let customSchemeUrl = URL(string: customScheme) else { return }
-
-        
         oauthSwift.authorize(
-            withCallbackURL: customSchemeUrl,
-            scope: getString(call, PARAM_SCOPE)!,
+            withCallbackURL: customScheme,
+            scope: getString(call, PARAM_SCOPE) ?? "",
             state: getString(call, PARAM_STATE) ?? "",
             success: { credential, response, parameters in
                 oauthSwift.client.get(
@@ -88,7 +85,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         var o = options
         for (_, k) in parts[0..<parts.count-1].enumerated() {
-            o = o![String(k)] as? [String:Any?]
+            if (o != nil) {
+                o = o?[String(k)] as? [String:Any?] ?? nil
+            }
         }
         return o
     }
@@ -103,13 +102,13 @@ public class OAuth2ClientPlugin: CAPPlugin {
     
     
     
-    @objc public func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
+    private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
         let k = getConfigKey(key)
         let o = getConfigObjectDeepest(call.options, key: key)
         return o?[k] ?? nil
     }
     
-    @objc public func getString(_ call: CAPPluginCall, _ key: String) -> String? {
+    private func getString(_ call: CAPPluginCall, _ key: String) -> String? {
         let value = getValue(call, key)
         if value == nil {
             return nil
