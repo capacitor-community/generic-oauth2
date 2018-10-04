@@ -3,7 +3,6 @@ import Capacitor
 import OAuthSwift
 
 typealias JSObject = [String:Any]
-typealias JSArray = [JSObject]
 
 @objc(OAuth2ClientPlugin)
 public class OAuth2ClientPlugin: CAPPlugin {
