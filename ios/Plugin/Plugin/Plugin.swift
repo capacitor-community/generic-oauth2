@@ -16,7 +16,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_STATE = "state";
     let PARAM_RESOURCE_URL = "resourceUrl";
     
-    var oauthSwift: OAuth2Swift
+    var oauthSwift: OAuth2Swift?
 
     @objc func authenticate(_ call: CAPPluginCall) {
         var appId = getString(call, PARAM_APP_ID)
@@ -45,7 +45,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return
         }
         
-        self.oauthSwift = OAuth2Swift(
+        let oauthSwift = OAuth2Swift(
             consumerKey: finalAppId,
             consumerSecret: "",
             authorizeUrl: baseUrl,
@@ -53,6 +53,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             responseType: "code"
         )
         
+        self.oauthSwift = oauthSwift
         oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
         
         let defaultState = generateState(withLength: 20)
@@ -61,7 +62,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             scope: getString(call, PARAM_SCOPE) ?? "",
             state: getString(call, PARAM_STATE) ?? defaultState,
             success: { credential, response, parameters in
-                let _ = self.oauthSwift.client.get(
+                let _ = oauthSwift.client.get(
                     resourceUrl,
                     parameters: parameters,
                     success: { (response) in
@@ -70,13 +71,11 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         }
                     },
                     failure: { (error) in
-                        print(error.localizedDescription);
-                        call.reject(error.localizedDescription);
+                        call.reject("Access resource failed with \(error.localizedDescription)");
                     })
             },
             failure: { error in
-                print(error.localizedDescription)
-                call.reject(error.localizedDescription);
+                call.reject("Authorization failed with \(error.localizedDescription)");
             }
         )
     }
