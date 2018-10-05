@@ -29,7 +29,7 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
 
     @Override
     protected ResourceCallResult doInBackground(String... tokens) {
-        String resourceUrl = pluginCall.getString("resourceUrl");
+        String resourceUrl = pluginCall.getString(OAuth2ClientPlugin.PARAM_RESOURCE_URL);
         try {
             URL url = new URL(resourceUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

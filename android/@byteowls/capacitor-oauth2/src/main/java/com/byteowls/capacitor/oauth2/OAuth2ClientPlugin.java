@@ -39,7 +39,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_CUSTOM_SCHEME = "android.customScheme";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
-    private static final String PARAM_RESOURCE_URL = "resourceUrl";
+    public static final String PARAM_RESOURCE_URL = "resourceUrl";
 
     private AuthorizationService authService;
     private AuthState authState;

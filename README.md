@@ -1,7 +1,7 @@
 # Capacitor OAuth 2 client plugin
 
-[![npm](https://img.shields.io/npm/v/@teamconductor/capacitor-oauth2.svg)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2)
-[![npm](https://img.shields.io/npm/dt/@teamconductor/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2) [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
+[![npm](https://img.shields.io/npm/v/@byteowls/capacitor-oauth2.svg)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
+[![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2) [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg?style=flat-square)](https://www.paypal.me/moberwasserlechner)
 
 This is a simple OAuth 2 client plugin.
@@ -10,7 +10,7 @@ It let you configure the oauth parameters yourself instead of using SDKs. Theref
 
 ## Installation
 
-`npm i @teamconductor/capacitor-oauth2`
+`npm i @byteowls/capacitor-oauth2`
 
 ## Configuration
 
@@ -24,7 +24,7 @@ Find the init component of your app, which is in Angular `app.component.ts` and 
 
 ```
 import {registerWebPlugin} from "@capacitor/core";
-import {OAuth2Client} from '@teamconductor/capacitor-oauth2';
+import {OAuth2Client} from '@byteowls/capacitor-oauth2';
 
 @Component()
 export class AppComponent implements OnInit {
@@ -329,7 +329,7 @@ Try to change only parts your feature or bugfix requires.
 
 MIT. Please see [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/LICENSE).
 
-## Team Condcutor
+## BYTEOWLS Software & Consulting
 
-This plugin is powered by [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
+This plugin is powered by BYTEOWLS Software & Consulting and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
 
