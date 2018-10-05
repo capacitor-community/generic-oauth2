@@ -73,8 +73,6 @@ This implementation just opens a browser window to let users enter their credent
 As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance
 impact using this plugin in a web applications.
 
-- Available since version: **1.0.0-alpha.16**
-
 ## Platform: Android
 
 **Register the plugin** in `com.companyname.appname.MainActivity#onCreate`
@@ -103,8 +101,6 @@ This plugin should be as generic as possible so I don't want to include provider
 Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. Simply configure a full qualified classname in the option property `android.customHandlerClass`. This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
 
 See a full working example below!
-
-- Available since version: **1.0.0-alpha.38**
 
 ## Platform: iOS
 
