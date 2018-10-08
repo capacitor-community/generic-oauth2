@@ -9,6 +9,15 @@ This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
+## Do not use in production
+
+I had to restructure the plugin to unify naming. For IOs I look at other libs and renamed a few directories.
+
+Change of npm package scope from `@teamconductor` (a product of mine) to `@byteowls` (my company name)
+
+The old (discontinued) package is found at [![npm](https://img.shields.io/npm/v/@teamconductor/capacitor-oauth2.svg)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2)
+
+
 ## Installation
 
 `npm i @byteowls/capacitor-oauth2`
