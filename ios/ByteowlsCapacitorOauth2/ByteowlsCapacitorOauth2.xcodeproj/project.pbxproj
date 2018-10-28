@@ -7,12 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		18DD3EC6FD926A19540AA106 /* Pods_ByteowlsCapacitorOauth2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F94771610D9566B3ED5847 /* Pods_ByteowlsCapacitorOauth2.framework */; };
 		FE1C41BD21861FFC00F8236E /* ByteowlsCapacitorOauth2.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1C41BB21861FFC00F8236E /* ByteowlsCapacitorOauth2.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FE9AC5F721862144009471A9 /* ByteowlsCapacitorOauth2.m in Sources */ = {isa = PBXBuildFile; fileRef = FE9AC5F421862144009471A9 /* ByteowlsCapacitorOauth2.m */; };
 		FE9AC5F821862144009471A9 /* ByteowlsCapacitorOauth2.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9AC5F521862144009471A9 /* ByteowlsCapacitorOauth2.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		50F94771610D9566B3ED5847 /* Pods_ByteowlsCapacitorOauth2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ByteowlsCapacitorOauth2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		80D48D1199882E584EB5E775 /* Pods-ByteowlsCapacitorOauth2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByteowlsCapacitorOauth2.release.xcconfig"; path = "Pods/Target Support Files/Pods-ByteowlsCapacitorOauth2/Pods-ByteowlsCapacitorOauth2.release.xcconfig"; sourceTree = "<group>"; };
+		E93EEABDBC3E0F5423DF22EB /* Pods-ByteowlsCapacitorOauth2.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ByteowlsCapacitorOauth2.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ByteowlsCapacitorOauth2/Pods-ByteowlsCapacitorOauth2.debug.xcconfig"; sourceTree = "<group>"; };
 		FE1C41B821861FFC00F8236E /* ByteowlsCapacitorOauth2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ByteowlsCapacitorOauth2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE1C41BB21861FFC00F8236E /* ByteowlsCapacitorOauth2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ByteowlsCapacitorOauth2.h; sourceTree = "<group>"; };
 		FE1C41BC21861FFC00F8236E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -25,17 +29,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18DD3EC6FD926A19540AA106 /* Pods_ByteowlsCapacitorOauth2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		34F01263DFDE9AF275C9C619 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				E93EEABDBC3E0F5423DF22EB /* Pods-ByteowlsCapacitorOauth2.debug.xcconfig */,
+				80D48D1199882E584EB5E775 /* Pods-ByteowlsCapacitorOauth2.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		7144C000E7B46E365CE4F0B8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				50F94771610D9566B3ED5847 /* Pods_ByteowlsCapacitorOauth2.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		FE1C41AE21861FFC00F8236E = {
 			isa = PBXGroup;
 			children = (
 				FE1C41BA21861FFC00F8236E /* Source */,
 				FE1C41B921861FFC00F8236E /* Products */,
+				34F01263DFDE9AF275C9C619 /* Pods */,
+				7144C000E7B46E365CE4F0B8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -76,6 +100,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = FE1C41C021861FFC00F8236E /* Build configuration list for PBXNativeTarget "ByteowlsCapacitorOauth2" */;
 			buildPhases = (
+				714F7C29706103C851AD5B57 /* [CP] Check Pods Manifest.lock */,
 				FE1C41B321861FFC00F8236E /* Headers */,
 				FE1C41B421861FFC00F8236E /* Sources */,
 				FE1C41B521861FFC00F8236E /* Frameworks */,
@@ -131,6 +156,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		714F7C29706103C851AD5B57 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ByteowlsCapacitorOauth2-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		FE1C41B421861FFC00F8236E /* Sources */ = {
@@ -269,6 +315,7 @@
 		};
 		FE1C41C121861FFC00F8236E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E93EEABDBC3E0F5423DF22EB /* Pods-ByteowlsCapacitorOauth2.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -279,6 +326,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "$(SRCROOT)/Source/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -288,13 +336,14 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		FE1C41C221861FFC00F8236E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 80D48D1199882E584EB5E775 /* Pods-ByteowlsCapacitorOauth2.release.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
@@ -305,6 +354,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = "$(SRCROOT)/Source/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -313,7 +363,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.byteowls.capacitor-oauth2.ByteowlsCapacitorOauth2";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
