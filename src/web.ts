@@ -68,7 +68,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                     reject(new Error("No token! Authentication failed!"));
                                 }
                             } else {
-                                if (href.indexOf(options.web.redirectUrl) == 0) {
+                                if (href.indexOf(options.web.redirectUrl) === 0) {
                                     clearInterval(this.intervalId);
                                     this.windowHandle.close();
                                     reject(new Error("Not found"));
@@ -87,15 +87,15 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             appId = options.web.appId;
         }
 
-        let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id="+appId;
+        let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id=" + appId;
         if (options.web.redirectUrl) {
-            baseUrl += "&redirect_uri="+options.web.redirectUrl;
+            baseUrl += "&redirect_uri=" + options.web.redirectUrl;
         }
         if (options.scope) {
-            baseUrl += "&scope="+options.scope;
+            baseUrl += "&scope=" + options.scope;
         }
         if (options.state) {
-            baseUrl += "&state="+options.state;
+            baseUrl += "&state=" + options.state;
         }
         return encodeURI(baseUrl);
     }
