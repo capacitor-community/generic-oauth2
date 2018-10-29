@@ -9,7 +9,7 @@
 import Foundation
 import Capacitor
 
-public protocol OAuth2CustomHandler: NSObjectProtocol {
+@objc public protocol OAuth2CustomHandler: NSObjectProtocol {
     
     func getAccessToken(viewController: UIViewController, call: CAPPluginCall, callback: () -> Void) -> Void
 }

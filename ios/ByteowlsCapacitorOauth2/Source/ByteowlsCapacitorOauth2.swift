@@ -19,14 +19,30 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_RESOURCE_URL = "resourceUrl";
     
     var oauthSwift: OAuth2Swift?
+    var handlers = [String: OAuth2CustomHandler.Type]()
+    
+    func registerHandlers() {
+        var numClasses = UInt32(0);
+        let classes = objc_copyClassList(&numClasses)
+        for i in 0..<Int(numClasses) {
+            let c: AnyClass = classes![i]
+            if class_conformsToProtocol(c, OAuth2CustomHandler.self) {
+                let className = NSStringFromClass(c)
+                print("OAuth2 handler class '\(className)' found!")
+                let pluginType = c as! OAuth2CustomHandler.Type
+                handlers[className] = pluginType
+            }
+        }
+    }
     
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
+        registerHandlers()
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
-            if let handlerClazz = NSClassFromString(handlerClassName) as? OAuth2CustomHandler.Type {
+            if let handlerClazz = self.handlers[handlerClassName] {
                
             } else {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
