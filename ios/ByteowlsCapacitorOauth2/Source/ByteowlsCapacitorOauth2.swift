@@ -28,9 +28,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
             let c: AnyClass = classes![i]
             if class_conformsToProtocol(c, OAuth2CustomHandler.self) {
                 let className = NSStringFromClass(c)
-                print("OAuth2 handler class '\(className)' found!")
                 let pluginType = c as! OAuth2CustomHandler.Type
                 handlers[className] = pluginType
+                print("@byteowls/capacitor-oauth2: custom handler class '\(className)' found!")
             }
         }
     }
