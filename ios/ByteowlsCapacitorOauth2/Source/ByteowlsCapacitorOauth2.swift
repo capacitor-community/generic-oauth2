@@ -8,6 +8,7 @@ typealias JSObject = [String:Any]
 public class OAuth2ClientPlugin: CAPPlugin {
     
     let PARAM_APP_ID = "appId";
+    let PARAM_APP_SECRET = "appSecret";
     let PARAM_IOS_APP_ID = "ios.appId";
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme";
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
@@ -17,6 +18,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_RESOURCE_URL = "resourceUrl";
     
     var oauthSwift: OAuth2Swift?
+    
+    public override func load() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
+    }
 
     @objc func authenticate(_ call: CAPPluginCall) {
         var appId = getString(call, PARAM_APP_ID)
@@ -47,7 +52,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         let oauthSwift = OAuth2Swift(
             consumerKey: finalAppId,
-            consumerSecret: "",
+            consumerSecret: getString(call, PARAM_APP_SECRET) ?? "",
             authorizeUrl: baseUrl,
             accessTokenUrl: accessTokenEndpoint,
             responseType: "code"
@@ -78,6 +83,16 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Authorization failed with \(error.localizedDescription)");
             }
         )
+    }
+    
+    @objc func handleRedirect(notification: NSNotification) {
+        guard let object = notification.object as? [String:Any?] else {
+            return
+        }
+        guard let url = object["url"] as? URL else {
+            return
+        }
+        OAuth2Swift.handle(url: url);
     }
     
     private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable:Any?]? {
@@ -118,7 +133,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     
     // Handle callback url which contains now token information
     public static func handleRedirectUrl(_ url: URL) {
-        OAuthSwift.handle(url: url)
+        OAuth2Swift.handle(url: url)
     }
     
 }
