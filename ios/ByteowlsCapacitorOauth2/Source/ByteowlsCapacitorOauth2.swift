@@ -13,6 +13,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme";
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     let PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
+    let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass";
     let PARAM_SCOPE = "scope";
     let PARAM_STATE = "state";
     let PARAM_RESOURCE_URL = "resourceUrl";
@@ -24,65 +25,75 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
-        var appId = getString(call, PARAM_APP_ID)
-        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
-        if iosAppId != nil {
-            appId = iosAppId
-        }
-        guard let finalAppId = appId, appId != nil else {
-            call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
-            return
-        }
-        guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
-            call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
-            return
-        }
-        guard let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT) else {
-            call.reject("Option '\(PARAM_ACCESS_TOKEN_ENDPOINT)' is required!")
-            return
-        }
-        guard let customScheme = getString(call, PARAM_IOS_CUSTOM_SCHEME) else {
-            call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
-            return
-        }
-        guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
-            call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
-            return
-        }
-        
-        let oauthSwift = OAuth2Swift(
-            consumerKey: finalAppId,
-            consumerSecret: getString(call, PARAM_APP_SECRET) ?? "",
-            authorizeUrl: baseUrl,
-            accessTokenUrl: accessTokenEndpoint,
-            responseType: "code"
-        )
-        
-        self.oauthSwift = oauthSwift
-        oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
-        
-        let defaultState = generateState(withLength: 20)
-        let _ = oauthSwift.authorize(
-            withCallbackURL: customScheme,
-            scope: getString(call, PARAM_SCOPE) ?? "",
-            state: getString(call, PARAM_STATE) ?? defaultState,
-            success: { credential, response, parameters in
-                let _ = oauthSwift.client.get(
-                    resourceUrl,
-                    parameters: parameters,
-                    success: { (response) in
-                        if let jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
-                            call.success(jsonObj)
-                        }
+        if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
+            if let handlerClazz = NSClassFromString(handlerClassName) as? OAuth2CustomHandler.Type {
+               
+            } else {
+                call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
+            }
+        } else {
+            var appId = getString(call, PARAM_APP_ID)
+            let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
+            if iosAppId != nil {
+                appId = iosAppId
+            }
+            guard let finalAppId = appId, appId != nil else {
+                call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
+                return
+            }
+            guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
+                call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
+                return
+            }
+            guard let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT) else {
+                call.reject("Option '\(PARAM_ACCESS_TOKEN_ENDPOINT)' is required!")
+                return
+            }
+            guard let customScheme = getString(call, PARAM_IOS_CUSTOM_SCHEME) else {
+                call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
+                return
+            }
+            guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
+                call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
+                return
+            }
+            
+            let oauthSwift = OAuth2Swift(
+                consumerKey: finalAppId,
+                consumerSecret: getString(call, PARAM_APP_SECRET) ?? "",
+                authorizeUrl: baseUrl,
+                accessTokenUrl: accessTokenEndpoint,
+                responseType: "code"
+            )
+            
+            self.oauthSwift = oauthSwift
+            oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
+            
+            let defaultState = generateState(withLength: 20)
+            let _ = oauthSwift.authorize(
+                withCallbackURL: customScheme,
+                scope: getString(call, PARAM_SCOPE) ?? "",
+                state: getString(call, PARAM_STATE) ?? defaultState,
+                success: { credential, response, parameters in
+                    let _ = oauthSwift.client.get(
+                        resourceUrl,
+                        parameters: parameters,
+                        success: { (response) in
+                            if let jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
+                                call.success(jsonObj)
+                            }
                     },
                     failure: { (error) in
                         call.reject("Access resource failed with \(error.localizedDescription)");
                     })
-            },
-            failure: { error in
-                call.reject("Authorization failed with \(error.localizedDescription)");
-            }
-        )
+                },
+                failure: { error in
+                    call.reject("Authorization failed with \(error.localizedDescription)");
+                }
+            )
+        }
+        
+        
     }
     
     @objc func handleRedirect(notification: NSNotification) {
