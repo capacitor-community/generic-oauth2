@@ -6,9 +6,8 @@ typealias JSObject = [String:Any]
 
 @objc(OAuth2ClientPlugin)
 public class OAuth2ClientPlugin: CAPPlugin {
-    
+
     let PARAM_APP_ID = "appId";
-    let PARAM_APP_SECRET = "appSecret";
     let PARAM_IOS_APP_ID = "ios.appId";
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme";
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
@@ -17,10 +16,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_SCOPE = "scope";
     let PARAM_STATE = "state";
     let PARAM_RESOURCE_URL = "resourceUrl";
-    
+
     var oauthSwift: OAuth2Swift?
     var handlers = [String: OAuth2CustomHandler.Type]()
-    
+
     func registerHandlers() {
         var numClasses = UInt32(0);
         let classes = objc_copyClassList(&numClasses)
@@ -34,7 +33,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
         }
     }
-    
+
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
         registerHandlers()
@@ -43,7 +42,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     @objc func authenticate(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerClazz = self.handlers[handlerClassName] {
-               
+
             } else {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
             }
@@ -73,18 +72,18 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
                 return
             }
-            
+
             let oauthSwift = OAuth2Swift(
                 consumerKey: finalAppId,
-                consumerSecret: getString(call, PARAM_APP_SECRET) ?? "",
+                consumerSecret: "",
                 authorizeUrl: baseUrl,
                 accessTokenUrl: accessTokenEndpoint,
                 responseType: "code"
             )
-            
+
             self.oauthSwift = oauthSwift
             oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
-            
+
             let defaultState = generateState(withLength: 20)
             let _ = oauthSwift.authorize(
                 withCallbackURL: customScheme,
@@ -108,10 +107,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }
             )
         }
-        
-        
+
+
     }
-    
+
     @objc func handleRedirect(notification: NSNotification) {
         guard let object = notification.object as? [String:Any?] else {
             return
@@ -121,10 +120,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         OAuth2Swift.handle(url: url);
     }
-    
+
     private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable:Any?]? {
         let parts = key.split(separator: ".")
-        
+
         var o = options
         for (_, k) in parts[0..<parts.count-1].enumerated() {
             if (o != nil) {
@@ -133,7 +132,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return o
     }
-    
+
     private func getConfigKey(_ key: String) -> String {
         let parts = key.split(separator: ".")
         if parts.last != nil {
@@ -141,15 +140,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return ""
     }
-    
-    
-    
+
+
+
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
         let k = getConfigKey(key)
         let o = getConfigObjectDeepest(call.options, key: key)
         return o?[k] ?? nil
     }
-    
+
     private func getString(_ call: CAPPluginCall, _ key: String) -> String? {
         let value = getValue(call, key)
         if value == nil {
@@ -157,10 +156,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return value as? String
     }
-    
+
     // Handle callback url which contains now token information
     public static func handleRedirectUrl(_ url: URL) {
         OAuth2Swift.handle(url: url)
     }
-    
+
 }

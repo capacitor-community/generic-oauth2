@@ -31,11 +31,6 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl: string;
     /**
-     * Code authorisation flow might require to send the app secret to aquire the access token. Facebook needs this step.
-     * Setting your secret on client side is insecure please try to avoid.
-     */
-    appSecret?: string;
-    /**
      *
      */
     scope?: string;
