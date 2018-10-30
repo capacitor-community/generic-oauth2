@@ -66,12 +66,11 @@ export interface OAuth2AuthenticateOptions {
          */
         appId?: string;
         /**
-         * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
+         * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */
         customScheme?: string;
         /**
-         * Some oauth provider especially Facebook does not support the standard oauth flow. Therefore a custom implementation
-         * using the provider's SDK is needed.
+         * Some oauth provider especially Facebook forces us to use their SDK for apps.
          *
          * Provide a class name implementing the 'com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler' interface.
          */
@@ -87,12 +86,11 @@ export interface OAuth2AuthenticateOptions {
          */
         appId?: string;
         /**
-         * Use your app's custom scheme here. e.g. com.byteowls.teamconductor:/
+         * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */
         customScheme?: string;
         /**
-         * Some oauth provider especially Facebook does not support the standard oauth flow. Therefore a custom implementation
-         * using the provider's SDK is needed.
+         * Some oauth provider especially Facebook forces us to use their SDK for apps.
          *
          * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
          */

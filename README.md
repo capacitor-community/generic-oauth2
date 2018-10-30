@@ -9,15 +9,6 @@ This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
-## Do not use in production
-
-I had to restructure the plugin to unify naming. For IOs I look at other libs and renamed a few directories.
-
-Change of npm package scope from `@teamconductor` (a product of mine) to `@byteowls` (my company name)
-
-The old (discontinued) package is found at [![npm](https://img.shields.io/npm/v/@teamconductor/capacitor-oauth2.svg)](https://www.npmjs.com/package/@teamconductor/capacitor-oauth2)
-
-
 ## Installation
 
 `npm i @byteowls/capacitor-oauth2`
@@ -76,12 +67,14 @@ export class SignupComponent {
 
 See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L16
 
+**Attention:** For security reasons this plugin does not has a option for the **app secret** because it should **never** be stored in client side code.
+
 ## Platform: Web/PWA
 
 This implementation just opens a browser window to let users enter their credentials.
 
 As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance
-impact using this plugin in a web applications.
+impact using this plugin in a web application.
 
 ## Platform: Android
 
@@ -108,17 +101,32 @@ Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
 This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
-Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. Simply configure a full qualified classname in the option property `android.customHandlerClass`. This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
+Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. 
+Simply configure a full qualified classname in the option property `android.customHandlerClass`. 
+This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
 
 See a full working example below!
 
 ## Platform: iOS
 
-- ETA October 2018
+On iOS the plugin is registered automatically by Capacitor.
+
+**Custom OAuth Handler**
+
+Some OAuth provider (Facebook) force developers to use their SDK on iOS.
+
+This plugin should be as generic as possible so I don't want to include provider specific dependencies.
+
+Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. 
+Simply configure a the class name in the option property `ios.customHandlerClass`. 
+This class has to implement `ByteowlsCapacitorOauth2.OAuth2CustomHandler`.
+
+See a full working example below!
+
 
 ## Platform: Electron
 
-- No ETA yet
+- Maybe early 2019
 
 ## Full examples
 
@@ -139,7 +147,11 @@ googleLogin() {
       },
       android: {
         appId: environment.oauthAppId.google.android,
-        customScheme: "com.companyname.appname:/"
+        customScheme: "com.companyname.appname:/" // package name from google dev console
+      },
+      ios: {
+        appId: environment.oauthAppId.google.ios,
+        customScheme: "com.companyname.appname:/" // Bundle ID from google dev console
       }
     }).then(resourceUrlResponse => {
       this.authenticateBackend("GOOGLE", resourceUrlResponse);
@@ -156,6 +168,22 @@ Add customScheme in `android/app/build.gradle` as well. Without `:/`.
 android.defaultConfig.manifestPlaceholders = [
   'appAuthRedirectScheme': 'com.companyname.appname'
 ]
+```
+
+**iOS**
+
+Open `ios/App/App/Info.plist` in a XML editor and add the customScheme without `:/` like that
+
+```xml
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.companyname.appname</string>
+			</array>
+		</dict>
+	</array>
 ```
 
 ### Facebook
@@ -175,7 +203,10 @@ facebookLogin() {
         windowOptions: "height=600,left=0,top=0"
       },
       android: {
-        customHandlerClass: "com.companyname.appname.YourFacebookOAuth2Handler",
+        customHandlerClass: "com.companyname.appname.YourAndroidFacebookOAuth2Handler",
+      },
+      ios: {
+        customHandlerClass: "App.YourIOsFacebookOAuth2Handler",
       }
     }).then(resourceUrlResponse => {
       // check with your backend
@@ -185,13 +216,25 @@ facebookLogin() {
   }
 ```
 
+**Android and iOS**
+
+Since October 2018 Strict Mode for Redirect Urls is always on.
+
+>Use Strict Mode for Redirect URIs
+
+>Only allow redirects that use the Facebook SDK or that exactly match the Valid OAuth Redirect URIs. Strongly recommended.
+
+Before that it was able to use `fb<your_app_id>:/authorize` in a Android or iOS app and get the accessToken.
+
+Unfortunately now we have to use the SDK for Facebook Login. 
+
+I don't want to have a dependency to facebook for users, who don't need Facebook OAuth.
+
+To address this problem I created a integration with custom code in your app `customHandlerClass`
+
 **Android**
 
-Facebook forces us to use their SDK and as I don't want to have a dependency to facebook for users, who dont need Facebook OAuth. I created the `customHandlerClass` integration.
-
 See https://developers.facebook.com/docs/facebook-login/android/ for more background on how to configure Facebook in your Android app.
-
-Here is what I did, which seems like a lot but it's basically the same you would have to I you do not use the plugin at all.
 
 1) Add `implementation 'com.facebook.android:facebook-login:4.36.0'` to `android/app/build.gradle` as dependency.
 
@@ -239,7 +282,7 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.getcapacitor.PluginCall;
 
-public class YourFacebookOAuth2Handler implements OAuth2CustomHandler {
+public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
 
   @Override
   public void getAccessToken(Activity activity, PluginCall pluginCall, final AccessTokenCallback callback) {
@@ -309,6 +352,44 @@ public class MainActivity extends BridgeActivity {
 
 }
 ```
+
+**iOS**
+
+See https://developers.facebook.com/docs/swift/getting-started and https://developers.facebook.com/docs/swift/login
+
+1) Add Facebook pods to your app's Podfile `ios/App/App`
+
+```
+platform :ios, '10.0'
+use_frameworks!
+
+target 'App' do
+  # Add your Pods here
+  pod 'FacebookCore'
+  pod 'FacebookLogin'
+
+  # Automatic Capacitor Pod dependencies, do not delete
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
+  pod 'CordovaPlugins', :path => '../../node_modules/@capacitor/cli/assets/capacitor-cordova-ios-plugins'
+    
+  # Do not delete
+end
+
+```
+
+2) Add Facebook app id to your `Info.plist`
+
+```xml 
+
+```
+
+3) Create a custom handler class
+
+```swift
+
+``
 
 ## Contribute
 
