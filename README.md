@@ -382,15 +382,51 @@ end
 
 2) Add Facebook app id to your `Info.plist`
 
-```xml 
-
+```xml
+	<key>FacebookDisplayName</key>
+	<string>{replace with your application name}</string>
+	<key>FacebookAppID</key>
+	<string>{replace with your facebook app id}</string>
 ```
 
 3) Create a custom handler class
 
 ```swift
+import Foundation
+import FacebookCore
+import FacebookLogin
+import Capacitor
+import ByteowlsCapacitorOauth2
 
-``
+@objc class YourFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
+    
+    required override init() {}
+    
+    func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
+        
+        if let accessToken = AccessToken.current {
+            success(accessToken.authenticationToken)
+        } else {
+            let loginManager = LoginManager()
+            loginManager.logIn(readPermissions: [ ReadPermission.publicProfile ],
+                               viewController: viewController, completion: { loginResult in
+                                switch loginResult {
+                                case .failed(let error):
+                                    failure(error)
+                                case .cancelled:
+                                    cancelled()
+                                case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                                    success(accessToken.authenticationToken)
+                                }
+            })
+        }
+    }
+}
+
+```
+
+This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
+
 
 ## Contribute
 

@@ -44,7 +44,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
             return
         }
-        
+
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerClazz = self.handlers[handlerClassName] {
                 let instance: OAuth2CustomHandler = handlerClazz.init()
