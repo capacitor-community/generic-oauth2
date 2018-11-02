@@ -155,7 +155,7 @@ googleLogin() {
         customScheme: "com.companyname.appname:/" // Bundle ID from google dev console
       }
     }).then(resourceUrlResponse => {
-      this.authenticateBackend("GOOGLE", resourceUrlResponse);
+      // do sth e.g. check with your backend
     }).catch(reason => {
       console.error("Google OAuth rejected", reason);
     });
@@ -210,7 +210,7 @@ facebookLogin() {
         customHandlerClass: "App.YourIOsFacebookOAuth2Handler",
       }
     }).then(resourceUrlResponse => {
-      // check with your backend
+      // do sth e.g. check with your backend
     }).catch(reason => {
       console.error("FB OAuth rejected", reason);
     });

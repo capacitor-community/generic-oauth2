@@ -40,9 +40,24 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
+        guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
+            call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
+            return
+        }
+        
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerClazz = self.handlers[handlerClassName] {
-
+                let instance: OAuth2CustomHandler = handlerClazz.init()
+                instance.getAccessToken(viewController: bridge.viewController, call: call,
+                success: { (accessToken) in
+                    print("Your access token! Resource will be requested")
+                },
+                cancelled: {
+                    call.reject("Login cancelled by user")
+                },
+                failure: { (error) in
+                   call.reject("Login failed because '\(error)'")
+                })
             } else {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
             }
@@ -68,10 +83,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
                 return
             }
-            guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
-                call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
-                return
-            }
+
 
             let oauthSwift = OAuth2Swift(
                 consumerKey: finalAppId,
@@ -99,10 +111,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                 jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
                                 call.success(jsonObj)
                             }
-                    },
-                    failure: { (error) in
-                        call.reject("Access resource failed with \(error.localizedDescription)");
-                    })
+                        },
+                        failure: { (error) in
+                            call.reject("Access resource failed with \(error.localizedDescription)");
+                        })
                 },
                 failure: { error in
                     call.reject("Authorization failed with \(error.localizedDescription)");
