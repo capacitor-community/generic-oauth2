@@ -33,7 +33,8 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         try {
             URL url = new URL(resourceUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.addRequestProperty("Authorization", String.format("Bearer %s", tokens[0]));
+            String accessToken = tokens[0];
+            conn.addRequestProperty("Authorization", String.format("Bearer %s", accessToken));
             try {
                 InputStream is;
 
@@ -48,8 +49,9 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 String jsonBody = readInputStream(is);
                 if (!result.isError()) {
                     Log.i(logTag, String.format("User Info Response %s", jsonBody));
-                    JSObject result = new JSObject(jsonBody);
-                    result.setResponse(result);
+                    JSObject json = new JSObject(jsonBody);
+                    json.put("access_token", accessToken);
+                    result.setResponse(json);
                 } else {
                     result.setErrorMsg(jsonBody);
                 }
