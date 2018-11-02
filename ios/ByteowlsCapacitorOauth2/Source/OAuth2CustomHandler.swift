@@ -6,7 +6,7 @@ import Capacitor
     init()
     
     func getAccessToken(viewController: UIViewController, call: CAPPluginCall,
-                        success: (_ accessToken: String) -> Void,
-                        cancelled: () -> Void,
-                        failure: (_ error: Error) -> Void)
+                        success: @escaping (_ accessToken: String) -> Void,
+                        cancelled: @escaping () -> Void,
+                        failure: @escaping (_ error: Error) -> Void)
 }
