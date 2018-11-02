@@ -40,6 +40,16 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
+        var appId = getString(call, PARAM_APP_ID)
+        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
+        if iosAppId != nil {
+            appId = iosAppId
+        }
+        guard let finalAppId = appId, appId != nil else {
+            call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
+            return
+        }
+        
         guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
             call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
             return
@@ -47,10 +57,28 @@ public class OAuth2ClientPlugin: CAPPlugin {
 
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerClazz = self.handlers[handlerClassName] {
+                
                 let instance: OAuth2CustomHandler = handlerClazz.init()
                 instance.getAccessToken(viewController: bridge.viewController, call: call,
                 success: { (accessToken) in
-                    print("Your access token! Resource will be requested")
+                    let client = OAuthSwiftClient(
+                        consumerKey: finalAppId,
+                        consumerSecret: "",
+                        oauthToken: accessToken,
+                        oauthTokenSecret: "",
+                        version: OAuthSwiftCredential.Version.oauth2)
+                    let _ = client.get(
+                        resourceUrl,
+                        success: { (response) in
+                            if var jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
+                                // send the access token to the caller so e.g. it can be stored on a backend
+                                jsonObj.updateValue(accessToken, forKey: "access_token")
+                                call.success(jsonObj)
+                            }
+                    },
+                        failure: { (error) in
+                            call.reject("Access resource failed with \(error.localizedDescription)");
+                    })
                 },
                 cancelled: {
                     call.reject("Login cancelled by user")
@@ -62,15 +90,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
             }
         } else {
-            var appId = getString(call, PARAM_APP_ID)
-            let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
-            if iosAppId != nil {
-                appId = iosAppId
-            }
-            guard let finalAppId = appId, appId != nil else {
-                call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
-                return
-            }
+            
             guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
                 call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
                 return
