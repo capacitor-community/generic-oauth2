@@ -48,7 +48,8 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 String jsonBody = readInputStream(is);
                 if (!result.isError()) {
                     Log.i(logTag, String.format("User Info Response %s", jsonBody));
-                    result.setResponse(new JSObject(jsonBody));
+                    JSObject result = new JSObject(jsonBody);
+                    result.setResponse(result);
                 } else {
                     result.setErrorMsg(jsonBody);
                 }

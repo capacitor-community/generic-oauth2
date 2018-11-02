@@ -53,6 +53,7 @@ export class SignupComponent {
         Plugins.OAuth2Client.authenticate(
             oauth2Options
         ).then(resourceUrlResponse => {
+            let accessToken = resourceUrlResponse["access_token"];
             let oauthUserId = resourceUrlResponse["id"];
             let name = resourceUrlResponse["name"];
             // go to backend

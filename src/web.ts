@@ -46,12 +46,15 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             if (accessTokenFound) {
                                 clearInterval(this.intervalId);
                                 this.windowHandle.close();
-                                let token = urlParamObj.access_token;
-                                if (token) {
+                                let accessToken = urlParamObj.access_token;
+                                if (accessToken) {
                                     const request = new XMLHttpRequest();
                                     request.onload = function () {
                                         if (this.status === 200) {
                                             let token = JSON.parse(this.response);
+                                            if (token) {
+                                                token["access_token"] = accessToken;
+                                            }
                                             resolve(token);
                                         } else {
                                             reject(new Error(this.statusText));
@@ -61,7 +64,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                         reject(new Error('XMLHttpRequest Error: ' + this.statusText));
                                     };
                                     request.open("GET", options.resourceUrl, true);
-                                    request.setRequestHeader('Authorization', `Bearer ${token}`);
+                                    request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
                                     request.send();
                                 } else {
                                     // this.authenticated = false; // we got the login callback just fine, but there was no token

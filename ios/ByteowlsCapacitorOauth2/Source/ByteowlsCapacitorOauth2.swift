@@ -94,7 +94,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         resourceUrl,
                         parameters: parameters,
                         success: { (response) in
-                            if let jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
+                            if var jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
+                                // send the access token to the caller so e.g. it can be stored on a backend
+                                jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
                                 call.success(jsonObj)
                             }
                     },
