@@ -382,13 +382,29 @@ end
 
 ```
 
-2) Add Facebook app id to your `Info.plist`
+2) Add some Facebook configs to your `Info.plist`
 
 ```xml
-	<key>FacebookDisplayName</key>
-	<string>{replace with your application name}</string>
-	<key>FacebookAppID</key>
-	<string>{replace with your facebook app id}</string>
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>fb{your-app-id}</string>
+    </array>
+  </dict>
+</array>
+<key>FacebookAppID</key>
+<string>{your-app-id}</string>
+<key>FacebookDisplayName</key>
+<string>{your-app-name}</string>
+<key>LSApplicationQueriesSchemes</key>
+<array>
+  <string>fbapi</string>
+  <string>fb-messenger-share-api</string>
+  <string>fbauth2</string>
+  <string>fbshareextension</string>
+</array>
 ```
 
 3) Create a custom handler class
