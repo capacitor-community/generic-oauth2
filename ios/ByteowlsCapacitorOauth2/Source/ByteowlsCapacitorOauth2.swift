@@ -42,16 +42,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
-        var appId = getString(call, PARAM_APP_ID)
-        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
-        if iosAppId != nil {
-            appId = iosAppId
-        }
-        guard let finalAppId = appId, appId != nil else {
-            call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
-            return
-        }
-
         guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
             call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
             return
@@ -92,7 +82,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
             }
         } else {
-
+            var appId = getString(call, PARAM_APP_ID)
+            let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
+            if iosAppId != nil {
+                appId = iosAppId
+            }
+            guard let finalAppId = appId, appId != nil else {
+                call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
+                return
+            }
             guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
                 call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
                 return
