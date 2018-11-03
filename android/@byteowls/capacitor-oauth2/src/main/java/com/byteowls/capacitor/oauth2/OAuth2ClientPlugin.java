@@ -33,10 +33,12 @@ public class OAuth2ClientPlugin extends Plugin {
 
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_ANDROID_APP_ID = "android.appId";
-    private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
+    private static final String PARAM_RESPONSE_TYPE = "responseType";
+    private static final String PARAM_ANDROID_RESPONSE_TYPE = "android.responseType";
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
-    private static final String PARAM_CUSTOM_SCHEME = "android.customScheme";
+    private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
+    private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
     public static final String PARAM_RESOURCE_URL = "resourceUrl";
@@ -81,9 +83,39 @@ public class OAuth2ClientPlugin extends Plugin {
             if (androidAppId != null && !androidAppId.isEmpty()) {
                 appId = androidAppId;
             }
+
+            if (appId == null || appId.length() == 0) {
+                call.reject("Option '"+PARAM_APP_ID+"' or '"+PARAM_ANDROID_APP_ID+"' is required!");
+                return;
+            }
+
             String baseUrl = getCallString(call, PARAM_AUTHORIZATION_BASE_URL);
+            if (baseUrl == null || baseUrl.length() == 0) {
+                call.reject("Option '"+PARAM_AUTHORIZATION_BASE_URL+"' is required!");
+                return;
+            }
             String accessTokenEndpoint = getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT); // placeholder
-            String customScheme = getCallString(call, PARAM_CUSTOM_SCHEME);
+            if (accessTokenEndpoint == null || accessTokenEndpoint.length() == 0) {
+                call.reject("Option '"+PARAM_ACCESS_TOKEN_ENDPOINT+"' is required!");
+                return;
+            }
+            String customScheme = getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME);
+            if (customScheme == null || customScheme.length() == 0) {
+                call.reject("Option '"+ PARAM_ANDROID_CUSTOM_SCHEME +"' is required!");
+                return;
+            }
+
+            String responseType = getCallString(call, PARAM_RESPONSE_TYPE);
+            String androidResponseType = getCallString(call, PARAM_ANDROID_RESPONSE_TYPE);
+            if (androidResponseType != null && !androidResponseType.isEmpty()) {
+                responseType = androidResponseType;
+            }
+
+            if (ResponseTypeValues.CODE.equals(responseType)) {
+                Log.i(getLogTag(), "Code flow with PKCE is not supported yet");
+            } else {
+                responseType = ResponseTypeValues.TOKEN;
+            }
 
             AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(
                 Uri.parse(baseUrl),
@@ -97,7 +129,7 @@ public class OAuth2ClientPlugin extends Plugin {
             AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
                 config,
                 appId,
-                ResponseTypeValues.CODE,
+                responseType,
                 Uri.parse(customScheme)
             );
 
