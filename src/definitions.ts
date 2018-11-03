@@ -13,6 +13,8 @@ export interface OAuth2ClientPlugin {
     authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
 }
 
+type ResponseTypeType = "token" | "code";
+
 export interface OAuth2AuthenticateOptions {
     /**
      * The app id (client id) you get from the oauth provider like Google, Facebook,...
@@ -30,6 +32,12 @@ export interface OAuth2AuthenticateOptions {
      * Protected resource url. For authentification you only need the basic user details.
      */
     resourceUrl: string;
+    /**
+     * Defaults to token if null or undefined. Be aware that this plugin does not support
+     * code flow with client secret because of security reason. However code + PKCE will be supported
+     * in future. Please see github issue #4
+     */
+    responseType?: ResponseTypeType
     /**
      *
      */
@@ -66,6 +74,10 @@ export interface OAuth2AuthenticateOptions {
          */
         appId?: string;
         /**
+         * Parameter for overwriting the root or default responseType.
+         */
+        responseType?: ResponseTypeType
+        /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */
         customScheme?: string;
@@ -85,6 +97,10 @@ export interface OAuth2AuthenticateOptions {
          * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
          */
         appId?: string;
+        /**
+         * Parameter for overwriting the root or default responseType.
+         */
+        responseType?: ResponseTypeType
         /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */

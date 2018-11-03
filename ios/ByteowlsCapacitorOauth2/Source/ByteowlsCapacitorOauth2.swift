@@ -7,15 +7,17 @@ typealias JSObject = [String:Any]
 @objc(OAuth2ClientPlugin)
 public class OAuth2ClientPlugin: CAPPlugin {
 
-    let PARAM_APP_ID = "appId";
-    let PARAM_IOS_APP_ID = "ios.appId";
-    let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme";
-    let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
-    let PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
-    let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass";
-    let PARAM_SCOPE = "scope";
-    let PARAM_STATE = "state";
-    let PARAM_RESOURCE_URL = "resourceUrl";
+    let PARAM_APP_ID = "appId"
+    let PARAM_RESPONSE_TYPE = "responseType"
+    let PARAM_IOS_RESPONSE_TYPE = "ios.responseType"
+    let PARAM_IOS_APP_ID = "ios.appId"
+    let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme"
+    let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
+    let PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl"
+    let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
+    let PARAM_SCOPE = "scope"
+    let PARAM_STATE = "state"
+    let PARAM_RESOURCE_URL = "resourceUrl"
 
     var oauthSwift: OAuth2Swift?
     var handlers = [String: OAuth2CustomHandler.Type]()
@@ -49,7 +51,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
             return
         }
-        
+
         guard let resourceUrl = getString(call, PARAM_RESOURCE_URL) else {
             call.reject("Option '\(PARAM_RESOURCE_URL)' is required!")
             return
@@ -57,7 +59,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
 
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerClazz = self.handlers[handlerClassName] {
-                
+
                 let instance: OAuth2CustomHandler = handlerClazz.init()
                 instance.getAccessToken(viewController: bridge.viewController, call: call,
                 success: { (accessToken) in
@@ -90,7 +92,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
             }
         } else {
-            
+
             guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
                 call.reject("Option '\(PARAM_AUTHORIZATION_BASE_URL)' is required!")
                 return
@@ -103,14 +105,23 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
                 return
             }
-
+            var responseType = getString(call, PARAM_RESPONSE_TYPE)
+            let iosResponseType: String? = getString(call, PARAM_IOS_RESPONSE_TYPE)
+            if iosResponseType != nil {
+                responseType = iosResponseType
+            }
+            if (responseType == "code") {
+                print("@byteowls/capacitor-oauth2: Code flow with PKCE is not supported yet")
+            } else {
+                responseType = "token"
+            }
 
             let oauthSwift = OAuth2Swift(
                 consumerKey: finalAppId,
-                consumerSecret: "",
+                consumerSecret: "", // never ever store the app secret on client!
                 authorizeUrl: baseUrl,
                 accessTokenUrl: accessTokenEndpoint,
-                responseType: "code"
+                responseType: responseType!
             )
 
             self.oauthSwift = oauthSwift
@@ -189,11 +200,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return nil
         }
         return value as? String
-    }
-
-    // Handle callback url which contains now token information
-    public static func handleRedirectUrl(_ url: URL) {
-        OAuth2Swift.handle(url: url)
     }
 
 }

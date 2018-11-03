@@ -148,10 +148,12 @@ googleLogin() {
       },
       android: {
         appId: environment.oauthAppId.google.android,
+        responseType: "code", // if you configured a android app in google dev console the value must be "code"
         customScheme: "com.companyname.appname:/" // package name from google dev console
       },
       ios: {
         appId: environment.oauthAppId.google.ios,
+        responseType: "code", // if you configured a ios app in google dev console the value must be "code"
         customScheme: "com.companyname.appname:/" // Bundle ID from google dev console
       }
     }).then(resourceUrlResponse => {

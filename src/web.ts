@@ -90,7 +90,14 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             appId = options.web.appId;
         }
 
-        let baseUrl = options.authorizationBaseUrl + "?response_type=token&client_id=" + appId;
+        let baseUrl = options.authorizationBaseUrl + "?client_id=" + appId;
+        let responseType = "token";
+        if (options.responseType === "code") {
+            console.log("@byteowls/capacitor-oauth2: Code flow + PKCE is not yet supported. See github #4")
+            // responseType = options.responseType;
+        }
+        baseUrl += "&response_type=" + responseType;
+
         if (options.web.redirectUrl) {
             baseUrl += "&redirect_uri=" + options.web.redirectUrl;
         }
