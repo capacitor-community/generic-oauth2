@@ -20,7 +20,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_RESOURCE_URL = "resourceUrl"
 
     var oauthSwift: OAuth2Swift?
-    var handlers = [String: OAuth2CustomHandler.Type]()
+    var handlerClasses = [String: OAuth2CustomHandler.Type]()
+    var handlerInstances = [String: OAuth2CustomHandler]()
 
     func registerHandlers() {
         var numClasses = UInt32(0);
@@ -30,7 +31,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             if class_conformsToProtocol(c, OAuth2CustomHandler.self) {
                 let className = NSStringFromClass(c)
                 let pluginType = c as! OAuth2CustomHandler.Type
-                handlers[className] = pluginType
+                handlerClasses[className] = pluginType
                 print("@byteowls/capacitor-oauth2: custom handler class '\(className)' found!")
             }
         }
@@ -57,10 +58,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
 
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
-            if let handlerClazz = self.handlers[handlerClassName] {
-
-                let instance: OAuth2CustomHandler = handlerClazz.init()
-                instance.getAccessToken(viewController: bridge.viewController, call: call,
+            if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
+                handlerInstance.getAccessToken(viewController: bridge.viewController, call: call,
                 success: { (accessToken) in
                     let client = OAuthSwiftClient(
                         consumerKey: finalAppId,
@@ -152,8 +151,24 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
     }
 
-    @objc func authenticate(_ call: CAPPluginCall) {
-
+    @objc func logout(_ call: CAPPluginCall) {
+        if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
+            if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
+                let success: Bool! = handlerInstance.logout(call: call)
+                if success {
+                    call.resolve();
+                } else {
+                    call.reject("Logout not successful")
+                }
+            } else {
+                call.reject("Handler instance not found! Bug!")
+            }
+        } else {
+            if self.oauthSwift != nil {
+                self.oauthSwift = nil
+            }
+            call.resolve()
+        }
     }
 
     @objc func handleRedirect(notification: NSNotification) {
@@ -198,6 +213,29 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return nil
         }
         return value as? String
+    }
+
+    public func getOrLoadHandlerInstance(className: String) -> OAuth2CustomHandler? {
+        guard let instance = self.getHandlerInstance(className: className) ?? self.loadHandlerInstance(className: className) else {
+            return nil
+        }
+        return instance
+    }
+
+    public func getHandlerInstance(className: String) -> OAuth2CustomHandler? {
+        return self.handlerInstances[className]
+    }
+
+    public func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
+        guard let handlerClazz: OAuth2CustomHandler.Type = self.handlerClasses[className] else {
+            print("@byteowls/capacitor-oauth2: Unable to load custom handler \(className). No such class found.")
+            return nil
+        }
+
+        let instance: OAuth2CustomHandler = handlerClazz.init()
+
+        self.handlerInstances[className] = instance
+        return instance
     }
 
 }
