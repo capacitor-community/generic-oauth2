@@ -46,7 +46,8 @@ import {
 } from '@capacitor/core';
 
 @Component({
-  template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>',
+  template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
+   '<button (click)="onLogoutClick()">Logout OAuth</button>'
 })
 export class SignupComponent {
     onOAuthBtnClick() {
@@ -61,6 +62,16 @@ export class SignupComponent {
             console.error("OAuth rejected", reason);
         });
     }
+    
+    onLogoutClick() {
+            Plugins.OAuth2Client.logout(
+                oauth2Options
+            ).then(() => {
+                // do something
+            }).catch(reason => {
+                console.error("OAuth logout failed", reason);
+            });
+        }
 }
 ```
 
@@ -410,36 +421,47 @@ end
 3) Create a custom handler class
 
 ```swift
-import Foundation
-import FacebookCore
-import FacebookLogin
-import Capacitor
-import ByteowlsCapacitorOauth2
+ import Foundation
+ import FacebookCore
+ import FacebookLogin
+ import Capacitor
+ import ByteowlsCapacitorOauth2
+ 
+ @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
+     
+     var loginManager: LoginManager?;
+     
+     required override init() {
+     }
+     
+     func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
+         
+         if let accessToken = AccessToken.current {
+             success(accessToken.authenticationToken)
+         } else {
+             if self.loginManager == nil {
+                 self.loginManager = LoginManager()
+             }
+             self.loginManager!.logIn(readPermissions: [ ReadPermission.publicProfile ],
+                                viewController: viewController, completion: { loginResult in
+                                 switch loginResult {
+                                 case .failed(let error):
+                                     failure(error)
+                                 case .cancelled:
+                                     cancelled()
+                                 case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                                     success(accessToken.authenticationToken)
+                                 }
+             })
+         }
+     }
+     
+     func logout(call: CAPPluginCall) -> Bool {
+         self.loginManager?.logOut()
+         return true
+     }
+ }
 
-@objc class YourFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
-    
-    required override init() {}
-    
-    func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
-        
-        if let accessToken = AccessToken.current {
-            success(accessToken.authenticationToken)
-        } else {
-            let loginManager = LoginManager()
-            loginManager.logIn(readPermissions: [ ReadPermission.publicProfile ],
-                               viewController: viewController, completion: { loginResult in
-                                switch loginResult {
-                                case .failed(let error):
-                                    failure(error)
-                                case .cancelled:
-                                    cancelled()
-                                case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                                    success(accessToken.authenticationToken)
-                                }
-            })
-        }
-    }
-}
 
 ```
 
