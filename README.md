@@ -62,7 +62,7 @@ export class SignupComponent {
             console.error("OAuth rejected", reason);
         });
     }
-    
+
     onLogoutClick() {
             Plugins.OAuth2Client.logout(
                 oauth2Options
@@ -113,8 +113,8 @@ Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
 This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
-Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. 
-Simply configure a full qualified classname in the option property `android.customHandlerClass`. 
+Therefore I created a mechanism which let developers integrate custom SDK features in this plugin.
+Simply configure a full qualified classname in the option property `android.customHandlerClass`.
 This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
 
 See a full working example below!
@@ -129,8 +129,8 @@ Some OAuth provider (Facebook) force developers to use their SDK on iOS.
 
 This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
-Therefore I created a mechanism which let developers integrate custom SDK features in this plugin. 
-Simply configure a the class name in the option property `ios.customHandlerClass`. 
+Therefore I created a mechanism which let developers integrate custom SDK features in this plugin.
+Simply configure a the class name in the option property `ios.customHandlerClass`.
 This class has to implement `ByteowlsCapacitorOauth2.OAuth2CustomHandler`.
 
 See a full working example below!
@@ -240,7 +240,7 @@ Since October 2018 Strict Mode for Redirect Urls is always on.
 
 Before that it was able to use `fb<your_app_id>:/authorize` in a Android or iOS app and get the accessToken.
 
-Unfortunately now we have to use the SDK for Facebook Login. 
+Unfortunately now we have to use the SDK for Facebook Login.
 
 I don't want to have a dependency to facebook for users, who don't need Facebook OAuth.
 
@@ -323,7 +323,15 @@ public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
         }
       });
     }
+
   }
+
+  @Override
+  public boolean logout(PluginCall pluginCall) {
+    LoginManager.getInstance().logOut();
+    return true;
+  }
+
 }
 
 ```
@@ -387,7 +395,7 @@ target 'App' do
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
   pod 'CordovaPlugins', :path => '../../node_modules/@capacitor/cli/assets/capacitor-cordova-ios-plugins'
-    
+
   # Do not delete
 end
 
@@ -426,16 +434,16 @@ end
  import FacebookLogin
  import Capacitor
  import ByteowlsCapacitorOauth2
- 
+
  @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
-     
+
      var loginManager: LoginManager?;
-     
+
      required override init() {
      }
-     
+
      func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
-         
+
          if let accessToken = AccessToken.current {
              success(accessToken.authenticationToken)
          } else {
@@ -455,7 +463,7 @@ end
              })
          }
      }
-     
+
      func logout(call: CAPPluginCall) -> Bool {
          self.loginManager?.logOut()
          return true
