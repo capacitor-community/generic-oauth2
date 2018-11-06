@@ -10,4 +10,6 @@ public interface OAuth2CustomHandler {
 
     void getAccessToken(Activity activity, PluginCall pluginCall, final AccessTokenCallback callback);
 
+    boolean logout(PluginCall pluginCall);
+
 }

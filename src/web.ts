@@ -125,6 +125,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             }
         }, {});
     }
+
+    logout(options: OAuth2AuthenticateOptions): Promise<void> {
+        return new Promise<any>((resolve, reject) => {
+            resolve();
+        });
+    }
 }
 
 const OAuth2Client = new OAuth2ClientPluginWeb();

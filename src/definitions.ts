@@ -11,6 +11,12 @@ export interface OAuth2ClientPlugin {
      * @returns {Promise<any>} the resource url response
      */
     authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
+    /**
+     * Logout from the authenticated OAuth 2 provider
+     * @param {OAuth2AuthenticateOptions} options Although not all options are needed. We simply reuse the options from authenticate
+     * @returns {Promise<boolean>} true if the logout was successful else false.
+     */
+    logout(options: OAuth2AuthenticateOptions): Promise<void>;
 }
 
 type ResponseTypeType = "token" | "code";

@@ -3,6 +3,7 @@ package com.byteowls.capacitor.oauth2;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -74,9 +75,8 @@ public class OAuth2ClientPlugin extends Plugin {
                     }
                 });
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                e.printStackTrace();
+                Log.e(getLogTag(), "Custom handler problem", e);
             }
-
         } else {
             String appId = getCallString(call, PARAM_APP_ID);
             String androidAppId = getCallString(call, PARAM_ANDROID_APP_ID);
@@ -138,10 +138,41 @@ public class OAuth2ClientPlugin extends Plugin {
                 .setState(call.getString(PARAM_STATE))
                 .build();
 
+            if (this.authService != null) {
+                authService.dispose();
+            }
+
             this.authService = new AuthorizationService(getContext());
             Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
 
             startActivityForResult(call, authIntent, RC_OAUTH);
+        }
+    }
+
+    @PluginMethod()
+    public void logout(final PluginCall call) {
+        String customHandlerClassname = getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
+        if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
+            try {
+                Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(customHandlerClassname);
+                OAuth2CustomHandler handler = handlerClass.newInstance();
+                boolean successful = handler.logout(call);
+                if (successful) {
+                    call.resolve();
+                } else {
+                    call.reject("Logout was not successful");
+                }
+            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+                Log.e(getLogTag(), "Custom handler problem", e);
+            }
+        } else {
+            if (this.authService != null) {
+                this.authService.dispose();
+            }
+            if (this.authState != null) {
+                this.authState = null;
+            }
+            this.discardAuthState();
         }
     }
 
@@ -220,7 +251,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @NonNull
     public AuthState readAuthState() {
-        SharedPreferences authPrefs = getContext().getSharedPreferences("auth", MODE_PRIVATE);
+        SharedPreferences authPrefs = getContext().getSharedPreferences(getLogTag(), MODE_PRIVATE);
         String stateJson = authPrefs.getString("stateJson", "");
         try {
             return AuthState.jsonDeserialize(stateJson);
@@ -229,11 +260,17 @@ public class OAuth2ClientPlugin extends Plugin {
     }
 
     public void writeAuthState(@NonNull AuthState state) {
-        SharedPreferences authPrefs = getContext().getSharedPreferences("auth", MODE_PRIVATE);
+        SharedPreferences authPrefs = getContext().getSharedPreferences(getLogTag(), MODE_PRIVATE);
         authPrefs
             .edit()
             .putString("stateJson", state.jsonSerializeString())
             .apply();
+    }
+
+    public void discardAuthState() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getContext().deleteSharedPreferences(getLogTag());
+        }
     }
 
 }

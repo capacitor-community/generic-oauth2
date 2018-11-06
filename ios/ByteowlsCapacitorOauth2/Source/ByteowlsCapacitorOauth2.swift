@@ -150,7 +150,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }
             )
         }
+    }
 
+    @objc func authenticate(_ call: CAPPluginCall) {
 
     }
 
@@ -183,8 +185,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return ""
     }
-
-
 
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
         let k = getConfigKey(key)

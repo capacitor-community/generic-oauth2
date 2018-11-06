@@ -9,4 +9,6 @@ import Capacitor
                         success: @escaping (_ accessToken: String) -> Void,
                         cancelled: @escaping () -> Void,
                         failure: @escaping (_ error: Error) -> Void)
+
+    func logout(call: CAPPluginCall)
 }
