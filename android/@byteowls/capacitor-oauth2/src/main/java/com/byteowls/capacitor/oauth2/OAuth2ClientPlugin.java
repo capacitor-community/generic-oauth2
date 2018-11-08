@@ -51,6 +51,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @PluginMethod()
     public void authenticate(final PluginCall call) {
+        disposeAuthService();
         String customHandlerClassname = getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
 
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
@@ -138,10 +139,6 @@ public class OAuth2ClientPlugin extends Plugin {
                 .setState(call.getString(PARAM_STATE))
                 .build();
 
-            if (this.authService != null) {
-                authService.dispose();
-            }
-
             this.authService = new AuthorizationService(getContext());
             Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
 
@@ -191,6 +188,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
             // get authorization code
             if (response != null) {
+                this.authService = new AuthorizationService(getContext());
                 this.authService.performTokenRequest(response.createTokenExchangeRequest(),
                     new AuthorizationService.TokenResponseCallback() {
                         @Override
@@ -209,6 +207,19 @@ public class OAuth2ClientPlugin extends Plugin {
                         }
                     });
             }
+        }
+    }
+
+    @Override
+    protected void handleOnStop() {
+        super.handleOnStop();
+        disposeAuthService();
+    }
+
+    private void disposeAuthService() {
+        if (authService != null) {
+            authService.dispose();
+            authService = null;
         }
     }
 
