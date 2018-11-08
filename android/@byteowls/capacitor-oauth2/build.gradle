@@ -21,6 +21,9 @@ repositories {
     jcenter()
     mavenCentral()
     mavenLocal()
+    maven {
+        url  "https://dl.bintray.com/ionic-team/capacitor"
+    }
 }
 
 android {
@@ -44,7 +47,8 @@ android {
 }
 
 dependencies {
-    implementation 'com.ionicframework.capacitor:capacitor-android:1.0.0-beta.8'
+    implementation 'ionic-team:capacitor-android:1.0.0-beta.8'
+    //implementation 'com.ionicframework.capacitor:capacitor-android:1.0.0-beta.8'
     implementation 'net.openid:appauth:0.7.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
