@@ -447,20 +447,23 @@ end
          if let accessToken = AccessToken.current {
              success(accessToken.authenticationToken)
          } else {
-             if self.loginManager == nil {
-                 self.loginManager = LoginManager()
+             DispatchQueue.main.async {
+                 if self.loginManager == nil {
+                     self.loginManager = LoginManager()
+                 }
+
+                 self.loginManager!.logIn(readPermissions: [ ReadPermission.publicProfile ],
+                                          viewController: viewController, completion: { loginResult in
+                                             switch loginResult {
+                                             case .failed(let error):
+                                                 failure(error)
+                                             case .cancelled:
+                                                 cancelled()
+                                             case .success(_, _, let accessToken):
+                                                 success(accessToken.authenticationToken)
+                                             }
+                 })
              }
-             self.loginManager!.logIn(readPermissions: [ ReadPermission.publicProfile ],
-                                viewController: viewController, completion: { loginResult in
-                                 switch loginResult {
-                                 case .failed(let error):
-                                     failure(error)
-                                 case .cancelled:
-                                     cancelled()
-                                 case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                                     success(accessToken.authenticationToken)
-                                 }
-             })
          }
      }
 
