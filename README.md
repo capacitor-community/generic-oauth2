@@ -472,12 +472,40 @@ end
          return true
      }
  }
-
-
 ```
 
 This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
 
+4) Add the following to `ios/App/App/AppDelegate.swift`
+
+```swift
+import UIKit
+import Capacitor
+
+@UIApplicationMain
+class AppDelegate: UIResponder, UIApplicationDelegate {
+
+    var window: UIWindow?
+
+    // other methods
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+      // Called when the app was launched with a url. Feel free to add additional processing here,
+      // but if you want the App API to support tracking app url opens, make sure to keep this call
+
+      if let scheme = url.scheme, let host = url.host {
+        if scheme == "fb\(SDKSettings.appId)" && host == "authorize" {
+          return SDKApplicationDelegate.shared.application(app, open: url, options: options)
+        }
+      }
+
+      return CAPBridge.handleOpenUrl(url, options)
+    }
+
+    // other methods
+}
+```
+This might not be needed but but users had an issue without it.
 
 ## Contribute
 
