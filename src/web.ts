@@ -84,6 +84,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
+    async logout(options: OAuth2AuthenticateOptions): Promise<void> {
+        return new Promise<any>((resolve, reject) => {
+            resolve();
+        });
+    }
+
     private getAuthorizationUrl(options: OAuth2AuthenticateOptions): string {
         let appId = options.appId;
         if (options.web && options.web.appId && options.web.appId.length > 0) {
@@ -124,12 +130,6 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 [key]: decodeURIComponent(val)
             }
         }, {});
-    }
-
-    logout(options: OAuth2AuthenticateOptions): Promise<void> {
-        return new Promise<any>((resolve, reject) => {
-            resolve();
-        });
     }
 }
 
