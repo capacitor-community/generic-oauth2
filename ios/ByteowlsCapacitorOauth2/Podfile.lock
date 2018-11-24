@@ -1,30 +1,24 @@
 PODS:
-  - Capacitor (0.0.113):
-    - CapacitorCordova (= 0.0.113)
-    - GCDWebServer (~> 3.0)
-  - CapacitorCordova (0.0.113)
-  - GCDWebServer (3.4.2):
-    - GCDWebServer/Core (= 3.4.2)
-  - GCDWebServer/Core (3.4.2)
+  - Capacitor (1.0.0-beta.11):
+    - CapacitorCordova (= 1.0.0-beta.11)
+  - CapacitorCordova (1.0.0-beta.11)
   - OAuthSwift (1.2.2)
 
 DEPENDENCIES:
-  - Capacitor
+  - Capacitor (~> 1.0.0-beta.11)
   - OAuthSwift (~> 1.2.2)
 
 SPEC REPOS:
   https://github.com/cocoapods/specs.git:
     - Capacitor
     - CapacitorCordova
-    - GCDWebServer
     - OAuthSwift
 
 SPEC CHECKSUMS:
-  Capacitor: b37060b0b2685257bedbc69e49a54a74ef30fb9a
-  CapacitorCordova: a923a32bc7ad5f1f3d69664ca86ff69580343ed3
-  GCDWebServer: 8d67ee9f634b4bb91eb4b8aee440318a5fc6debd
+  Capacitor: 3390fb6dbe782bdc71b4bd45df624d4d1da76c71
+  CapacitorCordova: eecc394e2f3e29b5ce9fd2fe597e3d7b4786422b
   OAuthSwift: 27b34fe80b76b67cd8f45571e0be2432bc9f6de1
 
-PODFILE CHECKSUM: 9708614bc51cd36e36f81a6198c34b49923e1229
+PODFILE CHECKSUM: 66ca557ffac4e143954e7157eebc4c5863510613
 
 COCOAPODS: 1.5.3
