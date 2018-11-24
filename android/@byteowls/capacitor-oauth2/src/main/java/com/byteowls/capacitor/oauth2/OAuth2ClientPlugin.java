@@ -1,10 +1,8 @@
 package com.byteowls.capacitor.oauth2;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
@@ -22,10 +20,7 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenResponse;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import static android.content.Context.MODE_PRIVATE;
 
 @NativePlugin(requestCodes = { OAuth2ClientPlugin.RC_OAUTH }, name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
@@ -52,7 +47,7 @@ public class OAuth2ClientPlugin extends Plugin {
     @PluginMethod()
     public void authenticate(final PluginCall call) {
         disposeAuthService();
-        String customHandlerClassname = getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
+        String customHandlerClassname = getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
 
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
             try {
@@ -79,8 +74,8 @@ public class OAuth2ClientPlugin extends Plugin {
                 Log.e(getLogTag(), "Custom handler problem", e);
             }
         } else {
-            String appId = getCallString(call, PARAM_APP_ID);
-            String androidAppId = getCallString(call, PARAM_ANDROID_APP_ID);
+            String appId = getCallParam(String.class,call, PARAM_APP_ID);
+            String androidAppId = getCallParam(String.class, call, PARAM_ANDROID_APP_ID);
             if (androidAppId != null && !androidAppId.isEmpty()) {
                 appId = androidAppId;
             }
@@ -90,24 +85,24 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
-            String baseUrl = getCallString(call, PARAM_AUTHORIZATION_BASE_URL);
+            String baseUrl = getCallParam(String.class, call, PARAM_AUTHORIZATION_BASE_URL);
             if (baseUrl == null || baseUrl.length() == 0) {
                 call.reject("Option '"+PARAM_AUTHORIZATION_BASE_URL+"' is required!");
                 return;
             }
-            String accessTokenEndpoint = getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT); // placeholder
+            String accessTokenEndpoint = getCallParam(String.class, call, PARAM_ACCESS_TOKEN_ENDPOINT); // placeholder
             if (accessTokenEndpoint == null || accessTokenEndpoint.length() == 0) {
                 call.reject("Option '"+PARAM_ACCESS_TOKEN_ENDPOINT+"' is required!");
                 return;
             }
-            String customScheme = getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME);
+            String customScheme = getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_SCHEME);
             if (customScheme == null || customScheme.length() == 0) {
                 call.reject("Option '"+ PARAM_ANDROID_CUSTOM_SCHEME +"' is required!");
                 return;
             }
 
-            String responseType = getCallString(call, PARAM_RESPONSE_TYPE);
-            String androidResponseType = getCallString(call, PARAM_ANDROID_RESPONSE_TYPE);
+            String responseType = getCallParam(String.class, call, PARAM_RESPONSE_TYPE);
+            String androidResponseType = getCallParam(String.class, call, PARAM_ANDROID_RESPONSE_TYPE);
             if (androidResponseType != null && !androidResponseType.isEmpty()) {
                 responseType = androidResponseType;
             }
@@ -148,7 +143,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @PluginMethod()
     public void logout(final PluginCall call) {
-        String customHandlerClassname = getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
+        String customHandlerClassname = getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(customHandlerClassname);
@@ -223,20 +218,34 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    private String getCallString(PluginCall call, String key) {
-        return getCallString(call, key, null);
+    private <T> T getCallParam(Class<T> clazz, PluginCall call, String key) {
+        return getCallParam(clazz, call, key, null);
     }
 
-    private String getCallString(PluginCall call, String key, String defaultValue) {
+    private <T> T getCallParam(Class<T> clazz, PluginCall call, String key, T defaultValue) {
         String k = getDeepestKey(key);
         try {
             JSONObject o = getDeepestObject(call.getData(), key);
 
-            String value = o.getString(k);
+            Object value = null;
+            if (clazz.isAssignableFrom(String.class)) {
+                value = o.getString(k);
+            } else if (clazz.isAssignableFrom(Boolean.class)) {
+                value = o.getBoolean(k);
+            } else if (clazz.isAssignableFrom(Double.class)) {
+                value = o.getDouble(k);
+            } else if (clazz.isAssignableFrom(Integer.class)) {
+                value = o.getInt(k);
+            } else if (clazz.isAssignableFrom(Float.class)) {
+                Double doubleValue = o.getDouble(k);
+                value = doubleValue.floatValue();
+            } else if (clazz.isAssignableFrom(Integer.class)) {
+                value = o.getInt(k);
+            }
             if (value == null) {
                 return defaultValue;
             }
-            return value;
+            return (T) value;
         } catch (Exception ignore) {}
         return defaultValue;
     }
@@ -249,7 +258,7 @@ public class OAuth2ClientPlugin extends Plugin {
         return null;
     }
 
-    private JSObject getDeepestObject(JSObject o, String key) throws JSONException {
+    private JSObject getDeepestObject(JSObject o, String key) {
         // Split on periods
         String[] parts = key.split("\\.");
         // Search until the second to last part of the key
@@ -258,24 +267,6 @@ public class OAuth2ClientPlugin extends Plugin {
             o = o.getJSObject(k);
         }
         return o;
-    }
-
-    @NonNull
-    public AuthState readAuthState() {
-        SharedPreferences authPrefs = getContext().getSharedPreferences(getLogTag(), MODE_PRIVATE);
-        String stateJson = authPrefs.getString("stateJson", "");
-        try {
-            return AuthState.jsonDeserialize(stateJson);
-        } catch (JSONException ignore) {}
-        return new AuthState();
-    }
-
-    public void writeAuthState(@NonNull AuthState state) {
-        SharedPreferences authPrefs = getContext().getSharedPreferences(getLogTag(), MODE_PRIVATE);
-        authPrefs
-            .edit()
-            .putString("stateJson", state.jsonSerializeString())
-            .apply();
     }
 
     public void discardAuthState() {
