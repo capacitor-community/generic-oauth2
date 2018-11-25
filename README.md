@@ -77,7 +77,7 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L16
+See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L24
 
 **Attention:** For security reasons this plugin does not has a option for the **app secret** because it should **never** be stored in client side code.
 
