@@ -33,11 +33,11 @@ export interface OAuth2AuthenticateOptions {
     /**
      * Url for retrieving the access_token by the authorization code.
      */
-    accessTokenEndpoint: string;
+    accessTokenEndpoint?: string;
     /**
      * Protected resource url. For authentification you only need the basic user details.
      */
-    resourceUrl: string;
+    resourceUrl?: string;
     /**
      * Defaults to token if null or undefined. Be aware that this plugin does not support
      * code flow with client secret because of security reason. However code + PKCE will be supported
@@ -52,6 +52,10 @@ export interface OAuth2AuthenticateOptions {
      *
      */
     state?: string;
+    /**
+     * Force the lib to only return the authorization code in the result.
+     */
+    authorizationCodeOnly?: boolean;
     /**
      * Custom options for the platform "web"
      */

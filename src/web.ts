@@ -41,40 +41,73 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
                         if (href != null) {
                             let urlParamObj = this.getUrlParams(href.substr(options.web.redirectUrl.length + 1));
-                            let re = /access_token=(.*)/;
-                            let accessTokenFound = href.match(re);
-                            if (accessTokenFound) {
+                            if (options.authorizationCodeOnly && options.responseType === "code") {
+                                let re = /code=(.*)/;
+                                let authorizationCodeFound = href.match(re);
                                 clearInterval(this.intervalId);
                                 this.windowHandle.close();
-                                let accessToken = urlParamObj.access_token;
-                                if (accessToken) {
-                                    const request = new XMLHttpRequest();
-                                    request.onload = function () {
-                                        if (this.status === 200) {
-                                            let token = JSON.parse(this.response);
-                                            if (token) {
-                                                token["access_token"] = accessToken;
-                                            }
-                                            resolve(token);
-                                        } else {
-                                            reject(new Error(this.statusText));
-                                        }
-                                    };
-                                    request.onerror = function () {
-                                        reject(new Error('XMLHttpRequest Error: ' + this.statusText));
-                                    };
-                                    request.open("GET", options.resourceUrl, true);
-                                    request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
-                                    request.send();
+                                if (authorizationCodeFound) {
+                                    let authorizationCode = urlParamObj.code;
+                                    if (authorizationCode) {
+                                        let resp = {
+                                            authorization_code: authorizationCode,
+                                        };
+                                        resolve(resp);
+                                    } else {
+                                        // this.authenticated = false; // we got the login callback just fine, but there was no token
+                                        reject(new Error("No authorization code found!"));
+                                    }
                                 } else {
-                                    // this.authenticated = false; // we got the login callback just fine, but there was no token
-                                    reject(new Error("No token! Authentication failed!"));
+                                    if (href.indexOf(options.web.redirectUrl) === 0) {
+                                        reject(new Error("No authorization code found!"));
+                                    }
                                 }
                             } else {
-                                if (href.indexOf(options.web.redirectUrl) === 0) {
+                                let re = /access_token=(.*)/;
+                                let accessTokenFound = href.match(re);
+                                if (accessTokenFound) {
                                     clearInterval(this.intervalId);
                                     this.windowHandle.close();
-                                    reject(new Error("Not found"));
+                                    let accessToken = urlParamObj.access_token;
+                                    if (accessToken) {
+                                        if (options.resourceUrl) {
+                                            const request = new XMLHttpRequest();
+                                            request.onload = function () {
+                                                if (this.status === 200) {
+                                                    let resp = JSON.parse(this.response);
+                                                    if (resp) {
+                                                        resp["access_token"] = accessToken;
+                                                        resp["expires_in"] = urlParamObj.expires_in;
+                                                    }
+                                                    resolve(resp);
+                                                } else {
+                                                    reject(new Error(this.statusText));
+                                                }
+                                            };
+                                            request.onerror = function () {
+                                                reject(new Error('XMLHttpRequest Error: ' + this.statusText));
+                                            };
+                                            request.open("GET", options.resourceUrl, true);
+                                            request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+                                            request.send();
+                                        } else {
+                                            let resp = {
+                                                access_token: accessToken,
+                                                refresh_token: urlParamObj.refresh_token,
+                                                expires_in: urlParamObj.expires_in
+                                            };
+                                            resolve(resp);
+                                        }
+                                    } else {
+                                        // this.authenticated = false; // we got the login callback just fine, but there was no token
+                                        reject(new Error("No access token! Authentication failed!"));
+                                    }
+                                } else {
+                                    if (href.indexOf(options.web.redirectUrl) === 0) {
+                                        clearInterval(this.intervalId);
+                                        this.windowHandle.close();
+                                        reject(new Error("Access token not found in redirect url!"));
+                                    }
                                 }
                             }
                         }
@@ -98,9 +131,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
         let baseUrl = options.authorizationBaseUrl + "?client_id=" + appId;
         let responseType = "token";
-        if (options.responseType === "code") {
-            console.log("@byteowls/capacitor-oauth2: Code flow + PKCE is not yet supported. See github #4")
-            // responseType = options.responseType;
+        if (options.responseType === "code" && options.authorizationCodeOnly) {
+            // console.log("@byteowls/capacitor-oauth2: Code flow + PKCE is not yet supported. See github #4")
+            responseType = options.responseType;
         }
         baseUrl += "&response_type=" + responseType;
 
