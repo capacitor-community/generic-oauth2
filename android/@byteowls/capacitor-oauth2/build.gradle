@@ -4,14 +4,11 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.4'
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'maven-publish'
-apply plugin: "com.jfrog.bintray"
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -50,8 +47,12 @@ dependencies {
     implementation 'ionic-team:capacitor-android:1.0.0-beta.11'
     implementation 'net.openid:appauth:0.7.1'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.6'
 }
 
 // ###############
@@ -61,129 +62,3 @@ dependencies {
 android.defaultConfig.manifestPlaceholders = [
     'appAuthRedirectScheme': 'com.byteowls.capacitorapp'
 ]
-
-// ##########################
-// ### Prepare publishing ###
-// ##########################
-
-project.version = (project.hasProperty('pluginVersion') ? pluginVersion : project.version)
-
-// ###################################
-// ### Publish to local maven repo ###
-// ###################################
-
-task androidJavadocs(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-    android.libraryVariants.all { variant ->
-        if (variant.name == 'release') {
-            owner.classpath += variant.javaCompile.classpath
-        }
-    }
-    exclude '**/R.html', '**/R.*.html', '**/index.html'
-}
-
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
-}
-
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId project.artifactId
-
-            artifact bundleRelease
-            artifact androidSourcesJar
-            artifact androidJavadocsJar
-
-            pom.withXml {
-                final dependenciesNode = asNode().appendNode('dependencies')
-
-                ext.addDependency = { Dependency dep, String scope ->
-                    if (dep.group == null || dep.version == null || dep.name == null || dep.name == "unspecified")
-                        return // ignore invalid dependencies
-
-                    final dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', dep.group)
-                    dependencyNode.appendNode('artifactId', dep.name)
-                    dependencyNode.appendNode('version', dep.version)
-                    dependencyNode.appendNode('scope', scope)
-
-                    if (!dep.transitive) {
-                        // If this dependency is transitive, we should force exclude all its dependencies them from the POM
-                        final exclusionNode = dependencyNode.appendNode('exclusions').appendNode('exclusion')
-                        exclusionNode.appendNode('groupId', '*')
-                        exclusionNode.appendNode('artifactId', '*')
-                    } else if (!dep.properties.excludeRules.empty) {
-                        // Otherwise add specified exclude rules
-                        final exclusionNode = dependencyNode.appendNode('exclusions').appendNode('exclusion')
-                        dep.properties.excludeRules.each { ExcludeRule rule ->
-                            exclusionNode.appendNode('groupId', rule.group ?: '*')
-                            exclusionNode.appendNode('artifactId', rule.module ?: '*')
-                        }
-                    }
-                }
-
-                // List all "compile" dependencies (for old Gradle)
-                configurations.compile.getAllDependencies().each { dep -> addDependency(dep, "compile") }
-                // List all "api" dependencies (for new Gradle) as "compile" dependencies
-                configurations.api.getAllDependencies().each { dep -> addDependency(dep, "compile") }
-                // List all "implementation" dependencies (for new Gradle) as "runtime" dependencies
-                configurations.implementation.getAllDependencies().each { dep -> addDependency(dep, "runtime") }
-            }
-        }
-    }
-}
-
-// ##########################
-// ### Publish to bintray ###
-// ##########################
-
-// ./gradlew clean build bintrayUpload -PbintrayUser=$BINTRAY_USER -PbintrayKey=$BINTRAY_KEY -PpluginVersion=$LERNA_VERSION -PdryRun=true
-
-// for publishToMavenLocal to work we have to use bintray's gradle plugin instead of novoda
-bintray {
-    user = project.hasProperty('bintrayUser') ? bintrayUser : null //this usually comes from gradle.properties file in ~/.gradle
-    key = project.hasProperty('bintrayKey') ? bintrayKey : null //this usually comes from gradle.properties file in ~/.gradle
-
-    // configurations = ['archives'] //When uploading configuration files
-    // - OR -
-    publications = ['maven'] //When uploading Maven-based publication files
-
-    dryRun = false //Whether to run this as dry-run, without deploying
-    publish = false //If version should be auto published after an upload
-
-    // Package configuration. The plugin will use the repo and name properties to check if the package already exists.
-    // In that case, there's no need to configure the other package properties (like userOrg, desc, etc).
-    pkg {
-        repo = 'maven'
-        name = 'capacitor-oauth2'
-        //userOrg = 'byteowls' //An optional organization name when the repo belongs to one of the user's orgs
-        desc = 'OAuth 2 capacitor plugin for manual oauth2 without using the sdks'
-        websiteUrl = 'https://github.com/moberwasserlechner/capacitor-oauth2'
-        issueTrackerUrl = 'https://github.com/moberwasserlechner/capacitor-oauth2/issues'
-        vcsUrl = 'https://github.com/moberwasserlechner/capacitor-oauth2.git'
-        licenses = ['MIT']
-        labels = ['capacitor', 'plugin', 'oauth2', 'authentication']
-        publicDownloadNumbers = true
-
-        version {
-            name = project.version //Bintray logical version name
-            // desc = 'optional'
-            vcsTag = project.version
-        }
-    }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.4'
-}
-
-
