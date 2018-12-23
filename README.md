@@ -9,6 +9,14 @@ This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
+## Attention: This project is an ALPHA
+
+This library is about to be changed through development as I need it.
+
+If you use a working version do not automatically update your dependencies.
+ 
+I will NOT announce any changes until the first beta is released.
+
 ## Installation
 
 `npm i @byteowls/capacitor-oauth2`
@@ -536,3 +544,12 @@ MIT. Please see [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2
 
 This plugin is powered by BYTEOWLS Software & Consulting and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
 
+### Commercial support and consulting
+
+We create plugins for apps we build and share them **as it is** with the community.
+
+I you have a feature request, need support how to use the plugin or 
+need a release breaking with our normal release cycle you have the possibility 
+to sponsor the development by paying for this custom development or support.
+
+See the wiki page for how to request a quote.
