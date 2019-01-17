@@ -9,17 +9,37 @@ This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
-## Attention: This project is an ALPHA
+## Attention: This project is in ALPHA phase
 
-This library is about to be changed through development as I need it.
+This library is about to be changed through development as need it.
 
 If you use a working version do not automatically update your dependencies.
  
 I will NOT announce any changes until the first beta is released.
 
+## Supported flows
+
+### Implicit flow
+
+Status: **ok**
+
+### Authorization code flow + PKCE
+
+Status: **planned** see #4
+
+**Attention:**
+For security reasons this plugin does not support the authorization code flow without PKCE.
+
+That would include storing your **client secret** in client code which is highly insecure and not recommended.
+That flow should only be used on the backend (server).
+
+But it is possible to use this plugin as part of that server side implementation
+by using `authorizationCodeOnly=true` and `responseType="code", so you get the authorization code for the server side steps.
+
+
 ## Installation
 
-`npm i @byteowls/capacitor-oauth2`
+`npm i -E @byteowls/capacitor-oauth2`
 
 ## Configuration
 
@@ -86,8 +106,6 @@ export class SignupComponent {
 ### Options
 
 See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L24
-
-**Attention:** For security reasons this plugin does not has a option for the **app secret** because it should **never** be stored in client side code.
 
 ## Platform: Web/PWA
 

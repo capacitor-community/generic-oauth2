@@ -39,21 +39,26 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl?: string;
     /**
-     * Defaults to token if null or undefined. Be aware that this plugin does not support
+     * Defaults to 'token' if null or undefined. Be aware that this plugin does not support
      * code flow with client secret because of security reason. However code + PKCE will be supported
      * in future. Please see github issue #4
      */
     responseType?: ResponseTypeType
     /**
-     *
+     * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
      */
     scope?: string;
     /**
-     *
+     * If this is null the plugin uses a own random string to make sure the red
      */
     state?: string;
     /**
-     * Force the lib to only return the authorization code in the result.
+     * In case you do no want that the plugins adds a state.
+     */
+    stateDisabled?: boolean;
+    /**
+     * Force the lib to only return the authorization code in the result. This becomes handy if you want to use it as part
+     * of a server side authorization code flow.
      */
     authorizationCodeOnly?: boolean;
     /**

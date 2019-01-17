@@ -1,11 +1,12 @@
 import {WebPlugin} from '@capacitor/core';
 import {OAuth2AuthenticateOptions, OAuth2ClientPlugin} from "./definitions";
+import {WebUtils} from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
 
     private windowHandle: Window = null;
     private intervalId: number = null;
-    private loopCount = 600;
+    private loopCount = 1000;
     private intervalLength = 100;
 
     constructor() {
@@ -20,6 +21,19 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             if (!options.web || !options.web.redirectUrl) {
                 reject(new Error("Required 'web.redirectUrl' not found!"))
             } else {
+
+                if (options.responseType === "token") {
+                    // check if access token is stored
+                    // TODO get access token and expires in
+                    // const storageItemName = options.authorizationBaseUrl
+                    // const storedAccessTokenObj: {accessToken: string, expiresAt: Date} = localStorage.getItem(this.getAppId(options))
+                    // if (storedAccessTokenObj) {
+                    //     if (storedAccessTokenObj.expiresAt && storedAccessTokenObj.expiresAt < new Date()) {
+                    //         this.requestResource(options, storedAccessTokenObj.accessToken, storedAccessTokenObj.expiresAt, resolve, reject);
+                    //     }
+                    // }
+                }
+
                 let loopCount = this.loopCount;
                 // open window
 
@@ -27,7 +41,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 if (options.web) {
                     winOptions = options.web.windowOptions;
                 }
-                this.windowHandle = window.open(this.getAuthorizationUrl(options), "_blank", winOptions);
+                this.windowHandle = window.open(WebUtils.getAuthorizationUrl(options), "_blank", winOptions);
                 // wait for redirect and resolve the
                 this.intervalId = setInterval(() => {
                     if (loopCount-- < 0) {
@@ -37,77 +51,66 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                         let href: string;
                         try {
                             href = this.windowHandle.location.href;
-                        } catch (ignore) {}
+                        } catch (e) {
+                            console.log(e);
+                        }
 
                         if (href != null) {
-                            let urlParamObj = this.getUrlParams(href.substr(options.web.redirectUrl.length + 1));
-                            if (options.authorizationCodeOnly && options.responseType === "code") {
-                                let re = /code=(.*)/;
-                                let authorizationCodeFound = href.match(re);
+                            let urlParamObj = WebUtils.getUrlParams(href);
+                            if (urlParamObj) {
                                 clearInterval(this.intervalId);
-                                this.windowHandle.close();
-                                if (authorizationCodeFound) {
-                                    let authorizationCode = urlParamObj.code;
-                                    if (authorizationCode) {
-                                        let resp = {
-                                            authorization_code: authorizationCode,
-                                        };
-                                        resolve(resp);
-                                    } else {
-                                        // this.authenticated = false; // we got the login callback just fine, but there was no token
-                                        reject(new Error("No authorization code found!"));
-                                    }
-                                } else {
-                                    if (href.indexOf(options.web.redirectUrl) === 0) {
-                                        reject(new Error("No authorization code found!"));
-                                    }
-                                }
-                            } else {
-                                let re = /access_token=(.*)/;
-                                let accessTokenFound = href.match(re);
-                                if (accessTokenFound) {
-                                    clearInterval(this.intervalId);
-                                    this.windowHandle.close();
-                                    let accessToken = urlParamObj.access_token;
-                                    if (accessToken) {
-                                        if (options.resourceUrl) {
-                                            const request = new XMLHttpRequest();
-                                            request.onload = function () {
-                                                if (this.status === 200) {
-                                                    let resp = JSON.parse(this.response);
-                                                    if (resp) {
-                                                        resp["access_token"] = accessToken;
-                                                        resp["expires_in"] = urlParamObj.expires_in;
-                                                    }
-                                                    resolve(resp);
-                                                } else {
-                                                    reject(new Error(this.statusText));
-                                                }
-                                            };
-                                            request.onerror = function () {
-                                                reject(new Error('XMLHttpRequest Error: ' + this.statusText));
-                                            };
-                                            request.open("GET", options.resourceUrl, true);
-                                            request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
-                                            request.send();
+                                console.log("urlparamobj", urlParamObj);
+                                if (options.stateDisabled || urlParamObj.state === options.state) {
+                                    // implicit flow
+                                    if (options.responseType === "token") {
+                                        let re = /access_token=(.*)/;
+                                        let accessTokenFound = href.match(re);
+                                        if (accessTokenFound) {
+                                            let accessToken = urlParamObj.access_token;
+                                            if (accessToken) {
+                                                const expiresIn = urlParamObj.expires_in;
+                                                // TODO store access token and expires in
+                                                this.requestResource(options, accessToken, expiresIn, resolve, reject);
+                                            } else {
+                                                // this.authenticated = false; // we got the login callback just fine, but there was no token
+                                                reject(new Error("No access token! Authentication failed!"));
+                                                this.closeWindow();
+                                            }
                                         } else {
-                                            let resp = {
-                                                access_token: accessToken,
-                                                refresh_token: urlParamObj.refresh_token,
-                                                expires_in: urlParamObj.expires_in
-                                            };
-                                            resolve(resp);
+                                            if (href.indexOf(options.web.redirectUrl) === 0) {
+                                                // clearInterval(this.intervalId);
+                                                // this.windowHandle.close();
+                                                reject(new Error("Access token not found in redirect url!"));
+                                                this.closeWindow();
+                                            }
+                                        }
+                                    } else if (options.responseType === "code") {
+                                        // code flow
+                                        let re = /code=(.*)/;
+                                        let authorizationCodeFound = href.match(re);
+                                        if (authorizationCodeFound) {
+                                            let authorizationCode = urlParamObj.code;
+                                            if (authorizationCode) {
+                                                let resp = {
+                                                    authorization_code: authorizationCode,
+                                                };
+                                                resolve(resp);
+                                            } else {
+                                                // this.authenticated = false; // we got the login callback just fine, but there was no token
+                                                reject(new Error("No authorization code found!"));
+                                            }
+                                        } else {
+                                            if (href.indexOf(options.web.redirectUrl) === 0) {
+                                                reject(new Error("No authorization code found!"));
+                                            }
                                         }
                                     } else {
-                                        // this.authenticated = false; // we got the login callback just fine, but there was no token
-                                        reject(new Error("No access token! Authentication failed!"));
+                                        reject(new Error("Not supported responseType"));
+                                        this.closeWindow();
                                     }
                                 } else {
-                                    if (href.indexOf(options.web.redirectUrl) === 0) {
-                                        clearInterval(this.intervalId);
-                                        this.windowHandle.close();
-                                        reject(new Error("Access token not found in redirect url!"));
-                                    }
+                                    reject(new Error("State check not passed! Retrieved state does not match sent one!"));
+                                    this.closeWindow();
                                 }
                             }
                         }
@@ -117,52 +120,51 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
+    private requestResource(options: OAuth2AuthenticateOptions, accessToken: string, expiresIn: Date, resolve: any, reject: (reason?: any) => void) {
+        if (options.resourceUrl) {
+            const self = this;
+            const request = new XMLHttpRequest();
+            request.onload = function () {
+                if (this.status === 200) {
+                    let resp = JSON.parse(this.response);
+                    if (resp) {
+                        resp["access_token"] = accessToken;
+                        resp["expires_in"] = expiresIn;
+                    }
+                    resolve(resp);
+                } else {
+                    reject(new Error(this.statusText));
+                }
+                self.closeWindow();
+            };
+            request.onerror = function () {
+                reject(new Error(this.statusText));
+                self.closeWindow();
+            };
+            request.open("GET", options.resourceUrl, true);
+            request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+            request.send();
+        } else {
+            // there is no refresh token allowed in implicit flow
+            let resp = {
+                access_token: accessToken,
+                expires_in: expiresIn
+            };
+            resolve(resp);
+            this.closeWindow();
+        }
+    }
+
     async logout(options: OAuth2AuthenticateOptions): Promise<void> {
         return new Promise<any>((resolve, reject) => {
+            localStorage.removeItem(WebUtils.getAppId(options));
             resolve();
         });
     }
 
-    private getAuthorizationUrl(options: OAuth2AuthenticateOptions): string {
-        let appId = options.appId;
-        if (options.web && options.web.appId && options.web.appId.length > 0) {
-            appId = options.web.appId;
-        }
-
-        let baseUrl = options.authorizationBaseUrl + "?client_id=" + appId;
-        let responseType = "token";
-        if (options.responseType === "code" && options.authorizationCodeOnly) {
-            // console.log("@byteowls/capacitor-oauth2: Code flow + PKCE is not yet supported. See github #4")
-            responseType = options.responseType;
-        }
-        baseUrl += "&response_type=" + responseType;
-
-        if (options.web.redirectUrl) {
-            baseUrl += "&redirect_uri=" + options.web.redirectUrl;
-        }
-        if (options.scope) {
-            baseUrl += "&scope=" + options.scope;
-        }
-        if (options.state) {
-            baseUrl += "&state=" + options.state;
-        }
-        return encodeURI(baseUrl);
-    }
-
-    private getUrlParams(search: string): any {
-        let idx = search.indexOf("#");
-        if (idx == -1) {
-            idx = search.indexOf("?");
-        }
-
-        const hashes = search.slice(idx + 1).split(`&`);
-        return hashes.reduce((acc, hash) => {
-            const [key, val] = hash.split(`=`);
-            return {
-                ...acc,
-                [key]: decodeURIComponent(val)
-            }
-        }, {});
+    private closeWindow() {
+        clearInterval(this.intervalId);
+        this.windowHandle.close();
     }
 }
 
