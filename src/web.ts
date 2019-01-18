@@ -59,51 +59,36 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             let urlParamObj = WebUtils.getUrlParams(href);
                             if (urlParamObj) {
                                 clearInterval(this.intervalId);
-                                console.log("urlparamobj", urlParamObj);
+                                // check state
                                 if (options.stateDisabled || urlParamObj.state === options.state) {
                                     // implicit flow
                                     if (options.responseType === "token") {
-                                        let re = /access_token=(.*)/;
-                                        let accessTokenFound = href.match(re);
-                                        if (accessTokenFound) {
-                                            let accessToken = urlParamObj.access_token;
-                                            if (accessToken) {
-                                                const expiresIn = urlParamObj.expires_in;
-                                                // TODO store access token and expires in
-                                                this.requestResource(options, accessToken, expiresIn, resolve, reject);
-                                            } else {
-                                                // this.authenticated = false; // we got the login callback just fine, but there was no token
-                                                reject(new Error("No access token! Authentication failed!"));
-                                                this.closeWindow();
-                                            }
+                                        let accessToken = urlParamObj.access_token;
+                                        if (accessToken) {
+                                            const expiresIn = urlParamObj.expires_in;
+                                            // TODO store access token and expires in
+                                            this.requestResource(options, accessToken, expiresIn, resolve, reject);
                                         } else {
-                                            if (href.indexOf(options.web.redirectUrl) === 0) {
-                                                // clearInterval(this.intervalId);
-                                                // this.windowHandle.close();
-                                                reject(new Error("Access token not found in redirect url!"));
-                                                this.closeWindow();
-                                            }
+                                            reject(new Error("No access token! Authentication failed!"));
+                                            this.closeWindow();
                                         }
                                     } else if (options.responseType === "code") {
                                         // code flow
-                                        let re = /code=(.*)/;
-                                        let authorizationCodeFound = href.match(re);
-                                        if (authorizationCodeFound) {
-                                            let authorizationCode = urlParamObj.code;
-                                            if (authorizationCode) {
+                                        let authorizationCode = urlParamObj.code;
+                                        if (authorizationCode) {
+                                            if (options.authorizationCodeOnly) {
                                                 let resp = {
                                                     authorization_code: authorizationCode,
                                                 };
                                                 resolve(resp);
                                             } else {
-                                                // this.authenticated = false; // we got the login callback just fine, but there was no token
-                                                reject(new Error("No authorization code found!"));
+                                                // TODO PKCE
+
                                             }
                                         } else {
-                                            if (href.indexOf(options.web.redirectUrl) === 0) {
-                                                reject(new Error("No authorization code found!"));
-                                            }
+                                            reject(new Error("No authorization code found!"));
                                         }
+                                        this.closeWindow();
                                     } else {
                                         reject(new Error("Not supported responseType"));
                                         this.closeWindow();

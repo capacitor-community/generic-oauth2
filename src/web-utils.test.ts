@@ -62,7 +62,6 @@ describe("Url param extraction", () => {
 
     it('should remove invalid combinations multiple param', () => {
         const paramObj = WebUtils.getUrlParams("https://app.example.com?=test&key1=param1");
-        console.log("invalid pairs", paramObj);
         expect(paramObj).toEqual({key1: "param1"});
     });
 
@@ -77,6 +76,19 @@ describe("Url param extraction", () => {
         expect(paramObj["state"]).toStrictEqual(state);
     });
 
+});
 
+describe("Random string gen", () => {
+    it('should generate a 10 letter string', () => {
+        const expected = 10;
+        const random = WebUtils.randomString(expected);
+        expect(random.length).toStrictEqual(expected);
+    });
+
+    it('should generate a 43 letter string as this is the minimum for PKCE', () => {
+        const expected = 43;
+        const random = WebUtils.randomString(expected);
+        expect(random.length).toStrictEqual(expected);
+    });
 });
 

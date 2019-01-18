@@ -49,11 +49,12 @@ export interface OAuth2AuthenticateOptions {
      */
     scope?: string;
     /**
-     * If this is null the plugin uses a own random string to make sure the red
+     * A unique alpha numeric string used to prevent CSRF. If not set the plugin automatically generate a string
+     * and sends it as using state is recommended.
      */
     state?: string;
     /**
-     * In case you do no want that the plugins adds a state.
+     * In case you do no want the plugin to add a state you can disable it. Defaults to false.
      */
     stateDisabled?: boolean;
     /**

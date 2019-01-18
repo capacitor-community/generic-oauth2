@@ -33,7 +33,7 @@ export class WebUtils {
 
         if (!options.stateDisabled) {
             if (!options.state || options.state.length == 0) {
-                options.state = this.randomString();
+                options.state = this.randomString(20);
             }
 
             baseUrl += "&state=" + options.state;
