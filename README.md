@@ -34,8 +34,7 @@ That would include storing your **client secret** in client code which is highly
 That flow should only be used on the backend (server).
 
 But it is possible to use this plugin as part of that server side implementation
-by using `authorizationCodeOnly=true` and `responseType="code", so you get the authorization code for the server side steps.
-
+by using `authorizationCodeOnly=true` and `responseType="code"`, so you get the authorization code for the server side steps.
 
 ## Installation
 
