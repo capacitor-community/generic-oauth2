@@ -51,8 +51,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                         let href: string;
                         try {
                             href = this.windowHandle.location.href;
-                        } catch (e) {
-                            console.log(e);
+                        } catch (ignore) {
+                            // ignore DOMException: Blocked a frame with origin "http://localhost:4200" from accessing a cross-origin frame.
                         }
 
                         if (href != null) {
