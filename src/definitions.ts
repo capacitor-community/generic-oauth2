@@ -39,9 +39,11 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl?: string;
     /**
-     * Defaults to 'token' if null or undefined. Be aware that this plugin does not support
-     * code flow with client secret because of security reason. However code + PKCE will be supported
-     * in future. Please see github issue #4
+     * Defaults to 'token' aka implicit flow if emtpy and not used with @authorizationCodeOnly.
+     *
+     * Be aware that this plugin does not support code flow with client secrets because of security reason.
+     *
+     * However code + PKCE will be supported in future. Please see github issue #4
      */
     responseType?: ResponseTypeType
     /**
@@ -53,13 +55,15 @@ export interface OAuth2AuthenticateOptions {
      * and sends it as using state is recommended.
      */
     state?: string;
+
     /**
      * In case you do no want the plugin to add a state you can disable it. Defaults to false.
      */
     stateDisabled?: boolean;
     /**
-     * Force the lib to only return the authorization code in the result. This becomes handy if you want to use it as part
-     * of a server side authorization code flow.
+     * Force the lib to only return the authorization code in the result.
+     * If true we use the code flow and the requestType is always "code".
+     * This becomes handy if you want to use it as part of a server side authorization code flow.
      */
     authorizationCodeOnly?: boolean;
     /**

@@ -19,6 +19,13 @@ export class WebUtils {
         let appId = this.getAppId(options);
         let baseUrl = options.authorizationBaseUrl + "?client_id=" + appId;
 
+        if (options.authorizationCodeOnly) {
+            if (options.responseType !== "code") {
+                console.warn("'authorizationCodeOnly' is 'true' so 'responseType' must be 'code'! We fix that for you.");
+            }
+            options.responseType = "code";
+        }
+
         if (!options.responseType) {
             options.responseType = "token";
         }
