@@ -17,7 +17,7 @@ export class WebUtils {
      */
     static getAuthorizationUrl(options: OAuth2AuthenticateOptions): string {
         let appId = this.getAppId(options);
-        let baseUrl = options.authorizationBaseUrl + "?client_id=" + appId;
+        let url = options.authorizationBaseUrl + "?client_id=" + appId;
 
         if (options.authorizationCodeOnly) {
             if (options.responseType !== "code") {
@@ -29,23 +29,22 @@ export class WebUtils {
         if (!options.responseType) {
             options.responseType = "token";
         }
-        baseUrl += "&response_type=" + options.responseType;
+        url += "&response_type=" + options.responseType;
 
         if (options.web.redirectUrl) {
-            baseUrl += "&redirect_uri=" + options.web.redirectUrl;
+            url += "&redirect_uri=" + options.web.redirectUrl;
         }
         if (options.scope) {
-            baseUrl += "&scope=" + options.scope;
+            url += "&scope=" + options.scope;
         }
 
         if (!options.stateDisabled) {
             if (!options.state || options.state.length == 0) {
                 options.state = this.randomString(20);
             }
-
-            baseUrl += "&state=" + options.state;
+            url += "&state=" + options.state;
         }
-        return encodeURI(baseUrl);
+        return encodeURI(url);
     }
 
     /**

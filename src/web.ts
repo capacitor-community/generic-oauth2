@@ -18,7 +18,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
     async authenticate(options: OAuth2AuthenticateOptions): Promise<any> {
         return new Promise<any>((resolve, reject) => {
-            if (!options.web || !options.web.redirectUrl) {
+            // validate
+            if (!WebUtils.getAppId(options)) {
+                reject(new Error("Required 'appId' or 'web.appId' not found!"))
+            } else if (!options.authorizationBaseUrl) {
+                reject(new Error("Required 'authorizationBaseUrl' not found!"))
+            } else if (!options.web || !options.web.redirectUrl) {
                 reject(new Error("Required 'web.redirectUrl' not found!"))
             } else {
 
