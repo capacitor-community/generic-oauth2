@@ -31,7 +31,7 @@ export interface OAuth2AuthenticateOptions {
      */
     authorizationBaseUrl: string;
     /**
-     * Url for retrieving the access_token by the authorization code.
+     * Url for retrieving the access_token by the authorization code flow.
      */
     accessTokenEndpoint?: string;
     /**
