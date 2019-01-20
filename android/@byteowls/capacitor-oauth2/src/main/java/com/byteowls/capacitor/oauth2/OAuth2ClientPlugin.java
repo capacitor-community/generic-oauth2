@@ -3,14 +3,13 @@ package com.byteowls.capacitor.oauth2;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
-import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
-import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
+import com.byteowls.capacitor.oauth2.api.AccessTokenCallback;
+import com.byteowls.capacitor.oauth2.api.OAuth2CustomHandler;
+import com.byteowls.capacitor.oauth2.login.LoginManager;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -51,7 +50,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 handler.getAccessToken(getActivity(), call, new AccessTokenCallback() {
                     @Override
                     public void onSuccess(String accessToken) {
-                        new ResourceUrlAsyncTask(call, getLogTag()).execute(accessToken);
+                        new ResourceUrlAsyncTask(call, oauth2Options, getLogTag()).execute(accessToken);
                     }
 
                     @Override
@@ -85,13 +84,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
-
-            Intent authIntent = new Intent(Intent.ACTION_VIEW);
-            // maybe use the options from a customTabsIntent
-//            authIntent.setPackage(getContext().getPackageName());
-//            authIntent.setComponent(getActivity().getComponentName());
-            authIntent.setData(Uri.parse(getAuthorizationUrl(oauth2Options)));
-            startActivityForResult(call, authIntent, RC_OAUTH_AUTHORIZATION);
+            LoginManager.getInstance(getContext()).logIn(getActivity(), getAuthorizationUrl(oauth2Options));
         }
     }
 
@@ -118,8 +111,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @Override
     protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
-        super.handleOnActivityResult(requestCode, resultCode, data);
-        if (RC_OAUTH_AUTHORIZATION == requestCode) {
+        if (RC_OAUTH_AUTHORIZATION == requestCode && data != null) {
             final PluginCall savedCall = getSavedCall();
             if (savedCall == null) {
                 return;

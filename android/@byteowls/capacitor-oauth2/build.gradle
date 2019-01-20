@@ -46,7 +46,6 @@ android {
 dependencies {
     implementation 'ionic-team:capacitor-android:1.0.0-beta.11'
     implementation 'com.android.support:customtabs:27.1.1'
-    implementation 'net.openid:appauth:0.7.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -56,10 +55,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '4.6'
 }
 
-// ###############
-// ### AppAuth ###
-// ###############
-
-android.defaultConfig.manifestPlaceholders = [
-    'appAuthRedirectScheme': 'com.byteowls.capacitorapp'
-]
+//android.defaultConfig.manifestPlaceholders = [
+//    'capacitorOAuth2CustomScheme': 'com.byteowls.your_custom_scheme'
+//]

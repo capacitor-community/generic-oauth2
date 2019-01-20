@@ -1,4 +1,4 @@
-package com.byteowls.capacitor.oauth2.handler;
+package com.byteowls.capacitor.oauth2.api;
 
 public interface AccessTokenCallback {
 
