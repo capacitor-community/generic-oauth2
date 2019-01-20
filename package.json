@@ -12,7 +12,8 @@
         "clean": "rm -rf ./dist",
         "watch": "tsc --watch",
         "test": "jest",
-        "prepublishOnly": "npm run build && npm pack"
+        "remove-packed": "rm -f byteowls-capacitor-oauth2-*.tgz",
+        "prepublishOnly": "npm run remove-packed && npm run build && npm pack"
     },
     "files": [
         "dist/",
