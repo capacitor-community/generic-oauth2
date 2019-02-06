@@ -12,8 +12,9 @@
         "clean": "rm -rf ./dist",
         "watch": "tsc --watch",
         "test": "jest",
-        "remove-packed": "rm -f byteowls-capacitor-oauth2-*.tgz",
-        "prepublishOnly": "npm run remove-packed && npm run build && npm pack"
+        "removePacked": "rm -f byteowls-capacitor-oauth2-*.tgz",
+        "publishLocally": "npm run removePacked && npm run build && npm pack",
+        "prepublishOnly": "npm run build"
     },
     "files": [
         "dist/",
@@ -46,10 +47,11 @@
     "publishConfig": {
         "access": "public"
     },
-    "dependencies": {
-        "@capacitor/core": "1.0.0-beta.11"
+    "peerDependencies": {
+        "@capacitor/core": "^1.0.0-beta.11"
     },
     "devDependencies": {
+        "@capacitor/core": "1.0.0-beta.17",
         "@types/jest": "23.3.12",
         "jest": "23.6.0",
         "ts-jest": "23.10.5",
