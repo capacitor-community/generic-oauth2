@@ -2,7 +2,6 @@ package com.byteowls.capacitor.oauth2;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
@@ -52,10 +51,10 @@ public class OAuth2ClientPlugin extends Plugin {
     @PluginMethod()
     public void authenticate(final PluginCall call) {
         disposeAuthService();
-        String customHandlerClassname = ConfigUtils.getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
-        if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
+        oauth2Options = buildOptions(call);
+        if (oauth2Options.getCustomHandlerClass() != null && oauth2Options.getCustomHandlerClass().length() > 0) {
             try {
-                Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(customHandlerClassname);
+                Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(oauth2Options.getCustomHandlerClass());
                 OAuth2CustomHandler handler = handlerClass.newInstance();
                 handler.getAccessToken(getActivity(), call, new AccessTokenCallback() {
                     @Override
@@ -78,8 +77,6 @@ public class OAuth2ClientPlugin extends Plugin {
                 Log.e(getLogTag(), "Custom handler problem", e);
             }
         } else {
-            oauth2Options = buildOptions(call);
-
             if (oauth2Options.getAppId() == null) {
                 call.reject("Option '" + PARAM_APP_ID + "' or '" + PARAM_ANDROID_APP_ID + "' is required!");
                 return;
@@ -262,9 +259,6 @@ public class OAuth2ClientPlugin extends Plugin {
     public void discardAuthState() {
         if (this.authState != null) {
             this.authState = null;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getContext().deleteSharedPreferences(getLogTag());
         }
     }
 }
