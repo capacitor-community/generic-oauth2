@@ -1,11 +1,11 @@
 PODS:
-  - Capacitor (1.0.0-beta.11):
-    - CapacitorCordova (= 1.0.0-beta.11)
-  - CapacitorCordova (1.0.0-beta.11)
+  - Capacitor (1.0.0-beta.17):
+    - CapacitorCordova (= 1.0.0-beta.17)
+  - CapacitorCordova (1.0.0-beta.17)
   - OAuthSwift (1.2.2)
 
 DEPENDENCIES:
-  - Capacitor (~> 1.0.0-beta.10)
+  - Capacitor (~> 1.0.0-beta.16)
   - OAuthSwift (~> 1.2.2)
 
 SPEC REPOS:
@@ -15,10 +15,10 @@ SPEC REPOS:
     - OAuthSwift
 
 SPEC CHECKSUMS:
-  Capacitor: 3390fb6dbe782bdc71b4bd45df624d4d1da76c71
-  CapacitorCordova: eecc394e2f3e29b5ce9fd2fe597e3d7b4786422b
+  Capacitor: e70f78a9f9ab26c8ad4a1f3a7aeda5da85e8d659
+  CapacitorCordova: 3acfc17886c27567d5c5dfebbc249b634d0eafdc
   OAuthSwift: 27b34fe80b76b67cd8f45571e0be2432bc9f6de1
 
-PODFILE CHECKSUM: 498980685af797786065cc5b874e35bda81231b0
+PODFILE CHECKSUM: b16c74b3bfc788d9af7c959974081f0415cc4c99
 
 COCOAPODS: 1.5.3
