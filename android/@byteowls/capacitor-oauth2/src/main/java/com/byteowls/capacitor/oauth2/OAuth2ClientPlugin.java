@@ -2,6 +2,8 @@ package com.byteowls.capacitor.oauth2;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
@@ -9,6 +11,13 @@ import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import net.openid.appauth.AuthState;
+import net.openid.appauth.AuthorizationException;
+import net.openid.appauth.AuthorizationRequest;
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationService;
+import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.TokenResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -32,15 +41,17 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
     private static final String RESPONSE_TYPE_CODE = "code";
     private static final String RESPONSE_TYPE_TOKEN = "token";
-    private static final String PARAM_STATE_DISABLED = "stateDisabled";
     private static final String PARAM_AUTHORIZATION_CODE_ONLY = "authorizationCodeOnly";
 
     private OAuth2Options oauth2Options;
+    private AuthorizationService authService;
+    private AuthState authState;
 
     public OAuth2ClientPlugin() {}
 
     @PluginMethod()
     public void authenticate(final PluginCall call) {
+        disposeAuthService();
         String customHandlerClassname = ConfigUtils.getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
             try {
@@ -83,12 +94,33 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
+            AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(
+                Uri.parse(oauth2Options.getAuthorizationBaseUrl()),
+                Uri.parse(oauth2Options.getAccessTokenEndpoint())
+            );
 
-            Intent authIntent = new Intent(Intent.ACTION_VIEW);
-            // maybe use the options from a customTabsIntent
-//            authIntent.setPackage(getContext().getPackageName());
-//            authIntent.setComponent(getActivity().getComponentName());
-            authIntent.setData(Uri.parse(getAuthorizationUrl(oauth2Options)));
+            if (this.authState == null) {
+                this.authState = new AuthState(config);
+            }
+
+            AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
+                config,
+                oauth2Options.getAppId(),
+                oauth2Options.getResponseType(),
+                Uri.parse(oauth2Options.getRedirectUrl())
+            );
+
+            // appauth always uses a state
+            if (oauth2Options.getState() != null) {
+                builder.setState(oauth2Options.getState());
+            }
+            builder.setScope(oauth2Options.getScope());
+
+            AuthorizationRequest req = builder.build();
+
+            this.authService = new AuthorizationService(getContext());
+            Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
+
             startActivityForResult(call, authIntent, RC_OAUTH_AUTHORIZATION);
         }
     }
@@ -110,7 +142,8 @@ public class OAuth2ClientPlugin extends Plugin {
                 Log.e(getLogTag(), "Custom handler problem", e);
             }
         } else {
-            // clear any
+            this.disposeAuthService();
+            this.discardAuthState();
         }
     }
 
@@ -123,49 +156,31 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
-            Uri authorizationResponseUri = data.getData();
-            String returnedState = authorizationResponseUri.getQueryParameter(PARAM_STATE);
-            if (oauth2Options.isStateDisabled() || oauth2Options.getState().equals(returnedState)) {
-                if (RESPONSE_TYPE_TOKEN.equals(oauth2Options.getResponseType())) {
-
-                } else if (RESPONSE_TYPE_CODE.equals(oauth2Options.getResponseType())) {
-                    // google uses code for android and ios but without requireing us to send the secret
-
-                } else {
-                    savedCall.reject("Not supported responseType");
-                    return;
-                }
-            } else {
-                savedCall.reject("State check not passed! Retrieved state does not match sent one!");
-                return;
-            }
-
-            // TODO learn from authNet how to handle the rquest
-//            AuthorizationResponse response = AuthorizationResponse.fromIntent(data);
-//            AuthorizationException error = AuthorizationException.fromIntent(data);
+            AuthorizationResponse response = AuthorizationResponse.fromIntent(data);
+            AuthorizationException error = AuthorizationException.fromIntent(data);
+            this.authState.update(response, error);
 
             // get authorization code
-//            if (response != null) {
-//                this.authService = new AuthorizationService(getContext());
-//                // TODO implicit code flow has never worked because this needs the authorizationCode
-//                this.authService.performTokenRequest(response.createTokenExchangeRequest(),
-//                    new AuthorizationService.TokenResponseCallback() {
-//                        @Override
-//                        public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
-//                            if (response != null) {
-//                                authState.update(response, ex);
-//                                authState.performActionWithFreshTokens(authService, new AuthState.AuthStateAction() {
-//                                    @Override
-//                                    public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-//                                        new ResourceUrlAsyncTask(savedCall, getLogTag()).execute(accessToken);
-//                                    }
-//                                });
-//                            } else {
-//                                savedCall.reject("No authToken retrieved!");
-//                            }
-//                        }
-//                    });
-//            }
+            if (response != null) {
+                this.authService = new AuthorizationService(getContext());
+                this.authService.performTokenRequest(response.createTokenExchangeRequest(),
+                    new AuthorizationService.TokenResponseCallback() {
+                        @Override
+                        public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
+                            if (response != null) {
+                                authState.update(response, ex);
+                                authState.performActionWithFreshTokens(authService, new AuthState.AuthStateAction() {
+                                    @Override
+                                    public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                                        new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken);
+                                    }
+                                });
+                            } else {
+                                savedCall.reject("No authToken retrieved!");
+                            }
+                        }
+                    });
+            }
         }
     }
 
@@ -178,13 +193,8 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setResponseType(getOverwritableParam(String.class, call, PARAM_RESPONSE_TYPE));
         o.setScope(ConfigUtils.getCallString(call, PARAM_SCOPE));
         o.setState(ConfigUtils.getCallString(call, PARAM_STATE));
-        o.setStateDisabled(ConfigUtils.getCallParam(Boolean.class, call, PARAM_STATE_DISABLED, false));
-        if (!o.isStateDisabled()) {
-            if (o.getState() == null) {
-                o.setState(ConfigUtils.getRandomString(20));
-            }
-        } else {
-            o.setState(null);
+        if (o.getState() == null || o.getState().trim().length() == 0) {
+            o.setState(ConfigUtils.getRandomString(20));
         }
         o.setAuthorizationCodeOnly(ConfigUtils.getCallParam(Boolean.class, call, OAuth2ClientPlugin.PARAM_AUTHORIZATION_CODE_ONLY, false));
         if (o.isAuthorizationCodeOnly()) {
@@ -203,6 +213,9 @@ public class OAuth2ClientPlugin extends Plugin {
         return o;
     }
 
+    /**
+     * For use in #22
+     */
     protected String getAuthorizationUrl(OAuth2Options options) {
         String url = options.getAuthorizationBaseUrl();
         url += "?client_id=" + options.getAppId();
@@ -231,5 +244,27 @@ public class OAuth2ClientPlugin extends Plugin {
             baseParam = androidParam;
         }
         return baseParam;
+    }
+
+    @Override
+    protected void handleOnStop() {
+        super.handleOnStop();
+        disposeAuthService();
+    }
+
+    private void disposeAuthService() {
+        if (authService != null) {
+            authService.dispose();
+            authService = null;
+        }
+    }
+
+    public void discardAuthState() {
+        if (this.authState != null) {
+            this.authState = null;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            getContext().deleteSharedPreferences(getLogTag());
+        }
     }
 }

@@ -12,7 +12,6 @@ public class OAuth2Options {
     private String responseType;
     private String scope;
     private String state;
-    private boolean stateDisabled;
     private boolean authorizationCodeOnly;
     private String redirectUrl;
     private String customHandlerClass;
@@ -71,14 +70,6 @@ public class OAuth2Options {
 
     public void setState(String state) {
         this.state = state;
-    }
-
-    public boolean isStateDisabled() {
-        return stateDisabled;
-    }
-
-    public void setStateDisabled(boolean stateDisabled) {
-        this.stateDisabled = stateDisabled;
     }
 
     public boolean isAuthorizationCodeOnly() {

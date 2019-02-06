@@ -38,12 +38,10 @@ export class WebUtils {
             url += "&scope=" + options.scope;
         }
 
-        if (!options.stateDisabled) {
-            if (!options.state || options.state.length == 0) {
-                options.state = this.randomString(20);
-            }
-            url += "&state=" + options.state;
+        if (!options.state || options.state.length == 0) {
+            options.state = this.randomString(20);
         }
+        url += "&state=" + options.state;
         return encodeURI(url);
     }
 

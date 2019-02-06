@@ -57,10 +57,6 @@ export interface OAuth2AuthenticateOptions {
     state?: string;
 
     /**
-     * In case you do no want the plugin to add a state you can disable it. Defaults to false.
-     */
-    stateDisabled?: boolean;
-    /**
      * Force the lib to only return the authorization code in the result.
      * If true we use the code flow and the requestType is always "code".
      * This becomes handy if you want to use it as part of a server side authorization code flow.

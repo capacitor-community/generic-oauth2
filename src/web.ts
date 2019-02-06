@@ -65,7 +65,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             if (urlParamObj) {
                                 clearInterval(this.intervalId);
                                 // check state
-                                if (options.stateDisabled || urlParamObj.state === options.state) {
+                                if (urlParamObj.state === options.state) {
                                     // implicit flow
                                     if (options.responseType === "token") {
                                         let accessToken = urlParamObj.access_token;
