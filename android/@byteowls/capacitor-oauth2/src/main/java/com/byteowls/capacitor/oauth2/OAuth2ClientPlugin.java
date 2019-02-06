@@ -9,8 +9,6 @@ import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -51,7 +49,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 handler.getAccessToken(getActivity(), call, new AccessTokenCallback() {
                     @Override
                     public void onSuccess(String accessToken) {
-                        new ResourceUrlAsyncTask(call, getLogTag()).execute(accessToken);
+                        new ResourceUrlAsyncTask(call, oauth2Options, getLogTag()).execute(accessToken);
                     }
 
                     @Override

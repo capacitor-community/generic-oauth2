@@ -20,16 +20,18 @@ import java.net.URL;
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
     private PluginCall pluginCall;
+    private OAuth2Options options;
     private String logTag;
 
-    public ResourceUrlAsyncTask(PluginCall pluginCall, String logTag) {
+    ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag) {
         this.pluginCall = pluginCall;
+        this.options = options;
         this.logTag = logTag;
     }
 
     @Override
     protected ResourceCallResult doInBackground(String... tokens) {
-        String resourceUrl = pluginCall.getString(OAuth2ClientPlugin.PARAM_RESOURCE_URL);
+        String resourceUrl = options.getResourceUrl();
         try {
             URL url = new URL(resourceUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
