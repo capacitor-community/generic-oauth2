@@ -44,7 +44,7 @@ android {
 }
 
 dependencies {
-    implementation 'ionic-team:capacitor-android:1.0.0-beta.11'
+    implementation 'ionic-team:capacitor-android:1.0.0-beta.17'
     implementation 'com.android.support:customtabs:27.1.1'
     implementation 'net.openid:appauth:0.7.1'
     testImplementation 'junit:junit:4.12'
