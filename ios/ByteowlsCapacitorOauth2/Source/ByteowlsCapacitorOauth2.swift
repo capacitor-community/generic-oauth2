@@ -9,7 +9,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
 
     let PARAM_APP_ID = "appId"
     let PARAM_RESPONSE_TYPE = "responseType"
-    let PARAM_IOS_RESPONSE_TYPE = "ios.responseType"
     let PARAM_IOS_APP_ID = "ios.appId"
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme"
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
@@ -18,6 +17,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
     let PARAM_RESOURCE_URL = "resourceUrl"
+    let RESPONSE_TYPE_CODE = "code"
+    let RESPONSE_TYPE_TOKEN = "token"
+    let PARAM_AUTHORIZATION_CODE_ONLY = "authorizationCodeOnly"
 
     var oauthSwift: OAuth2Swift?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
@@ -43,12 +45,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {
-        var appId = getString(call, PARAM_APP_ID)
-        let iosAppId: String? = getString(call, PARAM_IOS_APP_ID)
-        if iosAppId != nil {
-            appId = iosAppId
-        }
-        guard let finalAppId = appId, appId != nil else {
+        guard let appId = getOverwritableString(call, PARAM_APP_ID) else {
             call.reject("Option '\(PARAM_APP_ID)' or '\(PARAM_IOS_APP_ID)' is required!")
             return
         }
@@ -62,7 +59,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 handlerInstance.getAccessToken(viewController: bridge.viewController, call: call,
                 success: { (accessToken) in
                     let client = OAuthSwiftClient(
-                        consumerKey: finalAppId,
+                        consumerKey: appId,
                         consumerSecret: "",
                         oauthToken: accessToken,
                         oauthTokenSecret: "",
@@ -102,19 +99,13 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject("Option '\(PARAM_IOS_CUSTOM_SCHEME)' is required!")
                 return
             }
-            var responseType = getString(call, PARAM_RESPONSE_TYPE)
-            let iosResponseType: String? = getString(call, PARAM_IOS_RESPONSE_TYPE)
-            if iosResponseType != nil {
-                responseType = iosResponseType
-            }
-            if (responseType == "code") {
-                print("@byteowls/capacitor-oauth2: Code flow with PKCE is not supported yet")
-            } else {
-                responseType = "token"
+            var responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE)
+            if responseType == nil {
+                responseType = RESPONSE_TYPE_TOKEN
             }
 
             let oauthSwift = OAuth2Swift(
-                consumerKey: finalAppId,
+                consumerKey: appId,
                 consumerSecret: "", // never ever store the app secret on client!
                 authorizeUrl: baseUrl,
                 accessTokenUrl: accessTokenEndpoint,
@@ -124,12 +115,20 @@ public class OAuth2ClientPlugin: CAPPlugin {
             self.oauthSwift = oauthSwift
             oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
 
-            let defaultState = generateState(withLength: 20)
+            let requestState = getString(call, PARAM_STATE) ?? generateState(withLength: 20)
             let _ = oauthSwift.authorize(
                 withCallbackURL: customScheme,
                 scope: getString(call, PARAM_SCOPE) ?? "",
-                state: getString(call, PARAM_STATE) ?? defaultState,
+                state: requestState,
                 success: { credential, response, parameters in
+                    // oauthSwift internally checks the state if response type is code therefore I only need the token check
+                    if responseType == self.RESPONSE_TYPE_TOKEN {
+                        guard let responseState = parameters["state"] as? String, responseState == requestState else {
+                            call.reject("State check not passed! Retrieved state does not match sent one!")
+                            return
+                        }
+                    }
+                    
                     let _ = oauthSwift.client.get(
                         resourceUrl,
                         parameters: parameters,
@@ -140,7 +139,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                 call.success(jsonObj)
                             }
                         },
-                        failure: { (error) in
+                        failure: { error in
                             call.reject("Access resource failed with \(error.localizedDescription)");
                         })
                 },
@@ -199,6 +198,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return String(parts.last!)
         }
         return ""
+    }
+    
+    private func getOverwritableString(_ call: CAPPluginCall, _ key: String) -> String? {
+        var base = getString(call, key)
+        let ios = getString(call, "ios." + key)
+        if ios != nil {
+            base = ios
+        }
+        return base;
     }
 
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
