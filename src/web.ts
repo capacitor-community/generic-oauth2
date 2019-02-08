@@ -1,12 +1,13 @@
 import {WebPlugin} from '@capacitor/core';
 import {OAuth2AuthenticateOptions, OAuth2ClientPlugin} from "./definitions";
-import {WebUtils} from "./web-utils";
+import {WebOptions, WebUtils} from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
 
+    private webOptions: WebOptions;
     private windowHandle: Window = null;
     private intervalId: number = null;
-    private loopCount = 1000;
+    private loopCount = 2000;
     private intervalLength = 100;
 
     constructor() {
@@ -17,36 +18,23 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     async authenticate(options: OAuth2AuthenticateOptions): Promise<any> {
+        this.webOptions = WebUtils.buildWebOptions(options);
         return new Promise<any>((resolve, reject) => {
             // validate
-            if (!WebUtils.getAppId(options)) {
-                reject(new Error("Required 'appId' or 'web.appId' not found!"))
-            } else if (!options.authorizationBaseUrl) {
-                reject(new Error("Required 'authorizationBaseUrl' not found!"))
-            } else if (!options.web || !options.web.redirectUrl) {
-                reject(new Error("Required 'web.redirectUrl' not found!"))
+            if (!this.webOptions.appId) {
+                reject(new Error("ERR_PARAM_APP_ID_REQUIRED"))
+            } else if (!this.webOptions.authorizationBaseUrl) {
+                reject(new Error("ERR_PARAM_AUTHORIZATION_BASE_URL_REQUIREDR"))
+            } else if (!this.webOptions.redirectUrl) {
+                reject(new Error("ERR_PARAM_REDIRECT_URL_REQUIRED"))
             } else {
-
-                if (options.responseType === "token") {
-                    // check if access token is stored
-                    // TODO get access token and expires in
-                    // const storageItemName = options.authorizationBaseUrl
-                    // const storedAccessTokenObj: {accessToken: string, expiresAt: Date} = localStorage.getItem(this.getAppId(options))
-                    // if (storedAccessTokenObj) {
-                    //     if (storedAccessTokenObj.expiresAt && storedAccessTokenObj.expiresAt < new Date()) {
-                    //         this.requestResource(options, storedAccessTokenObj.accessToken, storedAccessTokenObj.expiresAt, resolve, reject);
-                    //     }
-                    // }
-                }
-
                 let loopCount = this.loopCount;
                 // open window
-
-                let winOptions = null;
-                if (options.web) {
-                    winOptions = options.web.windowOptions;
-                }
-                this.windowHandle = window.open(WebUtils.getAuthorizationUrl(options), "_blank", winOptions);
+                this.windowHandle = window.open(
+                    WebUtils.getAuthorizationUrl(this.webOptions),
+                    this.webOptions.windowTarget,
+                    this.webOptions.windowOptions,
+                    true);
                 // wait for redirect and resolve the
                 this.intervalId = setInterval(() => {
                     if (loopCount-- < 0) {
@@ -65,33 +53,33 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             if (urlParamObj) {
                                 clearInterval(this.intervalId);
                                 // check state
-                                if (urlParamObj.state === options.state) {
-                                    // implicit flow
-                                    if (options.responseType === "token") {
+                                if (urlParamObj.state === this.webOptions.state) {
+                                    if (this.webOptions.responseType === "token") {
+                                        // implicit flow
                                         let accessToken = urlParamObj.access_token;
                                         if (accessToken) {
-                                            const expiresIn = urlParamObj.expires_in;
-                                            // TODO store access token and expires in
-                                            this.requestResource(options, accessToken, expiresIn, resolve, reject);
+                                            this.requestResource(accessToken, urlParamObj, resolve, reject);
                                         } else {
-                                            reject(new Error("No access token! Authentication failed!"));
+                                            reject(new Error("ERR_NO_ACCESS_TOKEN"));
                                             this.closeWindow();
                                         }
-                                    } else if (options.responseType === "code") {
+                                    } else if (this.webOptions.responseType === "code") {
                                         // code flow
                                         let authorizationCode = urlParamObj.code;
                                         if (authorizationCode) {
-                                            // TODO PKCE
+                                            // TODO get access token by authorization code
+
+                                            // TODO access resource by access token
                                         } else {
-                                            reject(new Error("No authorization code found!"));
+                                            reject(new Error("ERR_NO_AUTHORIZATION_CODE"));
                                         }
                                         this.closeWindow();
                                     } else {
-                                        reject(new Error("Not supported responseType"));
+                                        reject(new Error("ERR_INVALID_RESPONSE_TYPE"));
                                         this.closeWindow();
                                     }
                                 } else {
-                                    reject(new Error("State check not passed! Retrieved state does not match sent one!"));
+                                    reject(new Error("ERR_STATES_NOT_MATCH"));
                                     this.closeWindow();
                                 }
                             }
@@ -102,8 +90,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
-    private requestResource(options: OAuth2AuthenticateOptions, accessToken: string, expiresIn: Date, resolve: any, reject: (reason?: any) => void) {
-        if (options.resourceUrl) {
+    private requestResource(accessToken: string, urlParamObj: any, resolve: any, reject: (reason?: any) => void) {
+        if (this.webOptions.resourceUrl) {
             const self = this;
             const request = new XMLHttpRequest();
             request.onload = function () {
@@ -111,7 +99,6 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     let resp = JSON.parse(this.response);
                     if (resp) {
                         resp["access_token"] = accessToken;
-                        resp["expires_in"] = expiresIn;
                     }
                     resolve(resp);
                 } else {
@@ -123,14 +110,13 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 reject(new Error(this.statusText));
                 self.closeWindow();
             };
-            request.open("GET", options.resourceUrl, true);
+            request.open("GET", this.webOptions.resourceUrl, true);
             request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
             request.send();
         } else {
             // there is no refresh token allowed in implicit flow
             let resp = {
                 access_token: accessToken,
-                expires_in: expiresIn
             };
             resolve(resp);
             this.closeWindow();

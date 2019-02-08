@@ -1,6 +1,6 @@
 {
     "name": "@byteowls/capacitor-oauth2",
-    "version": "1.0.0-beta.1",
+    "version": "1.0.0-beta.2",
     "description": "Simple Capacitor OAuth 2 client plugin",
     "author": "Michael Oberwasserlechner",
     "homepage": "https://github.com/moberwasserlechner/capacitor-oauth2",
@@ -49,6 +49,9 @@
     },
     "peerDependencies": {
         "@capacitor/core": "^1.0.0-beta.17"
+    },
+    "dependencies": {
+        "fast-sha256": "^1.1.0"
     },
     "devDependencies": {
         "@capacitor/core": "1.0.0-beta.17",

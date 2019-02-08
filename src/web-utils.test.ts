@@ -28,19 +28,19 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
     accessTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
     scope: "files.readwrite offline_access",
     responseType: "code",
-    resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
     web: {
-        redirectUrl: "https://com.byteowls/redirect"
+        redirectUrl: "https://oauth2.byteowls.com/authorize",
+        pkceDisabled: true
     },
     android: {
-        customScheme: "com.byteowls.oauth2://redirect"
+        customScheme: "com.byteowls.oauth2://authorize"
     },
     ios: {
-        customScheme: "com.byteowls.oauth2://redirect"
+        customScheme: "com.byteowls.oauth2://authorize"
     }
 };
 
-describe('Options processing', () => {
+describe('base options processing', () => {
 
     it('should build a nested appId', () => {
         const appId = WebUtils.getAppId(googleOptions);
@@ -56,6 +56,21 @@ describe('Options processing', () => {
         const pkceDisabled = WebUtils.getOverwritableValue<boolean>(googleOptions, "pkceDisabled");
         expect(pkceDisabled).toBeTruthy();
     });
+});
+
+describe('web options', () => {
+    const webOptions = WebUtils.buildWebOptions(oneDriveOptions)
+    console.log(webOptions);
+
+    it('should build web options', () => {
+        expect(webOptions).not.toBeNull();
+    });
+
+    it('should not have a code verifier', () => {
+        expect(webOptions.pkceCodeVerifier).toBeUndefined();
+    });
+
+
 });
 
 describe("Url param extraction", () => {
