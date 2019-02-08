@@ -84,6 +84,10 @@ export interface OAuth2AuthenticateOptions {
          * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
          */
         windowOptions?: string;
+        /**
+         * Options for the window target. defaults to _blank
+         */
+        windowTarget?: string;
     },
     /**
      * Custom options for the platform "android"
