@@ -22,11 +22,11 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         return new Promise<any>((resolve, reject) => {
             // validate
             if (!this.webOptions.appId) {
-                reject(new Error("ERR_PARAM_APP_ID_REQUIRED"))
+                reject(new Error("ERR_PARAM_APP_ID_REQUIRED"));
             } else if (!this.webOptions.authorizationBaseUrl) {
-                reject(new Error("ERR_PARAM_AUTHORIZATION_BASE_URL_REQUIREDR"))
+                reject(new Error("ERR_PARAM_AUTHORIZATION_BASE_URL_REQUIREDR"));
             } else if (!this.webOptions.redirectUrl) {
-                reject(new Error("ERR_PARAM_REDIRECT_URL_REQUIRED"))
+                reject(new Error("ERR_PARAM_REDIRECT_URL_REQUIRED"));
             } else {
                 let loopCount = this.loopCount;
                 // open window
@@ -58,18 +58,38 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                         // implicit flow
                                         let accessToken = urlParamObj.access_token;
                                         if (accessToken) {
-                                            this.requestResource(accessToken, urlParamObj, resolve, reject);
+                                            let tokenObj = { access_token: accessToken };
+                                            this.requestResource(tokenObj, resolve, reject);
                                         } else {
                                             reject(new Error("ERR_NO_ACCESS_TOKEN"));
                                             this.closeWindow();
                                         }
                                     } else if (this.webOptions.responseType === "code") {
                                         // code flow
+                                        const self = this;
                                         let authorizationCode = urlParamObj.code;
                                         if (authorizationCode) {
-                                            // TODO get access token by authorization code
+                                            if (!this.webOptions.accessTokenEndpoint) {
+                                                reject(new Error("ERR_PARAM_ACCESS_TOKEN_ENDPOINT_REQUIRED"));
+                                            } else {
+                                                const tokenRequest = new XMLHttpRequest();
+                                                tokenRequest.onload = function () {
+                                                    if (this.status === 200) {
+                                                        let accessTokenResponse = JSON.parse(this.response);
+                                                        self.requestResource(accessTokenResponse, resolve, reject);
+                                                    }
+                                                };
+                                                tokenRequest.onerror = function () {
+                                                    console.log("ERR_TOKEN_ENDPOINT_REQUEST: See client logs. It might be CORS. Status text: " + this.statusText);
+                                                    reject(new Error("ERR_TOKEN_ENDPOINT_REQUEST"));
+                                                };
+                                                tokenRequest.open("POST", this.webOptions.accessTokenEndpoint, true);
+                                                tokenRequest.setRequestHeader('accept', 'application/json');
+                                                tokenRequest.setRequestHeader('cache-control', 'no-cache');
+                                                tokenRequest.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+                                                tokenRequest.send(WebUtils.getTokenEndpointData(this.webOptions, authorizationCode));
+                                            }
 
-                                            // TODO access resource by access token
                                         } else {
                                             reject(new Error("ERR_NO_AUTHORIZATION_CODE"));
                                         }
@@ -90,7 +110,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
-    private requestResource(accessToken: string, urlParamObj: any, resolve: any, reject: (reason?: any) => void) {
+    private requestResource(tokenObj: any, resolve: any, reject: (reason?: any) => void) {
         if (this.webOptions.resourceUrl) {
             const self = this;
             const request = new XMLHttpRequest();
@@ -98,7 +118,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 if (this.status === 200) {
                     let resp = JSON.parse(this.response);
                     if (resp) {
-                        resp["access_token"] = accessToken;
+                        resp["access_token"] = tokenObj.access_token;
                     }
                     resolve(resp);
                 } else {
@@ -111,14 +131,10 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 self.closeWindow();
             };
             request.open("GET", this.webOptions.resourceUrl, true);
-            request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+            request.setRequestHeader('Authorization', `Bearer ${tokenObj.access_token}`);
             request.send();
         } else {
-            // there is no refresh token allowed in implicit flow
-            let resp = {
-                access_token: accessToken,
-            };
-            resolve(resp);
+            resolve(tokenObj);
             this.closeWindow();
         }
     }

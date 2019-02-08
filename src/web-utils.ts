@@ -40,6 +40,26 @@ export class WebUtils {
         return encodeURI(url);
     }
 
+    static getTokenEndpointUrl(options: WebOptions, code: string) {
+        let data = "grant_type=authorization_code";
+        data += "&client_id=" + options.appId;
+        data += "&redirect_uri=" + options.redirectUrl;
+        data += "&code=" + code;
+        data += "&code_verifier=" + options.pkceCodeVerifier;
+        return encodeURI(data);
+    }
+
+    static getTokenEndpointData(options: WebOptions, code: string): FormData {
+        let data = new FormData();
+        data.append('grant_type', 'authorization_code');
+        data.append('client_id', options.appId);
+        data.append('redirect_uri', options.redirectUrl);
+        data.append('code', code);
+        data.append('code_verifier', options.pkceCodeVerifier);
+        // data.append('scope', options.scope);
+        return data;
+    }
+
     /**
      * Public only for testing
      */
