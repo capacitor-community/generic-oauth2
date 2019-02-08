@@ -7,9 +7,11 @@ const googleOptions: OAuth2AuthenticateOptions = {
     accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
     scope: "email profile",
     resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+    pkceDisabled: false,
     web: {
         appId: "webAppId",
-        redirectUrl: "https://github.com/moberwasserlechner"
+        redirectUrl: "https://github.com/moberwasserlechner",
+        pkceDisabled: true
     },
     android: {
         responseType: "code",
@@ -20,11 +22,39 @@ const googleOptions: OAuth2AuthenticateOptions = {
     }
 };
 
+const oneDriveOptions: OAuth2AuthenticateOptions = {
+    appId: "appId",
+    authorizationBaseUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    accessTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+    scope: "files.readwrite offline_access",
+    responseType: "code",
+    resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+    web: {
+        redirectUrl: "https://com.byteowls/redirect"
+    },
+    android: {
+        customScheme: "com.byteowls.oauth2://redirect"
+    },
+    ios: {
+        customScheme: "com.byteowls.oauth2://redirect"
+    }
+};
+
 describe('Options processing', () => {
 
     it('should build a nested appId', () => {
         const appId = WebUtils.getAppId(googleOptions);
         expect(appId).toEqual("webAppId");
+    });
+
+    it('should build a overwritable string value', () => {
+        const appId = WebUtils.getOverwritableValue<string>(googleOptions, "appId");
+        expect(appId).toEqual("webAppId");
+    });
+
+    it('should build a overwritable boolean value', () => {
+        const pkceDisabled = WebUtils.getOverwritableValue<boolean>(googleOptions, "pkceDisabled");
+        expect(pkceDisabled).toBeTruthy();
     });
 });
 

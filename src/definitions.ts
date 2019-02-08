@@ -41,11 +41,15 @@ export interface OAuth2AuthenticateOptions {
     /**
      * Defaults to 'token' aka implicit flow if emtpy and not used with @authorizationCodeOnly.
      *
-     * Be aware that this plugin does not support code flow with client secrets because of security reason.
+     * Be aware that this plugin does not support code flow with client secrets because of security reason but PKCE.
      *
-     * However code + PKCE will be supported in future. Please see github issue #4
      */
     responseType?: ResponseTypeType
+    /**
+     * PKCE is enabled by default when using @responseType 'code'. This options disables it if needed.
+     */
+    pkceDisabled?: boolean;
+
     /**
      * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
      */
@@ -72,6 +76,14 @@ export interface OAuth2AuthenticateOptions {
          */
         appId?: string;
         /**
+         * Parameter for overwriting the root or default responseType.
+         */
+        responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
+        /**
          * Url to  which the oauth provider redirects after authentication
          */
         redirectUrl: string;
@@ -93,6 +105,10 @@ export interface OAuth2AuthenticateOptions {
          * Parameter for overwriting the root or default responseType.
          */
         responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
         /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */
@@ -117,6 +133,10 @@ export interface OAuth2AuthenticateOptions {
          * Parameter for overwriting the root or default responseType.
          */
         responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
         /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */

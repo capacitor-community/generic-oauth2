@@ -5,11 +5,15 @@ export class WebUtils {
      * Public only for testing
      */
     static getAppId(options: OAuth2AuthenticateOptions): string {
-        let appId = options.appId;
-        if (options.web && options.web.appId && options.web.appId.length > 0) {
-            appId = options.web.appId;
+        return this.getOverwritableValue(options, "appId");
+    }
+
+    static getOverwritableValue<T>(options: OAuth2AuthenticateOptions | any, key: string): T {
+        let base = options[key];
+        if (options.web && options.web[key]) {
+            base = options.web[key];
         }
-        return appId;
+        return base;
     }
 
     /**
