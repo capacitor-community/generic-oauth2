@@ -10,14 +10,6 @@ This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
-## Attention: This project is in ALPHA phase
-
-This library is about to be changed through development as need it.
-
-If you use a working version do not automatically update your dependencies.
- 
-Unfortunately I can not NOT announce any changes until the first beta is released.
-
 ## Supported flows
 
 ### Implicit flow
