@@ -56,12 +56,12 @@ export interface OAuth2AuthenticateOptions {
      */
     state?: string;
 
-    /**
-     * Force the lib to only return the authorization code in the result.
-     * If true we use the code flow and the requestType is always "code".
-     * This becomes handy if you want to use it as part of a server side authorization code flow.
-     */
-    authorizationCodeOnly?: boolean;
+    // /**
+    //  * Force the lib to only return the authorization code in the result.
+    //  * If true we use the code flow and the requestType is always "code".
+    //  * This becomes handy if you want to use it as part of a server side authorization code flow.
+    //  */
+    // authorizationCodeOnly?: boolean;
     /**
      * Custom options for the platform "web"
      */

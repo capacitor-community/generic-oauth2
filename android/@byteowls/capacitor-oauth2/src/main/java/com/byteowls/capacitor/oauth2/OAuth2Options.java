@@ -12,7 +12,7 @@ public class OAuth2Options {
     private String responseType;
     private String scope;
     private String state;
-    private boolean authorizationCodeOnly;
+//    private boolean authorizationCodeOnly;
     private String redirectUrl;
     private String customHandlerClass;
 
@@ -72,13 +72,13 @@ public class OAuth2Options {
         this.state = state;
     }
 
-    public boolean isAuthorizationCodeOnly() {
-        return authorizationCodeOnly;
-    }
-
-    public void setAuthorizationCodeOnly(boolean authorizationCodeOnly) {
-        this.authorizationCodeOnly = authorizationCodeOnly;
-    }
+//    public boolean isAuthorizationCodeOnly() {
+//        return authorizationCodeOnly;
+//    }
+//
+//    public void setAuthorizationCodeOnly(boolean authorizationCodeOnly) {
+//        this.authorizationCodeOnly = authorizationCodeOnly;
+//    }
 
     public String getRedirectUrl() {
         return redirectUrl;

@@ -19,7 +19,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_RESOURCE_URL = "resourceUrl"
     let RESPONSE_TYPE_CODE = "code"
     let RESPONSE_TYPE_TOKEN = "token"
-    let PARAM_AUTHORIZATION_CODE_ONLY = "authorizationCodeOnly"
+    // let PARAM_AUTHORIZATION_CODE_ONLY = "authorizationCodeOnly"
 
     var oauthSwift: OAuth2Swift?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()

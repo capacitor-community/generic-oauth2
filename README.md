@@ -34,9 +34,6 @@ For security reasons this plugin does not support the authorization code flow wi
 That would include storing your **client secret** in client code which is highly insecure and not recommended.
 That flow should only be used on the backend (server).
 
-But it is possible to use this plugin as part of that server side implementation
-by using `authorizationCodeOnly=true` and `responseType="code"`, so you get the authorization code for the server side steps.
-
 ## Installation
 
 `npm i -E @byteowls/capacitor-oauth2`
