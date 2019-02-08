@@ -40,7 +40,6 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
     private static final String RESPONSE_TYPE_CODE = "code";
     private static final String RESPONSE_TYPE_TOKEN = "token";
-    private static final String PARAM_AUTHORIZATION_CODE_ONLY = "authorizationCodeOnly";
 
     private OAuth2Options oauth2Options;
     private AuthorizationService authService;
@@ -192,13 +191,6 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setState(ConfigUtils.getCallString(call, PARAM_STATE));
         if (o.getState() == null || o.getState().trim().length() == 0) {
             o.setState(ConfigUtils.getRandomString(20));
-        }
-        o.setAuthorizationCodeOnly(ConfigUtils.getCallParam(Boolean.class, call, OAuth2ClientPlugin.PARAM_AUTHORIZATION_CODE_ONLY, false));
-        if (o.isAuthorizationCodeOnly()) {
-            if (!RESPONSE_TYPE_CODE.equals(o.getResponseType())) {
-                Log.w(getLogTag(), "'" + PARAM_AUTHORIZATION_CODE_ONLY + "' is 'true' so '" + PARAM_RESPONSE_TYPE + "' must be 'code'! We fix that for you.");
-            }
-            o.setResponseType(RESPONSE_TYPE_CODE);
         }
 
         if (o.getResponseType() == null || o.getResponseType().length() == 0) {

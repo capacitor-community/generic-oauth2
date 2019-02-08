@@ -81,15 +81,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                         // code flow
                                         let authorizationCode = urlParamObj.code;
                                         if (authorizationCode) {
-                                            if (options.authorizationCodeOnly) {
-                                                let resp = {
-                                                    authorization_code: authorizationCode,
-                                                };
-                                                resolve(resp);
-                                            } else {
-                                                // TODO PKCE
-
-                                            }
+                                            // TODO PKCE
                                         } else {
                                             reject(new Error("No authorization code found!"));
                                         }
