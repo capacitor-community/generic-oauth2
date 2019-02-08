@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -17,6 +18,7 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.TokenResponse;
+import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -35,6 +37,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
+    private static final String PARAM_PKCE_DISABLED = "pkceDisabled";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
@@ -111,6 +114,11 @@ public class OAuth2ClientPlugin extends Plugin {
                 builder.setState(oauth2Options.getState());
             }
             builder.setScope(oauth2Options.getScope());
+            if (!oauth2Options.isPkceDisabled()) {
+                builder.setCodeVerifier(oauth2Options.getPkceCodeVerifier());
+            } else {
+                builder.setCodeVerifier(null);
+            }
 
             AuthorizationRequest req = builder.build();
 
@@ -165,12 +173,29 @@ public class OAuth2ClientPlugin extends Plugin {
                         public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
                             if (response != null) {
                                 authState.update(response, ex);
-                                authState.performActionWithFreshTokens(authService, new AuthState.AuthStateAction() {
-                                    @Override
-                                    public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-                                        new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken);
+                                if (oauth2Options.getResourceUrl() != null) {
+                                    authState.performActionWithFreshTokens(authService, new AuthState.AuthStateAction() {
+                                        @Override
+                                        public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
+                                            new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken);
+                                        }
+                                    });
+                                } else {
+                                    // return only tokens if resourceUrl is empty
+                                    try {
+                                        JSObject json = new JSObject(response.jsonSerializeString());
+                                        savedCall.resolve(json);
+                                    } catch (JSONException e) {
+                                        savedCall.reject("ERR_TOKENS_JSON");
                                     }
-                                });
+//                                    json.put("access_token", response.accessToken);
+//                                    json.put("expires_in", response.accessTokenExpirationTime);
+//                                    json.put("refresh_token", response.refreshToken);
+//                                    json.put("id_token", response.idToken);
+//                                    json.put("scope", response.scope);
+//                                    json.put("additionalParameters", response.additionalParameters);
+                                }
+
                             } else {
                                 savedCall.reject("No authToken retrieved!");
                             }
@@ -183,6 +208,7 @@ public class OAuth2ClientPlugin extends Plugin {
     protected OAuth2Options buildOptions(PluginCall call) {
         OAuth2Options o = new OAuth2Options();
         o.setAppId(getOverwritableParam(String.class, call, PARAM_APP_ID));
+        o.setPkceDisabled(getOverwritableParam(Boolean.class, call, PARAM_PKCE_DISABLED));
         o.setAuthorizationBaseUrl(ConfigUtils.getCallString(call, PARAM_AUTHORIZATION_BASE_URL));
         o.setAccessTokenEndpoint(ConfigUtils.getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT));
         o.setResourceUrl(ConfigUtils.getCallString(call, PARAM_RESOURCE_URL));
@@ -197,6 +223,13 @@ public class OAuth2ClientPlugin extends Plugin {
             // fallback to token
             o.setResponseType(RESPONSE_TYPE_TOKEN);
         }
+
+        if (RESPONSE_TYPE_CODE.equals(o.getResponseType())) {
+            if (!o.isPkceDisabled()) {
+                o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
+            }
+        }
+
         o.setRedirectUrl(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME));
         o.setCustomHandlerClass(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS));
         return o;
