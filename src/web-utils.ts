@@ -111,9 +111,15 @@ export class WebUtils {
         if (webOptions.responseType == "code") {
             if (!webOptions.pkceDisabled) {
                 webOptions.pkceCodeVerifier = this.randomString(64);
-                // webOptions.pkceCodeChallenge = sha256(webOptions.pkceCodeVerifier);
-                webOptions.pkceCodeChallenge = webOptions.pkceCodeVerifier;
-                webOptions.pkceCodeChallengeMethod = "plain";
+                if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
+                    CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(c => {
+                        webOptions.pkceCodeChallenge = c;
+                        webOptions.pkceCodeChallengeMethod = "S256";
+                    });
+                } else {
+                    webOptions.pkceCodeChallenge = webOptions.pkceCodeVerifier;
+                    webOptions.pkceCodeChallengeMethod = "plain";
+                }
             }
         }
 
@@ -135,8 +141,72 @@ export class WebUtils {
             }
         }
         return webOptions;
-
     }
+
+    // static b64EncodeUnicode(str: any) {
+    //     // first we use encodeURIComponent to get percent-encoded UTF-8,
+    //     // then we convert the percent encodings into raw bytes which
+    //     // can be fed into btoa.
+    //     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+    //         // function toSolidBytes(match, p1) {
+    //         (match, p1) => {
+    //             // console.debug('match: ' + match);
+    //             return String.fromCharCode(("0x" + p1) as any);
+    //         }));
+    // }
+    //
+    // static b64DecodeUnicode(str: string) {
+    //     // Going backwards: from bytestream, to percent-encoding, to original string.
+    //     return decodeURIComponent(atob(str).split('').map(function (c) {
+    //         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    //     }).join(''));
+    // }
+    //
+    // static bufferToBase64(buffer: ArrayBuffer) {
+    //     const binary = String.fromCharCode.apply(null, buffer);
+    //     return window.btoa(binary);
+    // }
+
+}
+
+/**
+ *
+ */
+import * as base64 from 'base64-js';
+export class CryptoUtils {
+    static HAS_SUBTLE_CRYPTO: boolean = typeof window !== 'undefined' && !!(window.crypto as any) && !!(window.crypto.subtle as any);
+
+    static textEncode(str: string) {
+        const buf = new ArrayBuffer(str.length);
+        const bufView = new Uint8Array(buf);
+
+        for (let i = 0; i < str.length; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        return bufView;
+    }
+
+    static urlSafe(buffer: Uint8Array): string {
+        const encoded = base64.fromByteArray(new Uint8Array(buffer));
+        return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    static deriveChallenge(codeVerifier: string): Promise<string> {
+        if (codeVerifier.length < 43 || codeVerifier.length > 128) {
+            console.log("Code verifier length:", codeVerifier);
+            return Promise.reject(new Error('ERR_PKCE_CODE_VERIFIER_INVALID_LENGTH'));
+        }
+        if (!CryptoUtils.HAS_SUBTLE_CRYPTO) {
+            return Promise.reject(new Error('ERR_PKCE_CRYPTO_NOTSUPPORTED'));
+        }
+
+        return new Promise((resolve, reject) => {
+            crypto.subtle.digest('SHA-256', this.textEncode(codeVerifier)).then(buffer => {
+                return resolve(this.urlSafe(new Uint8Array(buffer)));
+            }, error => reject(error));
+        });
+    }
+
 
 }
 
@@ -155,6 +225,6 @@ export class WebOptions {
     pkceDisabled: boolean;
     pkceCodeVerifier: string;
     pkceCodeChallenge: string;
-    pkceCodeChallengeMethod: string = "S256";
+    pkceCodeChallengeMethod: string;
 }
 

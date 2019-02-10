@@ -18,9 +18,11 @@ Status: **ok**
 
 ### Authorization code flow + PKCE
 
-Status: **planned** see #4
+Status: **ok**
 
-**Attention:**
+Please be aware that various (OneDrive, Auth0) providers allow Code Flow + PKCE only for native apps. Web apps have to use implicit flow.
+
+### Important
 For security reasons this plugin does not support the authorization code flow without PKCE.
 
 That would include storing your **client secret** in client code which is highly insecure and not recommended.
