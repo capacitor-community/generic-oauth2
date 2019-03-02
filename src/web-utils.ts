@@ -63,15 +63,15 @@ export class WebUtils {
     /**
      * Public only for testing
      */
-    static getUrlParams(search: string): any | undefined {
-        if (search && search.trim().length > 0) {
-            search = search.trim();
-            let idx = search.indexOf("#");
+    static getUrlParams(urlString: string): any | undefined {
+        if (urlString && urlString.trim().length > 0) {
+            urlString = urlString.trim();
+            let idx = urlString.indexOf("#");
             if (idx == -1) {
-                idx = search.indexOf("?");
+                idx = urlString.indexOf("?");
             }
-            if (idx != -1 && search.length > (idx + 1)) {
-                const urlParamStr = search.slice(idx + 1);
+            if (idx != -1 && urlString.length > (idx + 1)) {
+                const urlParamStr = urlString.slice(idx + 1);
                 const keyValuePairs: string[] = urlParamStr.split(`&`);
                 return keyValuePairs.reduce((acc, hash) => {
                     const [key, val] = hash.split(`=`);

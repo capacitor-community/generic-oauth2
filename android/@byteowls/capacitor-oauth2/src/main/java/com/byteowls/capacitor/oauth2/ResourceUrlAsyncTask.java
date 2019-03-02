@@ -19,6 +19,7 @@ import java.net.URL;
  */
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
+    private static final String ERR_GENERAL = "ERR_GENERAL";
     private PluginCall pluginCall;
     private OAuth2Options options;
     private String logTag;
@@ -50,7 +51,6 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 }
                 String jsonBody = readInputStream(is);
                 if (!result.isError()) {
-                    Log.i(logTag, String.format("User Info Response %s", jsonBody));
                     JSObject json = new JSObject(jsonBody);
                     json.put("access_token", accessToken);
                     result.setResponse(json);
@@ -58,6 +58,8 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                     result.setErrorMsg(jsonBody);
                 }
                 return result;
+            } catch (IOException e) {
+                Log.e(logTag, "", e);
             } catch (JSONException e) {
                 Log.e(logTag, "Resource response no valid json.", e);
             } finally {
@@ -73,22 +75,28 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
 
     @Override
     protected void onPostExecute(ResourceCallResult response) {
-        if (!response.isError()) {
-            pluginCall.resolve(response.getResponse());
+        if (response != null) {
+            if (!response.isError()) {
+                pluginCall.resolve(response.getResponse());
+            } else {
+                Log.e(logTag, response.getErrorMsg());
+                pluginCall.reject(ERR_GENERAL);
+            }
         } else {
-            pluginCall.reject(response.getErrorMsg());
+            pluginCall.reject(ERR_GENERAL);
         }
     }
 
     private static String readInputStream(InputStream in) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        char[] buffer = new char[1024];
-        StringBuilder sb = new StringBuilder();
-        int readCount;
-        while ((readCount = br.read(buffer)) != -1) {
-            sb.append(buffer, 0, readCount);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+            char[] buffer = new char[1024];
+            StringBuilder sb = new StringBuilder();
+            int readCount;
+            while ((readCount = br.read(buffer)) != -1) {
+                sb.append(buffer, 0, readCount);
+            }
+            return sb.toString();
         }
-        return sb.toString();
     }
 
 }

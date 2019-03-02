@@ -20,7 +20,7 @@ Status: **ok**
 
 Status: **ok**
 
-Please be aware that various (OneDrive, Auth0) providers allow Code Flow + PKCE only for native apps. Web apps have to use implicit flow.
+Please be aware that some providers (OneDrive, Auth0) allow Code Flow + PKCE only for native apps. Web apps have to use implicit flow.
 
 ### Important
 For security reasons this plugin does not support the authorization code flow without PKCE.
@@ -97,6 +97,27 @@ export class SignupComponent {
 ### Options
 
 See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L24
+
+### Error Codes
+
+* ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android)
+* ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android)
+* ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android)
+* ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android)
+* ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android)
+
+* ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
+* ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android)
+* ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android)
+
+* USER_CANCELLED ... The user canceled the login flow. (android)
+
+* ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android)
+* ERR_CUSTOM_HANDLER_LOGOUT ... Logout failed while using custom handler. See logs and check your code. (android)
+
+* ERR_ANDROID_NO_BROWSER ... On Android not suitable browser could be found! (android)
+* ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened.
+
 
 ## Platform: Web/PWA
 

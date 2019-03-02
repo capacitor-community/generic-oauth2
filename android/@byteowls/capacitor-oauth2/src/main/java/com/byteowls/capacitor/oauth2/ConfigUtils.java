@@ -28,7 +28,7 @@ public abstract class ConfigUtils {
             if (clazz.isAssignableFrom(String.class)) {
                 value = o.getString(k);
             } else if (clazz.isAssignableFrom(Boolean.class)) {
-                value = o.getBoolean(k);
+                value = o.optBoolean(k);
             } else if (clazz.isAssignableFrom(Double.class)) {
                 value = o.getDouble(k);
             } else if (clazz.isAssignableFrom(Integer.class)) {
