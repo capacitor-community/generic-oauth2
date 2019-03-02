@@ -100,23 +100,19 @@ See the `oauth2Options` interface at https://github.com/moberwasserlechner/capac
 
 ### Error Codes
 
-* ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android)
-* ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android)
-* ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android)
-* ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android)
-* ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android)
-
+* ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android, ios)
+* ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
+* ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android, ios)
+* ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android, ios)
+* ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android, ios)
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
-* ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android)
-* ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android)
-
-* USER_CANCELLED ... The user canceled the login flow. (android)
-
-* ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android)
-* ERR_CUSTOM_HANDLER_LOGOUT ... Logout failed while using custom handler. See logs and check your code. (android)
-
+* ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
+* ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
+* USER_CANCELLED ... The user canceled the login flow. (android, ios)
+* ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
+* ERR_CUSTOM_HANDLER_LOGOUT ... Logout failed while using custom handler. See logs and check your code. (android, ios)
 * ERR_ANDROID_NO_BROWSER ... On Android not suitable browser could be found! (android)
-* ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened.
+* ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
 
 ## Platform: Web/PWA
