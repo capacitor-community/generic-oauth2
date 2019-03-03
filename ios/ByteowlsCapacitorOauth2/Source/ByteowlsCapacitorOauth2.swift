@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import OAuthSwift
+import CommonCrypto
 
 typealias JSObject = [String:Any]
 
@@ -15,6 +16,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
+    let PARAM_PKCE_DISABLED = "pkceDisabled"
     let PARAM_RESOURCE_URL = "resourceUrl"
     let RESPONSE_TYPE_CODE = "code"
     let RESPONSE_TYPE_TOKEN = "token"
@@ -141,56 +143,79 @@ public class OAuth2ClientPlugin: CAPPlugin {
             self.oauthSwift = oauthSwift
             oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
 
-            let requestState = getString(call, PARAM_STATE) ?? generateState(withLength: 20)
-            let _ = oauthSwift.authorize(
-                withCallbackURL: redirectUrl,
-                scope: getString(call, PARAM_SCOPE) ?? "",
-                state: requestState,
-                success: { credential, response, parameters in
-                    // oauthSwift internally checks the state if response type is code therefore I only need the token check
-                    if responseType == self.RESPONSE_TYPE_TOKEN {
-                        guard let responseState = parameters["state"] as? String, responseState == requestState else {
-                            call.reject("ERR_STATES_NOT_MATCH")
-                            return
-                        }
-                    }
-                    
-                    if resourceUrl != nil {
-                        let _ = oauthSwift.client.get(
-                            resourceUrl!,
-                            parameters: parameters,
-                            success: { (response) in
-                                do {
-                                    var jsonObj = try JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject
-                                    // send the access token to the caller so e.g. it can be stored on a backend
-                                    jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
-                                    call.resolve(jsonObj)
-                                } catch {
-                                    self.log("Invalid json in resource response \(error.localizedDescription)")
-                                    call.reject("ERR_GENERAL")
-                                }
-                                
-                            },
-                            failure: { error in
-                                self.log("Access resource request failed with \(error.localizedDescription)");
-                                call.reject("ERR_GENERAL")
-                            })
-                    } else {
-                        // TODO handle no resource url same as android
-                    }
-                },
-                failure: { error in
-                    switch error {
-                    case .cancelled, .accessDenied(_, _):
-                         call.reject("USER_CANCELLED")
-                    case .stateNotEqual( _, _):
+            let requestState = getString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
+            
+            let successHandler: OAuthSwift.TokenSuccessHandler = { credential, response, parameters in
+                // oauthSwift internally checks the state if response type is code therefore I only need the token check
+                if responseType == self.RESPONSE_TYPE_TOKEN {
+                    guard let responseState = parameters["state"] as? String, responseState == requestState else {
                         call.reject("ERR_STATES_NOT_MATCH")
-                    default:
-                        self.log("Authorization failed with \(error.localizedDescription)");
-                        call.reject("ERR_NO_AUTHORIZATION_CODE")
+                        return
                     }
                 }
-            )
+                
+                if resourceUrl != nil {
+                    let _ = oauthSwift.client.get(
+                        resourceUrl!,
+                        parameters: parameters,
+                        success: { (response) in
+                            do {
+                                var jsonObj = try JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject
+                                // send the access token to the caller so e.g. it can be stored on a backend
+                                jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
+                                call.resolve(jsonObj)
+                            } catch {
+                                self.log("Invalid json in resource response \(error.localizedDescription)")
+                                call.reject("ERR_GENERAL")
+                            }
+                            
+                    },
+                        failure: { error in
+                            self.log("Access resource request failed with \(error.localizedDescription)");
+                            call.reject("ERR_GENERAL")
+                    })
+                } else {
+                    // TODO handle no resource url same as android
+                }
+            }
+            
+            let failureHandler: OAuthSwift.FailureHandler = { error in
+                switch error {
+                case .cancelled, .accessDenied(_, _):
+                    call.reject("USER_CANCELLED")
+                case .stateNotEqual( _, _):
+                    call.reject("ERR_STATES_NOT_MATCH")
+                default:
+                    self.log("Authorization failed with \(error.localizedDescription)");
+                    call.reject("ERR_NO_AUTHORIZATION_CODE")
+                }
+            }
+            
+            let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
+            // if response type is code and pkce is not disabled
+            if responseType == RESPONSE_TYPE_CODE && !pkceDisabled {
+                // oauthSwift.accessTokenBasicAuthentification = true
+                let pkceCodeVerifier = generateRandom(withLength: 64)
+                let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
+                
+                let _ = oauthSwift.authorize(
+                    withCallbackURL: redirectUrl,
+                    scope: getString(call, PARAM_SCOPE) ?? "",
+                    state: requestState,
+                    codeChallenge: pkceCodeChallenge,
+                    codeVerifier: pkceCodeVerifier,
+                    success: successHandler,
+                    failure: failureHandler
+                )
+            } else {
+                let _ = oauthSwift.authorize(
+                    withCallbackURL: redirectUrl,
+                    scope: getString(call, PARAM_SCOPE) ?? "",
+                    state: requestState,
+                    success: successHandler,
+                    failure: failureHandler
+                )
+            }
         }
     }
 
@@ -253,6 +278,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return base;
     }
+    
+    private func getOverwritable(_ call: CAPPluginCall, _ key: String) -> Any? {
+        var base = getValue(call, key)
+        let ios = getValue(call, "ios." + key)
+        if ios != nil {
+            base = ios
+        }
+        return base;
+    }
 
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
         let k = getConfigKey(key)
@@ -294,5 +328,43 @@ public class OAuth2ClientPlugin: CAPPlugin {
         self.handlerInstances[className] = instance
         return instance
     }
+    
+    private func generateRandom(withLength len: Int) -> String {
+        let letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        let length = UInt32(letters.count)
+        
+        var randomString = ""
+        for _ in 0..<len {
+            let rand = arc4random_uniform(length)
+            let idx = letters.index(letters.startIndex, offsetBy: Int(rand))
+            let letter = letters[idx]
+            randomString += String(letter)
+        }
+        return randomString
+    }
 
+}
+
+// see https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
+
+extension String {
+    func sha256() -> Data {
+        let data = self.data(using: .utf8)!
+        var buffer = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+        data.withUnsafeBytes {
+            _ = CC_SHA256($0, CC_LONG(data.count), &buffer)
+        }
+        let hash = Data(bytes: buffer)
+        return hash;
+    }
+}
+
+extension Data {
+    func base64() -> String {
+        return self.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+            .trimmingCharacters(in: .whitespaces)
+    }
 }
