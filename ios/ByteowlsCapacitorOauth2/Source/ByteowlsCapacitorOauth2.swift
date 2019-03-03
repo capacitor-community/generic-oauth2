@@ -47,7 +47,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             call.reject("ERR_PARAM_NO_APP_ID")
             return
         }
-        let resourceUrl = self.getString(call, self.PARAM_RESOURCE_URL)
+        let resourceUrl = getString(call, self.PARAM_RESOURCE_URL)
 
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
@@ -78,7 +78,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                 call.reject("ERR_CUSTOM_HANDLER_LOGIN");
                             })
                     } else {
-                        // TODO if no resource url is given
+                       // TODO handle no resource url same as android
                     }
                 },
                 cancelled: {
@@ -105,7 +105,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
             
             var responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE)
             if responseType == nil {
-                responseType = RESPONSE_TYPE_TOKEN
+                // on native apps the response type is most probably "code"
+                responseType = RESPONSE_TYPE_CODE
             }
             
             let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT)
@@ -165,7 +166,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                     jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
                                     call.resolve(jsonObj)
                                 } catch {
-                                    self.log("Invalid json in resource response \(error)")
+                                    self.log("Invalid json in resource response \(error.localizedDescription)")
                                     call.reject("ERR_GENERAL")
                                 }
                                 
@@ -175,18 +176,19 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                 call.reject("ERR_GENERAL")
                             })
                     } else {
-                        // TODO no resource url handling same as android
-                        //
+                        // TODO handle no resource url same as android
                     }
                 },
                 failure: { error in
-                    // TODO handle specific errors
-                    // USER_CANCELLED
-                    // ERR_STATES_NOT_MATCH
-                    // ERR_GENERAL
-                    
-                    self.log("Authorization failed with \(error.localizedDescription)");
-                    call.reject("ERR_NO_AUTHORIZATION_CODE")
+                    switch error {
+                    case .cancelled, .accessDenied(_, _):
+                         call.reject("USER_CANCELLED")
+                    case .stateNotEqual( _, _):
+                        call.reject("ERR_STATES_NOT_MATCH")
+                    default:
+                        self.log("Authorization failed with \(error.localizedDescription)");
+                        call.reject("ERR_NO_AUTHORIZATION_CODE")
+                    }
                 }
             )
         }

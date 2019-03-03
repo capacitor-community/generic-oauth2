@@ -108,9 +108,9 @@ See the `oauth2Options` interface at https://github.com/moberwasserlechner/capac
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 * ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
 * ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
-* USER_CANCELLED ... The user canceled the login flow. (android, ios)
+* USER_CANCELLED ... The user cancelled the login flow. (android, ios)
 * ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
-* ERR_CUSTOM_HANDLER_LOGOUT ... Logout failed while using custom handler. See logs and check your code. (android, ios)
+* ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_ANDROID_NO_BROWSER ... On Android not suitable browser could be found! (android)
 * ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
