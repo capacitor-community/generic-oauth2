@@ -49,7 +49,6 @@ export interface OAuth2AuthenticateOptions {
      * PKCE is enabled by default when using @responseType 'code'. This options disables it if needed.
      */
     pkceDisabled?: boolean;
-
     /**
      * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
      */
@@ -60,89 +59,80 @@ export interface OAuth2AuthenticateOptions {
      */
     state?: string;
     /**
+     * Additional parameters for the created authorization url
+     */
+    additionalParameters?: {[key: string]: string}
+    /**
      * Custom options for the platform "web"
      */
-    web?: {
-        /**
-         * Parameter for overwriting the root app id.
-         * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
-         */
-        appId?: string;
-        /**
-         * Parameter for overwriting the root or default responseType.
-         */
-        responseType?: ResponseTypeType
-        /**
-         * Parameter for overwriting the root or default option.
-         */
-        pkceDisabled?: boolean;
-        /**
-         * Url to  which the oauth provider redirects after authentication
-         */
-        redirectUrl: string;
-        /**
-         * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
-         */
-        windowOptions?: string;
-        /**
-         * Options for the window target. defaults to _blank
-         */
-        windowTarget?: string;
-    },
+    web?: WebOption,
     /**
      * Custom options for the platform "android"
      */
-    android?: {
-        /**
-         * Parameter for overwriting the root app id.
-         * This is useful for Google OAuth because you have different client ids for web, android, ios
-         */
-        appId?: string;
-        /**
-         * Parameter for overwriting the root or default responseType.
-         */
-        responseType?: ResponseTypeType
-        /**
-         * Parameter for overwriting the root or default option.
-         */
-        pkceDisabled?: boolean;
-        /**
-         * Use your app's custom scheme here. e.g. com.companyname.appname:/
-         */
-        customScheme?: string;
-        /**
-         * Some oauth provider especially Facebook forces us to use their SDK for apps.
-         *
-         * Provide a class name implementing the 'com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler' interface.
-         */
-        customHandlerClass?: string;
-    },
+    android?: AndroidOptions,
     /**
      * Custom options for the platform "ios"
      */
-    ios?: {
-        /**
-         * Parameter for overwriting the root app id.
-         * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
-         */
-        appId?: string;
-        /**
-         * Parameter for overwriting the root or default responseType.
-         */
-        responseType?: ResponseTypeType
-        /**
-         * Parameter for overwriting the root or default option.
-         */
-        pkceDisabled?: boolean;
-        /**
-         * Use your app's custom scheme here. e.g. com.companyname.appname:/
-         */
-        customScheme?: string;
-        /**
-         * Some oauth provider especially Facebook forces us to use their SDK for apps.
-         *
-         * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
-         */
-        customHandlerClass?: string;
-    }
+    ios?: IosOptions,
+}
+
+export interface OverwritableOptions {
+    /**
+     * Parameter for overwriting the root app id.
+     * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
+     */
+    appId?: string;
+    /**
+     * Parameter for overwriting the root or default responseType.
+     */
+    responseType?: ResponseTypeType
+    /**
+     * Parameter for overwriting the root or default option.
+     */
+    pkceDisabled?: boolean;
+    /**
+     * Parameter for overwriting the root or default option.
+     */
+    additionalParameters?: {[key: string]: string}
+}
+
+export interface WebOption extends OverwritableOptions{
+    /**
+     * Url to  which the oauth provider redirects after authentication.
+     */
+    redirectUrl: string;
+    /**
+     * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
+     */
+    windowOptions?: string;
+    /**
+     * Options for the window target. defaults to _blank
+     */
+    windowTarget?: string;
+}
+
+export interface AndroidOptions extends OverwritableOptions{
+    /**
+     * Use your app's custom scheme here. e.g. com.companyname.appname:/
+     */
+    customScheme?: string;
+    /**
+     * Some oauth provider especially Facebook forces us to use their SDK for apps.
+     *
+     * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
+     */
+    customHandlerClass?: string;
+}
+
+export interface IosOptions extends OverwritableOptions{
+    /**
+     * Use your app's custom scheme here. e.g. com.companyname.appname:/
+     */
+    customScheme?: string;
+    /**
+     * Some oauth provider especially Facebook forces us to use their SDK for apps.
+     *
+     * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
+     */
+    customHandlerClass?: string;
 }

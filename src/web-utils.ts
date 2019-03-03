@@ -33,20 +33,17 @@ export class WebUtils {
         }
         url += "&state=" + options.state;
 
+        if (options.additionalParameters) {
+            for (const key in options.additionalParameters) {
+                url += "&" + key + "=" + options.additionalParameters[key];
+            }
+        }
+
         if (options.pkceCodeChallenge) {
             url += "&code_challenge=" + options.pkceCodeChallenge;
             url += "&code_challenge_method=" + options.pkceCodeChallengeMethod;
         }
         return encodeURI(url);
-    }
-
-    static getTokenEndpointUrl(options: WebOptions, code: string) {
-        let data = "grant_type=authorization_code";
-        data += "&client_id=" + options.appId;
-        data += "&redirect_uri=" + options.redirectUrl;
-        data += "&code=" + code;
-        data += "&code_verifier=" + options.pkceCodeVerifier;
-        return encodeURI(data);
     }
 
     static getTokenEndpointData(options: WebOptions, code: string): FormData {
@@ -132,6 +129,20 @@ export class WebUtils {
             webOptions.state = this.randomString(20);
         }
         webOptions.redirectUrl = configOptions.web.redirectUrl;
+
+        let mapHelper = this.getOverwritableValue<{[key: string]: string}>(configOptions, "additionalParameters");
+        if (mapHelper) {
+            webOptions.additionalParameters = {};
+            for (const key in mapHelper) {
+                if (key && key.trim().length > 0) {
+                    let value = mapHelper[key];
+                    if (value && value.trim().length > 0) {
+                        webOptions.additionalParameters[key] = value;
+                    }
+                }
+            }
+        }
+
         if (configOptions.web) {
             if (configOptions.web.windowOptions) {
                 webOptions.windowOptions = configOptions.web.windowOptions;
@@ -142,30 +153,6 @@ export class WebUtils {
         }
         return webOptions;
     }
-
-    // static b64EncodeUnicode(str: any) {
-    //     // first we use encodeURIComponent to get percent-encoded UTF-8,
-    //     // then we convert the percent encodings into raw bytes which
-    //     // can be fed into btoa.
-    //     return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-    //         // function toSolidBytes(match, p1) {
-    //         (match, p1) => {
-    //             // console.debug('match: ' + match);
-    //             return String.fromCharCode(("0x" + p1) as any);
-    //         }));
-    // }
-    //
-    // static b64DecodeUnicode(str: string) {
-    //     // Going backwards: from bytestream, to percent-encoding, to original string.
-    //     return decodeURIComponent(atob(str).split('').map(function (c) {
-    //         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    //     }).join(''));
-    // }
-    //
-    // static bufferToBase64(buffer: ArrayBuffer) {
-    //     const binary = String.fromCharCode.apply(null, buffer);
-    //     return window.btoa(binary);
-    // }
 
 }
 
@@ -226,5 +213,7 @@ export class WebOptions {
     pkceCodeVerifier: string;
     pkceCodeChallenge: string;
     pkceCodeChallengeMethod: string;
+
+    additionalParameters: {[key: string]: string};
 }
 
