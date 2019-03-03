@@ -43,9 +43,13 @@ export interface OAuth2AuthenticateOptions {
      *
      * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
      *
-     * However code + PKCE will be supported in future. Please see github issue #4
      */
     responseType?: ResponseTypeType
+    /**
+     * PKCE is enabled by default when using @responseType 'code'. This options disables it if needed.
+     */
+    pkceDisabled?: boolean;
+
     /**
      * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
      */
@@ -65,6 +69,14 @@ export interface OAuth2AuthenticateOptions {
          */
         appId?: string;
         /**
+         * Parameter for overwriting the root or default responseType.
+         */
+        responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
+        /**
          * Url to  which the oauth provider redirects after authentication
          */
         redirectUrl: string;
@@ -72,6 +84,10 @@ export interface OAuth2AuthenticateOptions {
          * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
          */
         windowOptions?: string;
+        /**
+         * Options for the window target. defaults to _blank
+         */
+        windowTarget?: string;
     },
     /**
      * Custom options for the platform "android"
@@ -86,6 +102,10 @@ export interface OAuth2AuthenticateOptions {
          * Parameter for overwriting the root or default responseType.
          */
         responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
         /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */
@@ -110,6 +130,10 @@ export interface OAuth2AuthenticateOptions {
          * Parameter for overwriting the root or default responseType.
          */
         responseType?: ResponseTypeType
+        /**
+         * Parameter for overwriting the root or default option.
+         */
+        pkceDisabled?: boolean;
         /**
          * Use your app's custom scheme here. e.g. com.companyname.appname:/
          */

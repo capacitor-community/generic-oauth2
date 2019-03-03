@@ -8,6 +8,6 @@ target 'ByteowlsCapacitorOauth2' do
   # Pods for ByteowlsCapacitorOauth2
 
    pod 'Capacitor', '~> 1.0.0-beta.16'
-   pod 'OAuthSwift', '~> 1.2.2'
+   pod 'OAuthSwift', '~> 1.3.0'
 
 end

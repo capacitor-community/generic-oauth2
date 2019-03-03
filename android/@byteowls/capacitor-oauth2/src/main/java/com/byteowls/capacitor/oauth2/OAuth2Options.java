@@ -14,6 +14,8 @@ public class OAuth2Options {
     private String state;
     private String redirectUrl;
     private String customHandlerClass;
+    private boolean pkceDisabled;
+    private String pkceCodeVerifier;
 
     public String getAppId() {
         return appId;
@@ -85,5 +87,21 @@ public class OAuth2Options {
 
     public void setCustomHandlerClass(String customHandlerClass) {
         this.customHandlerClass = customHandlerClass;
+    }
+
+    public boolean isPkceDisabled() {
+        return pkceDisabled;
+    }
+
+    public void setPkceDisabled(boolean pkceDisabled) {
+        this.pkceDisabled = pkceDisabled;
+    }
+
+    public String getPkceCodeVerifier() {
+        return pkceCodeVerifier;
+    }
+
+    public void setPkceCodeVerifier(String pkceCodeVerifier) {
+        this.pkceCodeVerifier = pkceCodeVerifier;
     }
 }
