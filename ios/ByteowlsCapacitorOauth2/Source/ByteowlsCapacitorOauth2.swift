@@ -13,6 +13,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme"
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
     let PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl"
+    let PARAM_ADDITIONAL_PARAMETERS = "additionalParameters"
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
@@ -192,6 +193,20 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
             
             let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
+            
+            // additional parameters #18
+            let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
+            var additionalParameters: [String: String] = [:]
+            for (key, value) in callParameter {
+                // only non empty string values are allowed
+                if !key.isEmpty && value is String {
+                    let str = value as! String;
+                    if !str.isEmpty {
+                        additionalParameters[key] = str
+                    }
+                }
+            }
+            
             // if response type is code and pkce is not disabled
             if responseType == RESPONSE_TYPE_CODE && !pkceDisabled {
                 // oauthSwift.accessTokenBasicAuthentification = true
@@ -204,6 +219,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     state: requestState,
                     codeChallenge: pkceCodeChallenge,
                     codeVerifier: pkceCodeVerifier,
+                    parameters: additionalParameters,
                     success: successHandler,
                     failure: failureHandler
                 )
@@ -212,6 +228,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     withCallbackURL: redirectUrl,
                     scope: getString(call, PARAM_SCOPE) ?? "",
                     state: requestState,
+                    parameters: additionalParameters,
                     success: successHandler,
                     failure: failureHandler
                 )
