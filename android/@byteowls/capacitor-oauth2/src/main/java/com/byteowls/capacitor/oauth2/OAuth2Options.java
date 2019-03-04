@@ -1,5 +1,8 @@
 package com.byteowls.capacitor.oauth2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author m.oberwasserlechner@byteowls.com
  */
@@ -14,6 +17,14 @@ public class OAuth2Options {
     private String state;
     private String redirectUrl;
     private String customHandlerClass;
+    private boolean pkceDisabled;
+    private String pkceCodeVerifier;
+    private Map<String, String> additionalParameters;
+
+    private String display;
+    private String loginHint;
+    private String prompt;
+    private String responseMode;
 
     public String getAppId() {
         return appId;
@@ -85,5 +96,70 @@ public class OAuth2Options {
 
     public void setCustomHandlerClass(String customHandlerClass) {
         this.customHandlerClass = customHandlerClass;
+    }
+
+    public boolean isPkceDisabled() {
+        return pkceDisabled;
+    }
+
+    public void setPkceDisabled(boolean pkceDisabled) {
+        this.pkceDisabled = pkceDisabled;
+    }
+
+    public String getPkceCodeVerifier() {
+        return pkceCodeVerifier;
+    }
+
+    public void setPkceCodeVerifier(String pkceCodeVerifier) {
+        this.pkceCodeVerifier = pkceCodeVerifier;
+    }
+
+    public Map<String, String> getAdditionalParameters() {
+        return additionalParameters;
+    }
+
+    public void setAdditionalParameters(Map<String, String> additionalParameters) {
+        this.additionalParameters = additionalParameters;
+    }
+
+    public void addAdditionalParameter(String key, String value) {
+        if (key != null && value != null) {
+            if (this.additionalParameters == null) {
+                this.additionalParameters = new HashMap<>();
+            }
+            this.additionalParameters.put(key, value);
+        }
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(String display) {
+        this.display = display;
+    }
+
+    public String getLoginHint() {
+        return loginHint;
+    }
+
+    public void setLoginHint(String loginHint) {
+        this.loginHint = loginHint;
+    }
+
+    public String getPrompt() {
+        return prompt;
+    }
+
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
+
+    public String getResponseMode() {
+        return responseMode;
+    }
+
+    public void setResponseMode(String responseMode) {
+        this.responseMode = responseMode;
     }
 }
