@@ -4,6 +4,9 @@ import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -47,6 +50,31 @@ public abstract class ConfigUtils {
             return (T) value;
         } catch (Exception ignore) {}
         return defaultValue;
+    }
+
+    public static Map<String, String> getCallParamMap(PluginCall call, String key) {
+        Map<String, String> map = new HashMap<>();
+        String k = getDeepestKey(key);
+        try {
+            JSONObject o = getDeepestObject(call.getData(), key);
+            JSONObject jsonObject = o.getJSONObject(k);
+            if (jsonObject != null) {
+                Iterator<String> keys = jsonObject.keys();
+                if (keys != null) {
+                    while (keys.hasNext()) {
+                        String mapKey = keys.next();
+                        if (mapKey != null && mapKey.trim().length() > 0) {
+                            String mapValue = jsonObject.getString(mapKey);
+                            if (mapValue != null && mapValue.trim().length() > 0) {
+                                map.put(mapKey, mapValue);
+                            }
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception ignore) {}
+        return map;
     }
 
     public static String getDeepestKey(String key) {

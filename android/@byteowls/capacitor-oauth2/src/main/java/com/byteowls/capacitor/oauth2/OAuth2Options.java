@@ -1,5 +1,8 @@
 package com.byteowls.capacitor.oauth2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author m.oberwasserlechner@byteowls.com
  */
@@ -16,6 +19,8 @@ public class OAuth2Options {
     private String customHandlerClass;
     private boolean pkceDisabled;
     private String pkceCodeVerifier;
+
+    private Map<String, String> additionalParameters;
 
     public String getAppId() {
         return appId;
@@ -104,4 +109,13 @@ public class OAuth2Options {
     public void setPkceCodeVerifier(String pkceCodeVerifier) {
         this.pkceCodeVerifier = pkceCodeVerifier;
     }
+
+    public Map<String, String> getAdditionalParameters() {
+        return additionalParameters;
+    }
+
+    public void setAdditionalParameters(Map<String, String> additionalParameters) {
+        this.additionalParameters = additionalParameters;
+    }
+
 }

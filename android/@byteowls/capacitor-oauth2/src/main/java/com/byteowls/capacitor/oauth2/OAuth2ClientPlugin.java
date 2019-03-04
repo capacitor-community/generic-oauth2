@@ -24,6 +24,7 @@ import org.json.JSONException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Map;
 
 @NativePlugin(requestCodes = { OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
@@ -34,14 +35,15 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_RESPONSE_TYPE = "responseType";
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
-    private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
-    private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
+    private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_PKCE_DISABLED = "pkceDisabled";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
     private static final String RESPONSE_TYPE_CODE = "code";
     private static final String RESPONSE_TYPE_TOKEN = "token";
+    private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
+    private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
 
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
@@ -60,6 +62,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String ERR_GENERAL = "ERR_GENERAL";
     private static final String ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH";
     private static final String ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE";
+
 
     private OAuth2Options oauth2Options;
     private AuthorizationService authService;
@@ -146,6 +149,15 @@ public class OAuth2ClientPlugin extends Plugin {
                 builder.setCodeVerifier(oauth2Options.getPkceCodeVerifier());
             } else {
                 builder.setCodeVerifier(null);
+            }
+
+            if (oauth2Options.getAdditionalParameters() != null) {
+                try {
+                    builder.setAdditionalParameters(oauth2Options.getAdditionalParameters());
+                } catch (IllegalArgumentException e) {
+                    // ignore all additional parameter on error
+                    Log.e(getLogTag(), "Only use this for non standard OAuth2 parameter. Do not use OpenId core params in additional parameter", e);
+                }
             }
 
             AuthorizationRequest req = builder.build();
@@ -280,38 +292,28 @@ public class OAuth2ClientPlugin extends Plugin {
             }
         }
 
+        Map<String, String> additionalParameters = getOverwritableParamMap(call, PARAM_ADDITIONAL_PARAMETERS);
+        if (additionalParameters != null && !additionalParameters.isEmpty()) {
+            o.setAdditionalParameters(additionalParameters);
+        }
+
         o.setRedirectUrl(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME));
         o.setCustomHandlerClass(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS));
         return o;
     }
 
-    /**
-     * For use in #22
-     */
-    protected String getAuthorizationUrl(OAuth2Options options) {
-        String url = options.getAuthorizationBaseUrl();
-        url += "?client_id=" + options.getAppId();
-        url += "&response_type=" + options.getResponseType();
-        if (options.getRedirectUrl() != null) {
-            url += "&redirect_uri=" + options.getRedirectUrl();
-        }
-        if (options.getScope() != null) {
-            url += "&scope=" + options.getScope();
-        }
-        if (options.getState() != null) {
-            url += "&state=" + options.getState();
-        }
-        try {
-            url = URLEncoder.encode(url, "UTF-8");
-        } catch (UnsupportedEncodingException ignore) {
-            // utf8 is always supported
-        }
-        return url;
-    }
-
     protected <T> T getOverwritableParam(Class<T> clazz, PluginCall call, String key) {
         T baseParam = ConfigUtils.getCallParam(clazz, call, key);
         T androidParam = ConfigUtils.getCallParam(clazz, call, "android." + key);
+        if (androidParam != null) {
+            baseParam = androidParam;
+        }
+        return baseParam;
+    }
+
+    protected Map<String, String> getOverwritableParamMap(PluginCall call, String key) {
+        Map<String, String> baseParam = ConfigUtils.getCallParamMap(call, key);
+        Map<String, String> androidParam = ConfigUtils.getCallParamMap(call, "android." + key);
         if (androidParam != null) {
             baseParam = androidParam;
         }
