@@ -19,8 +19,12 @@ public class OAuth2Options {
     private String customHandlerClass;
     private boolean pkceDisabled;
     private String pkceCodeVerifier;
-
     private Map<String, String> additionalParameters;
+
+    private String display;
+    private String loginHint;
+    private String prompt;
+    private String responseMode;
 
     public String getAppId() {
         return appId;
@@ -118,4 +122,44 @@ public class OAuth2Options {
         this.additionalParameters = additionalParameters;
     }
 
+    public void addAdditionalParameter(String key, String value) {
+        if (key != null && value != null) {
+            if (this.additionalParameters == null) {
+                this.additionalParameters = new HashMap<>();
+            }
+            this.additionalParameters.put(key, value);
+        }
+    }
+
+    public String getDisplay() {
+        return display;
+    }
+
+    public void setDisplay(String display) {
+        this.display = display;
+    }
+
+    public String getLoginHint() {
+        return loginHint;
+    }
+
+    public void setLoginHint(String loginHint) {
+        this.loginHint = loginHint;
+    }
+
+    public String getPrompt() {
+        return prompt;
+    }
+
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
+
+    public String getResponseMode() {
+        return responseMode;
+    }
+
+    public void setResponseMode(String responseMode) {
+        this.responseMode = responseMode;
+    }
 }

@@ -22,8 +22,6 @@ import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 import org.json.JSONException;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Map;
 
 @NativePlugin(requestCodes = { OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
@@ -44,6 +42,12 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String RESPONSE_TYPE_TOKEN = "token";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
+
+    // open id params
+    private static final String PARAM_DISPLAY = "display";
+    private static final String PARAM_LOGIN_HINT = "login_hint";
+    private static final String PARAM_PROMPT = "prompt";
+    private static final String PARAM_RESPONSE_MODE = "response_mode";
 
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
@@ -150,13 +154,25 @@ public class OAuth2ClientPlugin extends Plugin {
             } else {
                 builder.setCodeVerifier(null);
             }
+            if (oauth2Options.getPrompt() != null) {
+                builder.setPrompt(oauth2Options.getPrompt());
+            }
+            if (oauth2Options.getLoginHint() != null) {
+                builder.setLoginHint(oauth2Options.getLoginHint());
+            }
+            if (oauth2Options.getResponseMode() != null) {
+                builder.setResponseMode(oauth2Options.getResponseMode());
+            }
+            if (oauth2Options.getDisplay() != null) {
+                builder.setDisplay(oauth2Options.getDisplay());
+            }
 
             if (oauth2Options.getAdditionalParameters() != null) {
                 try {
                     builder.setAdditionalParameters(oauth2Options.getAdditionalParameters());
                 } catch (IllegalArgumentException e) {
                     // ignore all additional parameter on error
-                    Log.e(getLogTag(), "Only use this for non standard OAuth2 parameter. Do not use OpenId core params in additional parameter", e);
+                    Log.e(getLogTag(), "Additional parameter error", e);
                 }
             }
 
@@ -294,9 +310,21 @@ public class OAuth2ClientPlugin extends Plugin {
 
         Map<String, String> additionalParameters = getOverwritableParamMap(call, PARAM_ADDITIONAL_PARAMETERS);
         if (additionalParameters != null && !additionalParameters.isEmpty()) {
-            o.setAdditionalParameters(additionalParameters);
+            for (Map.Entry<String, String> entry : additionalParameters.entrySet()) {
+                String key = entry.getKey();
+                if (PARAM_DISPLAY.equals(key)) {
+                    o.setDisplay(entry.getValue());
+                } else if (PARAM_LOGIN_HINT.equals(key)) {
+                    o.setLoginHint(entry.getValue());
+                } else if (PARAM_PROMPT.equals(key)) {
+                    o.setPrompt(entry.getValue());
+                } else if (PARAM_RESPONSE_MODE.equals(key)) {
+                    o.setResponseMode(entry.getValue());
+                } else {
+                    o.addAdditionalParameter(key, entry.getValue());
+                }
+            }
         }
-
         o.setRedirectUrl(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME));
         o.setCustomHandlerClass(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS));
         return o;
