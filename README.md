@@ -12,18 +12,18 @@ It let you configure the oauth parameters yourself instead of using SDKs. Theref
 
 ## Supported flows
 
-### Implicit flow
+### Implicit flow (response type: token)
 
 Status: **ok**
 
-### Authorization code flow + PKCE
+### Code flow + PKCE (response type: code)
 
 Status: **ok**
 
-Please be aware that some providers (OneDrive, Auth0) allow Code Flow + PKCE only for native apps. Web apps have to use implicit flow.
+Please be aware that some providers (OneDrive, Auth0) allow **Code Flow + PKCE** only for native apps. Web apps have to use implicit flow.
 
 ### Important
-For security reasons this plugin does not support the authorization code flow without PKCE.
+For security reasons this plugin does/will not support Code Flow without PKCE.
 
 That would include storing your **client secret** in client code which is highly insecure and not recommended.
 That flow should only be used on the backend (server).
@@ -113,7 +113,6 @@ See the `oauth2Options` interface at https://github.com/moberwasserlechner/capac
 * ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_ANDROID_NO_BROWSER ... On Android not suitable browser could be found! (android)
 * ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
-
 
 ## Platform: Web/PWA
 
