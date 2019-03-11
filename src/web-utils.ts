@@ -156,14 +156,11 @@ export class WebUtils {
 
 }
 
-/**
- *
- */
-import * as base64 from 'base64-js';
 export class CryptoUtils {
+    static BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     static HAS_SUBTLE_CRYPTO: boolean = typeof window !== 'undefined' && !!(window.crypto as any) && !!(window.crypto.subtle as any);
 
-    static textEncode(str: string) {
+    static toUint8Array(str: string): Uint8Array {
         const buf = new ArrayBuffer(str.length);
         const bufView = new Uint8Array(buf);
 
@@ -173,14 +170,30 @@ export class CryptoUtils {
         return bufView;
     }
 
-    static urlSafe(buffer: Uint8Array): string {
-        const encoded = base64.fromByteArray(new Uint8Array(buffer));
-        return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    static toBase64Url(base64: string): string {
+        return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+    }
+
+    static toBase64(bytes: Uint8Array): string {
+        let len = bytes.length;
+        let base64 = "";
+        for (let i = 0; i < len; i+=3) {
+            base64 += this.BASE64_CHARS[bytes[i] >> 2];
+            base64 += this.BASE64_CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
+            base64 += this.BASE64_CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
+            base64 += this.BASE64_CHARS[bytes[i + 2] & 63];
+        }
+
+        if ((len % 3) === 2) {
+            base64 = base64.substring(0, base64.length - 1) + "=";
+        } else if (len % 3 === 1) {
+            base64 = base64.substring(0, base64.length - 2) + "==";
+        }
+        return base64;
     }
 
     static deriveChallenge(codeVerifier: string): Promise<string> {
         if (codeVerifier.length < 43 || codeVerifier.length > 128) {
-            console.log("Code verifier length:", codeVerifier);
             return Promise.reject(new Error('ERR_PKCE_CODE_VERIFIER_INVALID_LENGTH'));
         }
         if (!CryptoUtils.HAS_SUBTLE_CRYPTO) {
@@ -188,12 +201,14 @@ export class CryptoUtils {
         }
 
         return new Promise((resolve, reject) => {
-            crypto.subtle.digest('SHA-256', this.textEncode(codeVerifier)).then(buffer => {
-                return resolve(this.urlSafe(new Uint8Array(buffer)));
-            }, error => reject(error));
+            crypto.subtle.digest('SHA-256', this.toUint8Array(codeVerifier)).then(
+                arrayBuffer => {
+                    return resolve(this.toBase64Url(this.toBase64(new Uint8Array(arrayBuffer))));
+                },
+                error => reject(error)
+            );
         });
     }
-
 
 }
 
