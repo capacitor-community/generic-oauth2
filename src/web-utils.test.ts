@@ -1,5 +1,5 @@
 import {OAuth2AuthenticateOptions} from "./definitions";
-import {WebUtils} from "./web-utils";
+import {CryptoUtils, WebUtils} from "./web-utils";
 
 const googleOptions: OAuth2AuthenticateOptions = {
     appId: "appId",
@@ -171,8 +171,31 @@ describe("Authorization url building", () => {
     it('should contain a resource param', () => {
         expect(authorizationUrl).toContain("nonce");
     });
+});
 
-    //console.log("Authorization url:", authorizationUrl);
+describe("Crypto utils", () => {
 
+    it('base 64 simple', () => {
+        let arr: Uint8Array = CryptoUtils.toUint8Array("tester");
+        let expected = CryptoUtils.toBase64(arr);
+        expect(expected).toEqual("dGVzdGVy");
+    });
+
+    it('base 64 special char', () => {
+        let arr: Uint8Array = CryptoUtils.toUint8Array("testerposfieppw2874929");
+        let expected = CryptoUtils.toBase64(arr);
+        expect(expected).toEqual("dGVzdGVycG9zZmllcHB3Mjg3NDkyOQ==");
+    });
+
+    it('base 64 with space', () => {
+        let arr: Uint8Array = CryptoUtils.toUint8Array("base64 encoder");
+        let expected = CryptoUtils.toBase64(arr);
+        expect(expected).toEqual("YmFzZTY0IGVuY29kZXI=");
+    });
+
+    it('base64url safe all base64 special chars included', () => {
+        let expected = CryptoUtils.toBase64Url("YmFz+TY0IG/uY29kZXI=");
+        expect(expected).toEqual("YmFz-TY0IG_uY29kZXI");
+    });
 });
 
