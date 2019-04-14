@@ -207,7 +207,8 @@ googleLogin() {
     });
   }
 ```
-**Android**
+
+#### Android
 
 Add the value of the `android.customScheme` parameter in `android/app/build.gradle` as well, but remove the suffix `:/`
 
@@ -219,6 +220,7 @@ and change it to
 ```
 <data android:scheme="@string/custom_url_scheme" android:host="oauth" />
 ```
+Note: Actually any value for `android:host` will do. It does not has to be `oauth`.
 
 This will fix an issues within the oauth workflow when the application is shown twice.
 See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
@@ -235,7 +237,7 @@ android.buildTypes.release.manifestPlaceholders = [
 ]
 ```
 
-**iOS**
+#### iOS
 
 Open `ios/App/App/Info.plist` in a XML editor and add the customScheme without `:/` like that
 
