@@ -209,10 +209,27 @@ googleLogin() {
 ```
 **Android**
 
-Add customScheme in `android/app/build.gradle` as well. Without `:/`.
+Add the value of the `android.customScheme` parameter in `android/app/build.gradle` as well, but remove the suffix `:/`
+
+Then in your `AndroidManifest.xml` file find the line
+```
+<data android:scheme="@string/custom_url_scheme" />
+```
+and change it to
+```
+<data android:scheme="@string/custom_url_scheme" android:host="oauth" />
+```
+
+This will fix an issues within the oauth workflow when the application is shown twice. See Issue #15 for details what happens.
+
+Notice: If your appAuthRedirectScheme doesn't get recognized because you are using a library that replaces it
+(e.g.: onesignal-cordova-plugin), you will have to add it to your buildTypes like the following:
 
 ```
-android.defaultConfig.manifestPlaceholders = [
+android.buildTypes.debug.manifestPlaceholders =  [
+  'appAuthRedirectScheme': 'com.companyname.appname'
+]
+android.buildTypes.release.manifestPlaceholders = [
   'appAuthRedirectScheme': 'com.companyname.appname'
 ]
 ```
