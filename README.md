@@ -220,7 +220,8 @@ and change it to
 <data android:scheme="@string/custom_url_scheme" android:host="oauth" />
 ```
 
-This will fix an issues within the oauth workflow when the application is shown twice. See Issue #15 for details what happens.
+This will fix an issues within the oauth workflow when the application is shown twice.
+See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
 
 Notice: If your appAuthRedirectScheme doesn't get recognized because you are using a library that replaces it
 (e.g.: onesignal-cordova-plugin), you will have to add it to your buildTypes like the following:
