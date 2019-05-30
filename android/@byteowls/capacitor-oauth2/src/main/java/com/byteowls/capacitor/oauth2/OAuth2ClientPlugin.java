@@ -181,6 +181,7 @@ public class OAuth2ClientPlugin extends Plugin {
             this.authService = new AuthorizationService(getContext());
             try {
                 Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
+                saveCall(call);
                 startActivityForResult(call, authIntent, REQ_OAUTH_AUTHORIZATION);
             } catch (ActivityNotFoundException e) {
                 call.reject(ERR_ANDROID_NO_BROWSER);
