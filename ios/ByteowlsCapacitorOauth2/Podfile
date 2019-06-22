@@ -6,8 +6,7 @@ target 'ByteowlsCapacitorOauth2' do
   use_frameworks!
 
   # Pods for ByteowlsCapacitorOauth2
-
-   pod 'Capacitor', '~> 1.0.0-beta.16'
-   pod 'OAuthSwift', '~> 1.3.0'
+  pod 'Capacitor', :path => '../node_modules/@capacitor/ios'
+  pod 'OAuthSwift', '~> 1.3.0'
 
 end

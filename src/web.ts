@@ -161,3 +161,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 const OAuth2Client = new OAuth2ClientPluginWeb();
 
 export { OAuth2Client };
+
+// this does not work for angular. You need to register the plugin in app.component.ts again.
+import { registerWebPlugin } from '@capacitor/core';
+registerWebPlugin(OAuth2Client);
