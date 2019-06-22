@@ -176,7 +176,12 @@ public class OAuth2ClientPlugin: CAPPlugin {
                             call.reject("ERR_GENERAL")
                     })
                 } else {
-                    // TODO handle no resource url same as android
+                    do {
+                        let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                        call.resolve(jsonObj)
+                    } catch {
+                        call.reject("ERR_GENERAL")
+                    }
                 }
             }
             
