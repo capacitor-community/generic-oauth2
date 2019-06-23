@@ -52,9 +52,9 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "@capacitor/core": "latest",
-        "@capacitor/ios": "latest",
-        "@capacitor/android": "latest",
+        "@capacitor/core": "1.1.0",
+        "@capacitor/ios": "1.1.0",
+        "@capacitor/android": "1.1.0",
         "typescript": "3.2.4",
         "@types/jest": "24.0.15",
         "jest": "24.8.0",
