@@ -3,7 +3,6 @@ package com.byteowls.capacitor.oauth2;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
@@ -19,7 +18,6 @@ import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.TokenRequest;
-import net.openid.appauth.TokenResponse;
 import org.json.JSONException;
 
 import java.util.Map;
@@ -243,39 +241,31 @@ public class OAuth2ClientPlugin extends Plugin {
             // get authorization code
             if (response != null) {
                 this.authService = new AuthorizationService(getContext());
-                TokenRequest tokenExchangeRequest = null;
+                TokenRequest tokenExchangeRequest;
                 try {
                     tokenExchangeRequest = response.createTokenExchangeRequest();
-                    this.authService.performTokenRequest(tokenExchangeRequest,
-                        new AuthorizationService.TokenResponseCallback() {
-                            @Override
-                            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
-                                authState.update(response, ex);
-                                if (ex != null) {
-                                    savedCall.reject(ERR_GENERAL, ex);
-                                } else {
-                                    if (response != null) {
-                                        if (oauth2Options.getResourceUrl() != null) {
-                                            authState.performActionWithFreshTokens(authService, new AuthState.AuthStateAction() {
-                                                @Override
-                                                public void execute(@Nullable String accessToken, @Nullable String idToken, @Nullable AuthorizationException ex) {
-                                                    new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken);
-                                                }
-                                            });
-                                        } else {
-                                            try {
-                                                JSObject json = new JSObject(response.jsonSerializeString());
-                                                savedCall.resolve(json);
-                                            } catch (JSONException e) {
-                                                savedCall.reject(ERR_GENERAL, e);
-                                            }
-                                        }
+                    this.authService.performTokenRequest(tokenExchangeRequest, (response1, ex) -> {
+                            authState.update(response1, ex);
+                            if (ex != null) {
+                                savedCall.reject(ERR_GENERAL, ex);
+                            } else {
+                                if (response1 != null) {
+                                    if (oauth2Options.getResourceUrl() != null) {
+                                        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
+                                            -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
                                     } else {
-                                        savedCall.reject(ERR_NO_ACCESS_TOKEN);
+                                        try {
+                                            JSObject json = new JSObject(response1.jsonSerializeString());
+                                            savedCall.resolve(json);
+                                        } catch (JSONException e) {
+                                            savedCall.reject(ERR_GENERAL, e);
+                                        }
                                     }
+                                } else {
+                                    savedCall.reject(ERR_NO_ACCESS_TOKEN);
                                 }
-
                             }
+
                         });
                 } catch (IllegalStateException e) {
                     savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
@@ -284,7 +274,7 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    protected OAuth2Options buildOptions(PluginCall call) {
+    private OAuth2Options buildOptions(PluginCall call) {
         OAuth2Options o = new OAuth2Options();
         o.setAppId(getOverwritableParam(String.class, call, PARAM_APP_ID));
         o.setPkceDisabled(getOverwritableParam(Boolean.class, call, PARAM_PKCE_DISABLED));
@@ -331,7 +321,7 @@ public class OAuth2ClientPlugin extends Plugin {
         return o;
     }
 
-    protected <T> T getOverwritableParam(Class<T> clazz, PluginCall call, String key) {
+    private <T> T getOverwritableParam(Class<T> clazz, PluginCall call, String key) {
         T baseParam = ConfigUtils.getCallParam(clazz, call, key);
         T androidParam = ConfigUtils.getCallParam(clazz, call, "android." + key);
         if (androidParam != null) {
@@ -340,7 +330,7 @@ public class OAuth2ClientPlugin extends Plugin {
         return baseParam;
     }
 
-    protected Map<String, String> getOverwritableParamMap(PluginCall call, String key) {
+    private Map<String, String> getOverwritableParamMap(PluginCall call, String key) {
         Map<String, String> baseParam = ConfigUtils.getCallParamMap(call, key);
         Map<String, String> androidParam = ConfigUtils.getCallParamMap(call, "android." + key);
         if (androidParam != null) {
@@ -362,7 +352,7 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    public void discardAuthState() {
+    private void discardAuthState() {
         if (this.authState != null) {
             this.authState = null;
         }

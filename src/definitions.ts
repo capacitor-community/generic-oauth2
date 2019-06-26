@@ -96,7 +96,7 @@ export interface OverwritableOptions {
     additionalParameters?: {[key: string]: string}
 }
 
-export interface WebOption extends OverwritableOptions{
+export interface WebOption extends OverwritableOptions {
     /**
      * Url to  which the oauth provider redirects after authentication.
      */
@@ -111,7 +111,7 @@ export interface WebOption extends OverwritableOptions{
     windowTarget?: string;
 }
 
-export interface AndroidOptions extends OverwritableOptions{
+export interface AndroidOptions extends OverwritableOptions {
     /**
      * Use your app's custom scheme here. e.g. com.companyname.appname:/
      */
@@ -124,7 +124,7 @@ export interface AndroidOptions extends OverwritableOptions{
     customHandlerClass?: string;
 }
 
-export interface IosOptions extends OverwritableOptions{
+export interface IosOptions extends OverwritableOptions {
     /**
      * Use your app's custom scheme here. e.g. com.companyname.appname:/
      */

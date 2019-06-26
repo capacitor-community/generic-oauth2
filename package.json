@@ -1,6 +1,6 @@
 {
     "name": "@byteowls/capacitor-oauth2",
-    "version": "1.0.0-beta.4",
+    "version": "1.0.0",
     "description": "Simple Capacitor OAuth 2 client plugin",
     "author": "Michael Oberwasserlechner",
     "homepage": "https://github.com/moberwasserlechner/capacitor-oauth2",
@@ -48,14 +48,16 @@
         "access": "public"
     },
     "peerDependencies": {
-        "@capacitor/core": "^1.0.0-beta.17"
+        "@capacitor/core": "^1.0.0"
     },
     "dependencies": {},
     "devDependencies": {
-        "@capacitor/core": "1.0.0-beta.17",
-        "@types/jest": "23.3.12",
-        "jest": "23.6.0",
-        "ts-jest": "23.10.5",
-        "typescript": "2.9.1"
+        "@capacitor/core": "1.1.0",
+        "@capacitor/ios": "1.1.0",
+        "@capacitor/android": "1.1.0",
+        "typescript": "3.2.4",
+        "@types/jest": "24.0.15",
+        "jest": "24.8.0",
+        "ts-jest": "24.0.2"
     }
 }
