@@ -32,6 +32,8 @@ That flow should only be used on the backend (server).
 
 `npm i -E @byteowls/capacitor-oauth2`
 
+Minimum Capacitor version is **1.0.0**
+
 ## Configuration
 
 This example shows the common process of configuring this plugin.
