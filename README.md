@@ -6,7 +6,9 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/moberwasserlechner)
 
-This is a simple OAuth 2 client plugin.
+This is a simple OAuth 2 client plugin. 
+
+It does **not support OpenId** but it might in future. See #49 ;)
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 
