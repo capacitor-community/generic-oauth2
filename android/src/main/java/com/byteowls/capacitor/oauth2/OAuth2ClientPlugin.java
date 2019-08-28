@@ -241,11 +241,21 @@ public class OAuth2ClientPlugin extends Plugin {
 
             // get authorization code
             if (response != null) {
-                this.authService = new AuthorizationService(getContext());
-                TokenRequest tokenExchangeRequest;
-                try {
-                    tokenExchangeRequest = response.createTokenExchangeRequest();
-                    this.authService.performTokenRequest(tokenExchangeRequest, (response1, ex) -> {
+                if(response.accessToken!= null){
+                    try {
+                        JSObject json = new JSObject(response.jsonSerializeString());
+                        savedCall.resolve(json);
+                    }
+                    catch (JSONException e){
+                        savedCall.reject(ERR_GENERAL, e);
+                    }
+                }
+                else{
+                    this.authService = new AuthorizationService(getContext());
+                    TokenRequest tokenExchangeRequest;
+                    try {
+                        tokenExchangeRequest = response.createTokenExchangeRequest();
+                        this.authService.performTokenRequest(tokenExchangeRequest, (response1, ex) -> {
                             authState.update(response1, ex);
                             if (ex != null) {
                                 savedCall.reject(ERR_GENERAL, ex);
@@ -268,8 +278,9 @@ public class OAuth2ClientPlugin extends Plugin {
                             }
 
                         });
-                } catch (IllegalStateException e) {
-                    savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
+                    } catch (IllegalStateException e) {
+                        savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
+                    }
                 }
             }
         }

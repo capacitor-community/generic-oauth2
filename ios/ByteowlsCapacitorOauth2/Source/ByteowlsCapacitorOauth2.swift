@@ -176,12 +176,18 @@ public class OAuth2ClientPlugin: CAPPlugin {
                             call.reject("ERR_GENERAL")
                     })
                 } else {
-                    do {
-                        let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                    if(response != nil){
+                        do {
+                            let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                            call.resolve(jsonObj)
+                        } catch {
+                            call.reject("ERR_GENERAL")
+                        }
+                    } else {
+                        let jsonObj =  parameters
                         call.resolve(jsonObj)
-                    } catch {
-                        call.reject("ERR_GENERAL")
                     }
+                    
                 }
             }
             
