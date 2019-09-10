@@ -1,5 +1,5 @@
-import {OAuth2AuthenticateOptions} from "./definitions";
-import {CryptoUtils, WebUtils} from "./web-utils";
+import { OAuth2AuthenticateOptions } from "./definitions";
+import { CryptoUtils, WebUtils } from "./web-utils";
 
 const googleOptions: OAuth2AuthenticateOptions = {
     appId: "appId",
@@ -77,8 +77,8 @@ describe('base options processing', () => {
     });
 });
 
-describe('web options', () => {
-    const webOptions = WebUtils.buildWebOptions(oneDriveOptions);
+describe('web options', async () => {
+    const webOptions = await WebUtils.buildWebOptions(oneDriveOptions);
     // console.log(webOptions);
 
     it('should build web options', () => {
@@ -160,8 +160,8 @@ describe("Random string gen", () => {
     });
 });
 
-describe("Authorization url building", () => {
-    const webOptions = WebUtils.buildWebOptions(oneDriveOptions);
+describe("Authorization url building", async () => {
+    const webOptions = await WebUtils.buildWebOptions(oneDriveOptions);
     const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
 
     it('should contain a nonce param', () => {
