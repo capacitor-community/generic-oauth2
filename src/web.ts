@@ -1,9 +1,9 @@
-import {WebPlugin} from '@capacitor/core';
-import {OAuth2AuthenticateOptions, OAuth2ClientPlugin} from "./definitions";
-import {WebOptions, WebUtils} from "./web-utils";
+import { registerWebPlugin, WebPlugin } from '@capacitor/core';
+import { OAuth2AuthenticateOptions, OAuth2ClientPlugin } from "./definitions";
+import { WebOptions, WebUtils } from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
-
+ 
     private webOptions: WebOptions;
     private windowHandle: Window = null;
     private intervalId: number = null;
@@ -18,7 +18,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     async authenticate(options: OAuth2AuthenticateOptions): Promise<any> {
-        this.webOptions = WebUtils.buildWebOptions(options);
+        this.webOptions = await WebUtils.buildWebOptions(options);
         return new Promise<any>((resolve, reject) => {
             // validate
             if (!this.webOptions.appId) {
@@ -162,6 +162,4 @@ const OAuth2Client = new OAuth2ClientPluginWeb();
 
 export { OAuth2Client };
 
-// this does not work for angular. You need to register the plugin in app.component.ts again.
-import { registerWebPlugin } from '@capacitor/core';
 registerWebPlugin(OAuth2Client);
