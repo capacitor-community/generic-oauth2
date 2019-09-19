@@ -1,4 +1,4 @@
-import {OAuth2AuthenticateOptions} from "./definitions";
+import { OAuth2AuthenticateOptions } from "./definitions";
 // import sha256 from "fast-sha256";
 
 
@@ -46,15 +46,14 @@ export class WebUtils {
         return encodeURI(url);
     }
 
-    static getTokenEndpointData(options: WebOptions, code: string): FormData {
-        let data = new FormData();
-        data.append('grant_type', 'authorization_code');
-        data.append('client_id', options.appId);
-        data.append('redirect_uri', options.redirectUrl);
-        data.append('code', code);
-        data.append('code_verifier', options.pkceCodeVerifier);
-        // data.append('scope', options.scope);
-        return data;
+    static getTokenEndpointData(options: WebOptions, code: string): string {
+        let body = '';
+        body += encodeURIComponent('grant_type') + '=' + encodeURIComponent('authorization_code') + '&';
+        body += encodeURIComponent('client_id') + '=' + encodeURIComponent(options.appId) + '&';
+        body += encodeURIComponent('redirect_uri') + '=' + encodeURIComponent(options.redirectUrl) + '&';
+        body += encodeURIComponent('code') + '=' + encodeURIComponent(code) + '&';
+        body += encodeURIComponent('code_verifier') + '=' + encodeURIComponent(options.pkceCodeVerifier);
+        return body;
     }
 
     /**
@@ -96,7 +95,7 @@ export class WebUtils {
         return text;
     }
 
-    static buildWebOptions(configOptions: OAuth2AuthenticateOptions): WebOptions {
+    static async buildWebOptions(configOptions: OAuth2AuthenticateOptions): Promise<WebOptions> {
         const webOptions = new WebOptions();
         webOptions.appId = this.getAppId(configOptions);
         webOptions.responseType = this.getOverwritableValue(configOptions, "responseType");
@@ -109,7 +108,7 @@ export class WebUtils {
             if (!webOptions.pkceDisabled) {
                 webOptions.pkceCodeVerifier = this.randomString(64);
                 if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
-                    CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(c => {
+                    await CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(c => {
                         webOptions.pkceCodeChallenge = c;
                         webOptions.pkceCodeChallengeMethod = "S256";
                     });
