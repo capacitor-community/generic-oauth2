@@ -1,5 +1,5 @@
-import { OAuth2AuthenticateOptions } from "./definitions";
-import { CryptoUtils, WebUtils } from "./web-utils";
+import {OAuth2AuthenticateOptions} from "./definitions";
+import {CryptoUtils, WebUtils} from "./web-utils";
 
 const googleOptions: OAuth2AuthenticateOptions = {
     appId: "appId",
@@ -77,23 +77,21 @@ describe('base options processing', () => {
     });
 });
 
-describe('web options', async () => {
-    const webOptions = await WebUtils.buildWebOptions(oneDriveOptions);
-    // console.log(webOptions);
+describe('web options', () => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
+        it('should build web options', () => {
+            expect(webOptions).not.toBeNull();
+        });
 
-    it('should build web options', () => {
-        expect(webOptions).not.toBeNull();
+        it('should not have a code verifier', () => {
+            expect(webOptions.pkceCodeVerifier).toBeUndefined();
+        });
+
+        it('must not contain empty additional parameter', () => {
+            expect(webOptions.additionalParameters[" "]).toBeUndefined();
+            expect(webOptions.additionalParameters["emptyParam"]).toBeUndefined();
+        });
     });
-
-    it('should not have a code verifier', () => {
-        expect(webOptions.pkceCodeVerifier).toBeUndefined();
-    });
-
-    it('must not contain empty additional parameter', () => {
-        expect(webOptions.additionalParameters[" "]).toBeUndefined();
-        expect(webOptions.additionalParameters["emptyParam"]).toBeUndefined();
-    });
-
 });
 
 describe("Url param extraction", () => {
@@ -160,16 +158,17 @@ describe("Random string gen", () => {
     });
 });
 
-describe("Authorization url building", async () => {
-    const webOptions = await WebUtils.buildWebOptions(oneDriveOptions);
-    const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
+describe("Authorization url building", () => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
+        const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
 
-    it('should contain a nonce param', () => {
-        expect(authorizationUrl).toContain("nonce");
-    });
+        it('should contain a nonce param', () => {
+            expect(authorizationUrl).toContain("nonce");
+        });
 
-    it('should contain a resource param', () => {
-        expect(authorizationUrl).toContain("nonce");
+        it('should contain a resource param', () => {
+            expect(authorizationUrl).toContain("nonce");
+        });
     });
 });
 
