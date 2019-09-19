@@ -585,6 +585,9 @@ If not please use the sun coding convention. Please do not use tabs at all!
 
 Try to change only parts your feature or bugfix requires.
 
+## Changelog
+See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
+
 ## License
 
 MIT. Please see [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/LICENSE).
