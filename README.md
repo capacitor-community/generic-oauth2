@@ -439,7 +439,7 @@ See https://developers.facebook.com/docs/swift/getting-started and https://devel
 1) Add Facebook pods to your app's Podfile `ios/App/App`
 
 ```
-platform :ios, '10.0'
+platform :ios, '11.0'
 use_frameworks!
 
 target 'App' do
@@ -486,49 +486,49 @@ end
 3) Create a custom handler class
 
 ```swift
- import Foundation
- import FacebookCore
- import FacebookLogin
- import Capacitor
- import ByteowlsCapacitorOauth2
+import Foundation
+import FacebookCore
+import FacebookLogin
+import Capacitor
+import ByteowlsCapacitorOauth2
 
- @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
+@objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
 
-     var loginManager: LoginManager?;
+    var loginManager: LoginManager?;
 
-     required override init() {
-     }
+    required override init() {
+    }
 
-     func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
+    func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
 
-         if let accessToken = AccessToken.current {
-             success(accessToken.authenticationToken)
-         } else {
-             DispatchQueue.main.async {
-                 if self.loginManager == nil {
-                     self.loginManager = LoginManager()
-                 }
+        if let accessToken = AccessToken.current {
+            success(accessToken.tokenString)
+        } else {
+            DispatchQueue.main.async {
+                if self.loginManager == nil {
+                    self.loginManager = LoginManager()
+                }
 
-                 self.loginManager!.logIn(readPermissions: [ ReadPermission.publicProfile ],
-                                          viewController: viewController, completion: { loginResult in
-                                             switch loginResult {
-                                             case .failed(let error):
-                                                 failure(error)
-                                             case .cancelled:
-                                                 cancelled()
-                                             case .success(_, _, let accessToken):
-                                                 success(accessToken.authenticationToken)
-                                             }
-                 })
-             }
-         }
-     }
+                self.loginManager!.logIn(permissions: [ .publicProfile ],
+                                         viewController: viewController, completion: { loginResult in
+                                            switch loginResult {
+                                            case .failed(let error):
+                                                failure(error)
+                                            case .cancelled:
+                                                cancelled()
+                                            case .success(_, _, let accessToken):
+                                                success(accessToken.tokenString)
+                                            }
+                })
+            }
+        }
+    }
 
-     func logout(call: CAPPluginCall) -> Bool {
-         self.loginManager?.logOut()
-         return true
-     }
- }
+    func logout(call: CAPPluginCall) -> Bool {
+        self.loginManager?.logOut()
+        return true
+    }
+}
 ```
 
 This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
@@ -562,7 +562,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // other methods
 }
 ```
-This might not be needed but but users had an issue without it.
+This might not be needed but some users had an issue without it.
 
 ## Contribute
 
