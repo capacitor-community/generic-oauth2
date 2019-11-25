@@ -14,7 +14,7 @@ export interface OAuth2ClientPlugin {
     /**
      * Get a new access token based on the given refresh token.
      * @param {OAuth2RefreshTokenOptions} options
-     * @returns {Promise<any>} the resource url response
+     * @returns {Promise<any>} the token endpoint response
      */
     refreshToken(options: OAuth2RefreshTokenOptions): Promise<any>;
     /**
