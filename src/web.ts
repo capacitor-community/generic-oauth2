@@ -1,9 +1,9 @@
 import { registerWebPlugin, WebPlugin } from '@capacitor/core';
-import { OAuth2AuthenticateOptions, OAuth2ClientPlugin } from "./definitions";
+import { OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions } from "./definitions";
 import { WebOptions, WebUtils } from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
- 
+
     private webOptions: WebOptions;
     private windowHandle: Window = null;
     private intervalId: number = null;
@@ -14,6 +14,40 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         super({
             name: 'OAuth2Client',
             platforms: ['web']
+        });
+    }
+
+    /**
+     * Get a new access token using an existing refresh token.
+     */
+    async refreshToken(options: OAuth2RefreshTokenOptions): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            if (!options.appId) {
+                reject(new Error("ERR_PARAM_NO_APP_ID"));
+            } else if (!options.accessTokenEndpoint) {
+                reject(new Error("ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"));
+            } else if (!options.refreshToken) {
+                reject(new Error("ERR_PARAM_NO_REFRESH_TOKEN"));
+            }
+
+            const tokenRequest = new XMLHttpRequest();
+            const self = this;
+            tokenRequest.onload = function () {
+                if (this.status === 200) {
+                    let accessTokenResponse = JSON.parse(this.response);
+                    self.requestResource(accessTokenResponse, resolve, reject);
+                }
+            };
+            tokenRequest.onerror = function () {
+                console.log("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
+                reject(new Error("ERR_GENERAL"));
+            };
+            tokenRequest.open("POST", options.accessTokenEndpoint, true);
+            tokenRequest.setRequestHeader('accept', 'application/json');
+            tokenRequest.setRequestHeader('cache-control', 'no-cache');
+            tokenRequest.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+            // TODO add WebUtils.getTokenEndpointData(this.webOptions, authorizationCode)
+            tokenRequest.send();
         });
     }
 
