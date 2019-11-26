@@ -107,6 +107,10 @@ public class OAuth2ClientPlugin extends Plugin {
             Uri.parse(oAuth2RefreshTokenOptions.getAccessTokenEndpoint())
         );
 
+        if (this.authState == null) {
+            this.authState = new AuthState(config);
+        }
+
         TokenRequest tokenRequest = new TokenRequest.Builder(
             config,
             oAuth2RefreshTokenOptions.getAppId()
@@ -116,22 +120,18 @@ public class OAuth2ClientPlugin extends Plugin {
             .build();
 
         this.authService.performTokenRequest(tokenRequest, (response1, ex) -> {
-            authState.update(response1, ex);
+            this.authState.update(response1, ex);
             if (ex != null) {
                 call.reject(ERR_GENERAL, ex);
             } else {
                 if (response1 != null) {
-                    if (oauth2Options.getResourceUrl() != null) {
-                        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
-                            -> new ResourceUrlAsyncTask(call, oauth2Options, getLogTag()).execute(accessToken));
-                    } else {
-                        try {
-                            JSObject json = new JSObject(response1.jsonSerializeString());
-                            call.resolve(json);
-                        } catch (JSONException e) {
-                            call.reject(ERR_GENERAL, e);
-                        }
+                    try {
+                        JSObject json = new JSObject(response1.jsonSerializeString());
+                        call.resolve(json);
+                    } catch (JSONException e) {
+                        call.reject(ERR_GENERAL, e);
                     }
+
                 } else {
                     call.reject(ERR_NO_ACCESS_TOKEN);
                 }
