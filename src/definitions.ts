@@ -76,6 +76,7 @@ export interface OAuth2AuthenticateOptions {
     pkceDisabled?: boolean;
     /**
      * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
+     * If you want to get a refresh token, you most likely will need the offline_access scope (only supported in Code Flow!)
      */
     scope?: string;
     /**

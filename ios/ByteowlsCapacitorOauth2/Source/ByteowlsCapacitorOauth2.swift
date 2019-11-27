@@ -70,15 +70,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
             responseType: RESPONSE_TYPE_CODE
         )
         
-        let requestState = getString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
+        self.oauthSwift = oauthSwift
         
         let successHandler: OAuthSwift.TokenSuccessHandler = { credential, response, parameters in
-            // oauthSwift internally checks the state if response type is code therefore I only need the token check
-            guard let responseState = parameters["state"] as? String, responseState == requestState else {
-                    call.reject("ERR_STATES_NOT_MATCH")
-                    return
-                }
-            
             do {
                 let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
                     call.resolve(jsonObj)
@@ -99,7 +93,14 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
         }
         
-        let _ = oauthSwift.renewAccessToken(withRefreshToken: refreshToken, success: successHandler, failure: failureHandler)
+        let scope = getString(call, PARAM_SCOPE) ?? nil;
+        var parameters: OAuthSwift.Parameters = [:];
+        
+        if (scope != nil) {
+            parameters["scope"] = scope;
+        }
+        
+        let _ = oauthSwift.renewAccessToken(withRefreshToken: refreshToken, parameters: parameters, success: successHandler, failure: failureHandler)
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {

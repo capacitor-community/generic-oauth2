@@ -70,9 +70,12 @@ import {
 
 @Component({
   template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
+   '<button (click)="onOAuthRefreshBtnClick()">Refresh token</button>' +
    '<button (click)="onLogoutClick()">Logout OAuth</button>'
 })
 export class SignupComponent {
+    refreshToken: string;
+
     onOAuthBtnClick() {
         Plugins.OAuth2Client.authenticate(
             oauth2Options
@@ -80,10 +83,29 @@ export class SignupComponent {
             let accessToken = resourceUrlResponse["access_token"];
             let oauthUserId = resourceUrlResponse["id"];
             let name = resourceUrlResponse["name"];
+            this.refreshToken = resourceUrlResponse["refresh_token"];
             // go to backend
         }).catch(reason => {
             console.error("OAuth rejected", reason);
         });
+    }
+
+    // Refreshing tokens only works on iOS/Android for now
+    onOAuthRefreshBtnClick() {
+      if (!this.refreshToken) {
+        console.error("No refresh token found. Log in with OAuth first.");
+      }
+
+      Plugins.OAuth2Client.refreshToken(
+        oauth2RefreshOptions
+      ).then(response => {
+        let accessToken = response["access_token"];
+        // Don't forget to store the new refresh token as well!
+        this.refreshToken = response["refresh_token"];
+        // Go to backend
+      }).catch(reason => {
+          console.error("Refreshing token failed", reason);
+      });
     }
 
     onLogoutClick() {
@@ -100,7 +122,7 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L24
+See the `oauth2Options` and `OAuth2RefreshTokenOptions` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
 
 ### Error Codes
 
