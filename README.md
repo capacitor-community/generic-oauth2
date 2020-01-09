@@ -70,9 +70,12 @@ import {
 
 @Component({
   template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
+   '<button (click)="onOAuthRefreshBtnClick()">Refresh token</button>' +
    '<button (click)="onLogoutClick()">Logout OAuth</button>'
 })
 export class SignupComponent {
+    refreshToken: string;
+
     onOAuthBtnClick() {
         Plugins.OAuth2Client.authenticate(
             oauth2Options
@@ -80,10 +83,29 @@ export class SignupComponent {
             let accessToken = resourceUrlResponse["access_token"];
             let oauthUserId = resourceUrlResponse["id"];
             let name = resourceUrlResponse["name"];
+            this.refreshToken = resourceUrlResponse["refresh_token"];
             // go to backend
         }).catch(reason => {
             console.error("OAuth rejected", reason);
         });
+    }
+
+    // Refreshing tokens only works on iOS/Android for now
+    onOAuthRefreshBtnClick() {
+      if (!this.refreshToken) {
+        console.error("No refresh token found. Log in with OAuth first.");
+      }
+
+      Plugins.OAuth2Client.refreshToken(
+        oauth2RefreshOptions
+      ).then(response => {
+        let accessToken = response["access_token"];
+        // Don't forget to store the new refresh token as well!
+        this.refreshToken = response["refresh_token"];
+        // Go to backend
+      }).catch(reason => {
+          console.error("Refreshing token failed", reason);
+      });
     }
 
     onLogoutClick() {
@@ -100,7 +122,7 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts#L24
+See the `oauth2Options` and `OAuth2RefreshTokenOptions` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
 
 ### Error Codes
 
@@ -109,6 +131,7 @@ See the `oauth2Options` interface at https://github.com/moberwasserlechner/capac
 * ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android, ios)
 * ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android, ios)
 * ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android, ios)
+* ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing (only when obtaining an access token based on a refresh token, android/ios)
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 * ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
 * ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)

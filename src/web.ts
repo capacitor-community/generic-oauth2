@@ -1,9 +1,9 @@
 import { registerWebPlugin, WebPlugin } from '@capacitor/core';
-import { OAuth2AuthenticateOptions, OAuth2ClientPlugin } from "./definitions";
+import { OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions } from "./definitions";
 import { WebOptions, WebUtils } from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
- 
+
     private webOptions: WebOptions;
     private windowHandle: Window = null;
     private intervalId: number = null;
@@ -14,6 +14,15 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         super({
             name: 'OAuth2Client',
             platforms: ['web']
+        });
+    }
+
+    /**
+     * Get a new access token using an existing refresh token.
+     */
+    async refreshToken(options: OAuth2RefreshTokenOptions): Promise<any> {
+        return new Promise<any>((resolve, reject) => {
+            reject(new Error("Functionality not implemented for PWAs yet"));
         });
     }
 

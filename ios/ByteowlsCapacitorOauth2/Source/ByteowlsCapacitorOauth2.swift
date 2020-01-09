@@ -19,6 +19,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_STATE = "state"
     let PARAM_PKCE_DISABLED = "pkceDisabled"
     let PARAM_RESOURCE_URL = "resourceUrl"
+    let PARAM_REFRESH_TOKEN = "refreshToken";
     let RESPONSE_TYPE_CODE = "code"
     let RESPONSE_TYPE_TOKEN = "token"
 
@@ -43,6 +44,63 @@ public class OAuth2ClientPlugin: CAPPlugin {
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
         registerHandlers()
+    }
+    
+    @objc func refreshToken(_ call: CAPPluginCall) {
+        guard let appId = getOverwritableString(call, PARAM_APP_ID) else {
+            call.reject("ERR_PARAM_NO_APP_ID")
+            return
+        }
+        
+        guard let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT) else {
+            call.reject("ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT")
+            return
+        }
+        
+        guard let refreshToken = getOverwritableString(call, PARAM_REFRESH_TOKEN) else {
+            call.reject("ERR_PARAM_NO_REFRESH_TOKEN")
+            return
+        }
+        
+        let oauthSwift = OAuth2Swift(
+            consumerKey: appId,
+            consumerSecret: "", // never ever store the app secret on client!
+            authorizeUrl: "",
+            accessTokenUrl: accessTokenEndpoint,
+            responseType: RESPONSE_TYPE_CODE
+        )
+        
+        self.oauthSwift = oauthSwift
+        
+        let successHandler: OAuthSwift.TokenSuccessHandler = { credential, response, parameters in
+            do {
+                let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                    call.resolve(jsonObj)
+            } catch {
+                call.reject("ERR_GENERAL")
+            }
+        }
+        
+        let failureHandler: OAuthSwift.FailureHandler = { error in
+            switch error {
+            case .cancelled, .accessDenied(_, _):
+                call.reject("USER_CANCELLED")
+            case .stateNotEqual( _, _):
+                call.reject("ERR_STATES_NOT_MATCH")
+            default:
+                self.log("Authorization failed with \(error.localizedDescription)");
+                call.reject("ERR_NO_AUTHORIZATION_CODE")
+            }
+        }
+        
+        let scope = getString(call, PARAM_SCOPE) ?? nil;
+        var parameters: OAuthSwift.Parameters = [:];
+        
+        if (scope != nil) {
+            parameters["scope"] = scope;
+        }
+        
+        let _ = oauthSwift.renewAccessToken(withRefreshToken: refreshToken, parameters: parameters, success: successHandler, failure: failureHandler)
     }
 
     @objc func authenticate(_ call: CAPPluginCall) {

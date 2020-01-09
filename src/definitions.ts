@@ -12,11 +12,36 @@ export interface OAuth2ClientPlugin {
      */
     authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
     /**
+     * Get a new access token based on the given refresh token.
+     * @param {OAuth2RefreshTokenOptions} options
+     * @returns {Promise<any>} the token endpoint response
+     */
+    refreshToken(options: OAuth2RefreshTokenOptions): Promise<any>;
+    /**
      * Logout from the authenticated OAuth 2 provider
      * @param {OAuth2AuthenticateOptions} options Although not all options are needed. We simply reuse the options from authenticate
      * @returns {Promise<boolean>} true if the logout was successful else false.
      */
     logout(options: OAuth2AuthenticateOptions): Promise<void>;
+}
+
+export interface OAuth2RefreshTokenOptions {
+    /**
+     * The app id (client id) you get from the oauth provider like Google, Facebook,...
+     */
+    appId: string;
+    /**
+     * Url for retrieving the access_token.
+     */
+    accessTokenEndpoint: string;
+    /**
+     * The refresh token that will be used to obtain the new access token.
+     */
+    refreshToken: string;
+    /**
+     * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
+     */
+    scope?: string;
 }
 
 type ResponseTypeType = "token" | "code";
@@ -51,6 +76,7 @@ export interface OAuth2AuthenticateOptions {
     pkceDisabled?: boolean;
     /**
      * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
+     * If you want to get a refresh token, you most likely will need the offline_access scope (only supported in Code Flow!)
      */
     scope?: string;
     /**
