@@ -409,10 +409,11 @@ public class OAuth2ClientPlugin extends Plugin {
     private Map<String, String> getOverwritableParamMap(PluginCall call, String key) {
         Map<String, String> baseParam = ConfigUtils.getCallParamMap(call, key);
         Map<String, String> androidParam = ConfigUtils.getCallParamMap(call, "android." + key);
+        Map<String, String> mergedParam = new HashMap<>(baseParam);
         if (androidParam != null) {
-            baseParam = androidParam;
+            mergedParam.putAll(androidParam);
         }
-        return baseParam;
+        return mergedParam;
     }
 
     @Override
