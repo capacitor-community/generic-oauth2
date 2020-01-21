@@ -10,9 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Docs for Facebook if using iOS 13 and Facebook pod 5.x #56
 - Align Android behavior to iOS where the additional parameters are not overwritten #57 (thx @maggix)
+- Upgrade dev dependencies to Capacitor 1.4.0
 
 ### Added
 - Refresh token feature for iOS and Android #64 (thx @dennisameling)
+- Detect when user cancels authentication on web (implicit flow) #25 (thx @michaeltintiuc)
 
 ## [1.0.1] - 2019-09-19
 ### Added

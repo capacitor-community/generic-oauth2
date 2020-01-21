@@ -9,6 +9,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     private intervalId: number = null;
     private loopCount = 2000;
     private intervalLength = 100;
+    private windowClosedByPlugin: boolean;
 
     constructor() {
         super({
@@ -39,7 +40,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             } else if ("code" !== this.webOptions.responseType && "token" !== this.webOptions.responseType) {
                 reject(new Error("ERR_PARAM_INVALID_RESPONSE_TYPE"));
             } else {
+                // init internal control params
                 let loopCount = this.loopCount;
+                this.windowClosedByPlugin = false;
                 // open window
                 this.windowHandle = window.open(
                     WebUtils.getAuthorizationUrl(this.webOptions),
@@ -49,8 +52,10 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 // wait for redirect and resolve the
                 this.intervalId = setInterval(() => {
                     if (loopCount-- < 0) {
+                        this.closeWindow();
+                    } else if (this.windowHandle.closed && !this.windowClosedByPlugin) {
                         clearInterval(this.intervalId);
-                        this.windowHandle.close();
+                        reject(new Error("USER_CANCELLED"));
                     } else {
                         let href: string;
                         try {
@@ -164,6 +169,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     private closeWindow() {
         clearInterval(this.intervalId);
         this.windowHandle.close();
+        this.windowClosedByPlugin = true;
     }
 }
 
