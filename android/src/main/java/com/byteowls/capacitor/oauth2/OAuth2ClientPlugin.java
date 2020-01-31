@@ -24,6 +24,7 @@ import net.openid.appauth.TokenRequest;
 
 import org.json.JSONException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @NativePlugin(requestCodes = {OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
