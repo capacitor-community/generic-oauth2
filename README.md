@@ -555,10 +555,13 @@ import ByteowlsCapacitorOauth2
 
 This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
 
-4) Add the following to `ios/App/App/AppDelegate.swift`
+4) The users that have redirect problem after success grant add the following code to `ios/App/App/AppDelegate.swift`.
+This code correctly delegate the FB redirect url to be managed by Facebook SDK.
 
 ```swift
 import UIKit
+import FacebookCore
+import FacebookLogin
 import Capacitor
 
 @UIApplicationMain
@@ -573,8 +576,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       // but if you want the App API to support tracking app url opens, make sure to keep this call
 
       if let scheme = url.scheme, let host = url.host {
-        if scheme == "fb\(SDKSettings.appId)" && host == "authorize" {
-          return SDKApplicationDelegate.shared.application(app, open: url, options: options)
+        let appId: String = Settings.appID!
+        if scheme == "fb\(appId)" && host == "authorize" {
+          return ApplicationDelegate.shared.application(app, open: url, options: options)
         }
       }
 
@@ -584,7 +588,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // other methods
 }
 ```
-This might not be needed but some users had an issue without it.
 
 ## Contribute
 
