@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Upgrade Jest depencencies
+
+### Fixed
+
+### Breaking
+- Capacitor 2.x is new minimum peer dependency
+- Android
+ - Migrate to AndroidX
+
 ## [1.1.0] - 2020-01-22
 ### Changed
 - Docs for Facebook if using iOS 13 and Facebook pod 5.x #56
@@ -38,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix github security error by updating Jest lib
 
 
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...master
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...master
+[2.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/releases/tag/1.0.0
