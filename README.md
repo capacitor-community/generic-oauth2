@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
-This is a simple OAuth 2 client plugin. 
+This is a simple OAuth 2 client plugin.
 
 It does **not support OpenId** but it might in future. See #49 ;)
 
@@ -33,7 +33,7 @@ That flow should only be used on the backend (server).
 
 `npm i -E @byteowls/capacitor-oauth2`
 
-Minimum Capacitor version is **1.0.0**
+Minimum Capacitor version is **2.0.0**
 
 ## Configuration
 
@@ -625,8 +625,8 @@ This plugin is powered by BYTEOWLS Software & Consulting and was build for [Team
 
 We create plugins for apps we build and share them **as it is** with the community.
 
-I you have a feature request, need support how to use the plugin or 
-need a release breaking with our normal release cycle you have the possibility 
+I you have a feature request, need support how to use the plugin or
+need a release breaking with our normal release cycle you have the possibility
 to sponsor the development by paying for this custom development or support.
 
 See the wiki page for how to request a quote.
