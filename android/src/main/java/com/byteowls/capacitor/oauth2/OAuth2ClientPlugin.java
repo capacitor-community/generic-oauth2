@@ -262,7 +262,7 @@ public class OAuth2ClientPlugin extends Plugin {
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(customHandlerClassname);
                 OAuth2CustomHandler handler = handlerClass.newInstance();
-                boolean successful = handler.logout(call);
+                boolean successful = handler.logout(getActivity(), call);
                 if (successful) {
                     call.resolve();
                 } else {

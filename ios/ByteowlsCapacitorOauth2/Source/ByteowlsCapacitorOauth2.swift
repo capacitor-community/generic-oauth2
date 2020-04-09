@@ -289,8 +289,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     @objc func logout(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
-                // TODO add method argument viewController: bridge.viewController,
-                let success: Bool! = handlerInstance.logout(call: call)
+                let success: Bool! = handlerInstance.logout(viewController: bridge.viewController, call: call)
                 if success {
                     call.resolve();
                 } else {

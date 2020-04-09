@@ -10,5 +10,5 @@ import Capacitor
                         cancelled: @escaping () -> Void,
                         failure: @escaping (_ error: Error) -> Void)
 
-    func logout(call: CAPPluginCall) -> Bool
+    func logout(viewController: UIViewController, call: CAPPluginCall) -> Bool
 }
