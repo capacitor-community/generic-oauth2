@@ -558,7 +558,7 @@ import ByteowlsCapacitorOauth2
         }
     }
     
-    func logout(call: CAPPluginCall) -> Bool {
+    func logout(viewController: UIViewController, call: CAPPluginCall) -> Bool {
         let loginManager = LoginManager()
         loginManager.logOut()
         return true
