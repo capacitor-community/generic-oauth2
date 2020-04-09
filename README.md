@@ -5,11 +5,19 @@
 [![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
-This is a simple OAuth 2 client plugin.
-
-It does **not support OpenId** but it might in future. See #49 ;)
+This is a simple OAuth 2 client plugin. **No OpenID** support!
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
+See [providers](#list-of-providers) the community has already used this plugin with.
+
+## Versions
+
+| Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
+|--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
+| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md) | XCode 11.4 needs this version  |
+| 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
+
+For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
 ## Supported flows
 
@@ -197,7 +205,17 @@ See a full working example below!
 
 ## Platform: Electron
 
-- Maybe early 2019
+- No timeline.
+
+## List of Providers
+
+These are some of the providers that can be configured with this plugin. I'm happy to add others ot the list, if you let me know.
+
+| Name     | Example (config,...)   | Notes |
+|----------|------------------------|-------|
+| Google   | [see below](#google)   |       |
+| Facebook | [see below](#facebook) |       |
+
 
 ## Full examples
 
@@ -515,45 +533,41 @@ import Capacitor
 import ByteowlsCapacitorOauth2
 
 @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
-
-    var loginManager: LoginManager?;
-
+    
     required override init() {
     }
-
+    
     func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
-
         if let accessToken = AccessToken.current {
             success(accessToken.tokenString)
         } else {
             DispatchQueue.main.async {
-                if self.loginManager == nil {
-                    self.loginManager = LoginManager()
+                let loginManager = LoginManager()
+                // I only need the most basic permissions but others are available
+                loginManager.logIn(permissions: [ .publicProfile ], viewController: viewController) { result in
+                    switch result {
+                    case .success(_, _, let accessToken):
+                        success(accessToken.tokenString)
+                    case .failed(let error):
+                        failure(error)
+                    case .cancelled:
+                        cancelled()
+                    }
                 }
-
-                self.loginManager!.logIn(permissions: [ .publicProfile ],
-                                         viewController: viewController, completion: { loginResult in
-                                            switch loginResult {
-                                            case .failed(let error):
-                                                failure(error)
-                                            case .cancelled:
-                                                cancelled()
-                                            case .success(_, _, let accessToken):
-                                                success(accessToken.tokenString)
-                                            }
-                })
             }
         }
     }
-
+    
     func logout(call: CAPPluginCall) -> Bool {
-        self.loginManager?.logOut()
+        let loginManager = LoginManager()
+        loginManager.logOut()
         return true
     }
 }
 ```
 
-This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
+This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK. 
+See https://developers.facebook.com/docs/swift/login/#custom-login-button for details.
 
 4) The users that have redirect problem after success grant add the following code to `ios/App/App/AppDelegate.swift`.
 This code correctly delegate the FB redirect url to be managed by Facebook SDK.

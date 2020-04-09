@@ -1,20 +1,21 @@
 # Changelog
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
-- Upgrade Jest depencencies
-
+### Breaking
+* Core: Capacitor 2.x is new minimum peer dependency. closes #80
+* Additional method argument for `OAuth2CustomHandler#logout`. closes #58
+  * iOS: `viewController` as 1st argument
+  * Android: `activity` as 1st argument
+  
 ### Fixed
 
-### Breaking
-- Capacitor 2.x is new minimum peer dependency
-- Android
- - Migrate to AndroidX
+* XCode 11.4 crash on app start. closes #73. thx [@macdja38](https://github.com/macdja38)
+  
+### Docs
+
+* CustomHandler Facebook example logout fixed. closes #79. thx [@REPTILEHAUS](https://github.com/REPTILEHAUS)
+* Facebook force authentication with FB App. closes #69. thx [@mrbatista](https://github.com/mrbatista)
 
 ## [1.1.0] - 2020-01-22
 ### Changed
@@ -48,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix github security error by updating Jest lib
 
 
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...master
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...master
 [2.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.0...1.0.1
