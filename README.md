@@ -385,13 +385,17 @@ import android.app.Activity;
 
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
-import com.byteowls.teamconductor.MainActivity;
+import com.companyname.appname.MainActivity;
 import com.facebook.AccessToken;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.login.DefaultAudience;
+import com.facebook.login.LoginBehavior;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.getcapacitor.PluginCall;
+
+import java.util.Collections;
 
 public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
 
@@ -401,8 +405,10 @@ public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
     if (AccessToken.isCurrentAccessTokenActive()) {
       callback.onSuccess(accessToken.getToken());
     } else {
-      LoginManager.getInstance().logInWithReadPermissions(activity, null);
-
+      LoginManager l = LoginManager.getInstance();
+      l.logInWithReadPermissions(activity, Collections.singletonList("public_profile"));
+      l.setLoginBehavior(LoginBehavior.WEB_ONLY);
+      l.setDefaultAudience(DefaultAudience.NONE);
       LoginManager.getInstance().registerCallback(((MainActivity) activity).getCallbackManager(), new FacebookCallback<LoginResult>() {
         @Override
         public void onSuccess(LoginResult loginResult) {
@@ -424,11 +430,10 @@ public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
   }
 
   @Override
-  public boolean logout(PluginCall pluginCall) {
+  public boolean logout(Activity activity, PluginCall pluginCall) {
     LoginManager.getInstance().logOut();
     return true;
   }
-
 }
 
 ```
@@ -533,10 +538,10 @@ import Capacitor
 import ByteowlsCapacitorOauth2
 
 @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
-    
+
     required override init() {
     }
-    
+
     func getAccessToken(viewController: UIViewController, call: CAPPluginCall, success: @escaping (String) -> Void, cancelled: @escaping () -> Void, failure: @escaping (Error) -> Void) {
         if let accessToken = AccessToken.current {
             success(accessToken.tokenString)
@@ -557,7 +562,7 @@ import ByteowlsCapacitorOauth2
             }
         }
     }
-    
+
     func logout(viewController: UIViewController, call: CAPPluginCall) -> Bool {
         let loginManager = LoginManager()
         loginManager.logOut()
@@ -566,7 +571,7 @@ import ByteowlsCapacitorOauth2
 }
 ```
 
-This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK. 
+This handler will be automatically discovered up by the plugin and handles the login using the Facebook SDK.
 See https://developers.facebook.com/docs/swift/login/#custom-login-button for details.
 
 4) The users that have redirect problem after success grant add the following code to `ios/App/App/AppDelegate.swift`.
