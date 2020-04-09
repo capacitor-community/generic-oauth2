@@ -7,7 +7,9 @@ typealias JSObject = [String:Any]
 
 @objc(OAuth2ClientPlugin)
 public class OAuth2ClientPlugin: CAPPlugin {
-
+    
+    let JSON_KEY_ACCESS_TOKEN = "access_token"
+    
     let PARAM_APP_ID = "appId"
     let PARAM_RESPONSE_TYPE = "responseType"
     let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme"
@@ -19,46 +21,79 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_STATE = "state"
     let PARAM_PKCE_DISABLED = "pkceDisabled"
     let PARAM_RESOURCE_URL = "resourceUrl"
-    let PARAM_REFRESH_TOKEN = "refreshToken";
+    let PARAM_REFRESH_TOKEN = "refreshToken"
     let RESPONSE_TYPE_CODE = "code"
     let RESPONSE_TYPE_TOKEN = "token"
-
+    
+    let ERR_GENERAL = "ERR_GENERAL"
+    let ERR_USER_CANCELLED = "USER_CANCELLED"
+    let ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID"
+    let ERR_CUSTOM_HANDLER_LOGIN = "ERR_CUSTOM_HANDLER_LOGIN"
+    let ERR_CUSTOM_HANDLER_LOGOUT = "ERR_CUSTOM_HANDLER_LOGOUT"
+    let ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH"
+    let ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"
+    let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
+    let ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN"
+    let ERR_PARAM_NO_AUTHORIZATION_BASE_URL = "ERR_PARAM_NO_AUTHORIZATION_BASE_URL"
+    let ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL"
+    let ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE"
+    
     var oauthSwift: OAuth2Swift?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
-
+    
     func registerHandlers() {
-        var numClasses = UInt32(0);
-        let classes = objc_copyClassList(&numClasses)
+        let classCount = objc_getClassList(nil, 0)
+        let classes = UnsafeMutablePointer<AnyClass?>.allocate(capacity: Int(classCount))
+        
+        let releasingClasses = AutoreleasingUnsafeMutablePointer<AnyClass>(classes)
+        let numClasses: Int32 = objc_getClassList(releasingClasses, classCount)
+        
         for i in 0..<Int(numClasses) {
-            let c: AnyClass = classes![i]
-            if class_conformsToProtocol(c, OAuth2CustomHandler.self) {
-                let className = NSStringFromClass(c)
-                let pluginType = c as! OAuth2CustomHandler.Type
-                handlerClasses[className] = pluginType
-                log("Custom handler class '\(className)' found!")
+            if let c: AnyClass = classes[i] {
+                if class_conformsToProtocol(c, OAuth2CustomHandler.self) {
+                    let className = NSStringFromClass(c)
+                    let pluginType = c as! OAuth2CustomHandler.Type
+                    handlerClasses[className] = pluginType
+                    log("Custom handler class '\(className)' found!")
+                }
             }
         }
+        
+        classes.deallocate()
     }
-
+    
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
         registerHandlers()
     }
     
+    @objc func handleRedirect(notification: NSNotification) {
+        guard let object = notification.object as? [String: Any?] else {
+            return
+        }
+        guard let url = object["url"] as? URL else {
+            return
+        }
+        OAuth2Swift.handle(url: url);
+    }
+    
+    /*
+     * Plugin function to refresh tokens
+     */
     @objc func refreshToken(_ call: CAPPluginCall) {
         guard let appId = getOverwritableString(call, PARAM_APP_ID) else {
-            call.reject("ERR_PARAM_NO_APP_ID")
+            call.reject(self.ERR_PARAM_NO_APP_ID)
             return
         }
         
         guard let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT) else {
-            call.reject("ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT")
+            call.reject(self.ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT)
             return
         }
         
         guard let refreshToken = getOverwritableString(call, PARAM_REFRESH_TOKEN) else {
-            call.reject("ERR_PARAM_NO_REFRESH_TOKEN")
+            call.reject(self.ERR_PARAM_NO_REFRESH_TOKEN)
             return
         }
         
@@ -72,48 +107,51 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         self.oauthSwift = oauthSwift
         
-        let successHandler: OAuthSwift.TokenSuccessHandler = { credential, response, parameters in
-            do {
-                let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
-                    call.resolve(jsonObj)
-            } catch {
-                call.reject("ERR_GENERAL")
-            }
-        }
-        
-        let failureHandler: OAuthSwift.FailureHandler = { error in
-            switch error {
-            case .cancelled, .accessDenied(_, _):
-                call.reject("USER_CANCELLED")
-            case .stateNotEqual( _, _):
-                call.reject("ERR_STATES_NOT_MATCH")
-            default:
-                self.log("Authorization failed with \(error.localizedDescription)");
-                call.reject("ERR_NO_AUTHORIZATION_CODE")
-            }
-        }
-        
         let scope = getString(call, PARAM_SCOPE) ?? nil;
         var parameters: OAuthSwift.Parameters = [:];
         
-        if (scope != nil) {
+        if scope != nil {
             parameters["scope"] = scope;
         }
         
-        let _ = oauthSwift.renewAccessToken(withRefreshToken: refreshToken, parameters: parameters, success: successHandler, failure: failureHandler)
+        oauthSwift.renewAccessToken(withRefreshToken: refreshToken, parameters: parameters) { result in
+            switch result {
+            case .success(let tokenSuccess):
+                do {
+                    let jsonObj = try JSONSerialization.jsonObject(with: tokenSuccess.response!.data, options: []) as! JSObject
+                    call.resolve(jsonObj)
+                } catch {
+                    call.reject(self.ERR_GENERAL)
+                }
+            case .failure(let error):
+                switch error {
+                case .cancelled, .accessDenied(_, _):
+                    call.reject(self.ERR_USER_CANCELLED)
+                case .stateNotEqual( _, _):
+                    call.reject(self.ERR_STATES_NOT_MATCH)
+                default:
+                    self.log("Authorization failed with \(error.localizedDescription)");
+                    call.reject(self.ERR_NO_AUTHORIZATION_CODE)
+                }
+            }
+        }
     }
-
+    
+    /*
+     * Plugin function to authenticate
+     */
     @objc func authenticate(_ call: CAPPluginCall) {
         guard let appId = getOverwritableString(call, PARAM_APP_ID) else {
-            call.reject("ERR_PARAM_NO_APP_ID")
+            call.reject(self.ERR_PARAM_NO_APP_ID)
             return
         }
         let resourceUrl = getString(call, self.PARAM_RESOURCE_URL)
-
+        
+        // ######### Custom Handler ########
+        
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
-                handlerInstance.getAccessToken(viewController: bridge.viewController, call: call,
-                success: { (accessToken) in
+                handlerInstance.getAccessToken(viewController: bridge.viewController, call: call, success: { (accessToken) in
                     
                     if resourceUrl != nil {
                         let client = OAuthSwiftClient(
@@ -123,44 +161,45 @@ public class OAuth2ClientPlugin: CAPPlugin {
                             oauthTokenSecret: "",
                             version: OAuthSwiftCredential.Version.oauth2)
                         
-                        let _ = client.get(
-                            resourceUrl!,
-                            success: { (response) in
-                                if var jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject {
+                        client.get(resourceUrl!) { result in
+                            switch result {
+                            case .success(let response):
+                                if var jsonObj = try? JSONSerialization.jsonObject(with: response.data, options: []) as? JSObject {
                                     // send the access token to the caller so e.g. it can be stored on a backend
-                                    jsonObj.updateValue(accessToken, forKey: "access_token")
+                                    jsonObj.updateValue(accessToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
                                     call.resolve(jsonObj)
                                 } else {
-                                    call.reject("ERR_GENERAL")
+                                    call.reject(self.ERR_GENERAL)
                                 }
-                            },
-                            failure: { (error) in
+                            case .failure(let error):
                                 self.log("Resource url request error '\(error)'")
-                                call.reject("ERR_CUSTOM_HANDLER_LOGIN");
-                            })
+                                call.reject(self.ERR_CUSTOM_HANDLER_LOGIN);
+                            }
+                        }
                     } else {
-                       // TODO handle no resource url same as android
+                        // create a json object with just the access tokens
+                        var jsonObj = JSObject()
+                        jsonObj.updateValue(accessToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+                        call.resolve(jsonObj)
                     }
-                },
-                cancelled: {
-                    call.reject("USER_CANCELLED")
-                },
-                failure: { (error) in
+                }, cancelled: {
+                    call.reject(self.ERR_USER_CANCELLED)
+                }, failure: { error in
                     self.log("Login failed because '\(error)'")
-                    call.reject("ERR_CUSTOM_HANDLER_LOGIN")
+                    call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
                 })
             } else {
                 log("Handler class '\(handlerClassName)' not implements OAuth2CustomHandler protocol")
-                call.reject("ERR_CUSTOM_HANDLER_LOGIN")
+                call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
             }
         } else {
             guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
-                call.reject("ERR_PARAM_NO_AUTHORIZATION_BASE_URL")
+                call.reject(self.ERR_PARAM_NO_AUTHORIZATION_BASE_URL)
                 return
             }
-           
+            
             guard let redirectUrl = getString(call, PARAM_IOS_CUSTOM_SCHEME) else {
-                call.reject("ERR_PARAM_NO_REDIRECT_URL")
+                call.reject(self.ERR_PARAM_NO_REDIRECT_URL)
                 return
             }
             
@@ -172,17 +211,17 @@ public class OAuth2ClientPlugin: CAPPlugin {
             
             let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT)
             if accessTokenEndpoint == nil && responseType == RESPONSE_TYPE_CODE {
-                call.reject("ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT")
+                call.reject(self.ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT)
                 return
             }
             
             if responseType != RESPONSE_TYPE_CODE && responseType != RESPONSE_TYPE_TOKEN {
-                call.reject("ERR_PARAM_INVALID_RESPONSE_TYPE")
+                call.reject(self.ERR_PARAM_INVALID_RESPONSE_TYPE)
                 return
             }
             
             var oauthSwift: OAuth2Swift
-            if (responseType == RESPONSE_TYPE_CODE) {
+            if responseType == RESPONSE_TYPE_CODE {
                 oauthSwift = OAuth2Swift(
                     consumerKey: appId,
                     consumerSecret: "", // never ever store the app secret on client!
@@ -198,64 +237,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     responseType: responseType!
                 )
             }
-
+            
             self.oauthSwift = oauthSwift
             oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
-
-            let requestState = getString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
-            
-            let successHandler: OAuthSwift.TokenSuccessHandler = { credential, response, parameters in
-                // oauthSwift internally checks the state if response type is code therefore I only need the token check
-                if responseType == self.RESPONSE_TYPE_TOKEN {
-                    guard let responseState = parameters["state"] as? String, responseState == requestState else {
-                        call.reject("ERR_STATES_NOT_MATCH")
-                        return
-                    }
-                }
-                
-                if resourceUrl != nil {
-                    let _ = oauthSwift.client.get(
-                        resourceUrl!,
-                        parameters: parameters,
-                        success: { (response) in
-                            do {
-                                var jsonObj = try JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject
-                                // send the access token to the caller so e.g. it can be stored on a backend
-                                jsonObj.updateValue(oauthSwift.client.credential.oauthToken, forKey: "access_token")
-                                call.resolve(jsonObj)
-                            } catch {
-                                self.log("Invalid json in resource response \(error.localizedDescription)")
-                                call.reject("ERR_GENERAL")
-                            }
-                            
-                    },
-                        failure: { error in
-                            self.log("Access resource request failed with \(error.localizedDescription)");
-                            call.reject("ERR_GENERAL")
-                    })
-                } else {
-                    do {
-                        let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
-                        call.resolve(jsonObj)
-                    } catch {
-                        call.reject("ERR_GENERAL")
-                    }
-                }
-            }
-            
-            let failureHandler: OAuthSwift.FailureHandler = { error in
-                switch error {
-                case .cancelled, .accessDenied(_, _):
-                    call.reject("USER_CANCELLED")
-                case .stateNotEqual( _, _):
-                    call.reject("ERR_STATES_NOT_MATCH")
-                default:
-                    self.log("Authorization failed with \(error.localizedDescription)");
-                    call.reject("ERR_NO_AUTHORIZATION_CODE")
-                }
-            }
-            
-            let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
             
             // additional parameters #18
             let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
@@ -270,47 +254,51 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }
             }
             
+            let requestState = getString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
+            let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
             // if response type is code and pkce is not disabled
             if responseType == RESPONSE_TYPE_CODE && !pkceDisabled {
                 // oauthSwift.accessTokenBasicAuthentification = true
                 let pkceCodeVerifier = generateRandom(withLength: 64)
                 let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
                 
-                let _ = oauthSwift.authorize(
+                oauthSwift.authorize(
                     withCallbackURL: redirectUrl,
                     scope: getString(call, PARAM_SCOPE) ?? "",
                     state: requestState,
                     codeChallenge: pkceCodeChallenge,
                     codeVerifier: pkceCodeVerifier,
-                    parameters: additionalParameters,
-                    success: successHandler,
-                    failure: failureHandler
-                )
+                    parameters: additionalParameters) { result in
+                        self.handleAuthorizationResult(result, call, responseType!, requestState, resourceUrl)
+                }
             } else {
-                let _ = oauthSwift.authorize(
+                oauthSwift.authorize(
                     withCallbackURL: redirectUrl,
                     scope: getString(call, PARAM_SCOPE) ?? "",
                     state: requestState,
-                    parameters: additionalParameters,
-                    success: successHandler,
-                    failure: failureHandler
-                )
+                    parameters: additionalParameters) { result in
+                        self.handleAuthorizationResult(result, call, responseType!, requestState, resourceUrl)
+                }
             }
         }
     }
-
+    
+    /*
+     * Plugin function to refresh tokens
+     */
     @objc func logout(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
+                // TODO add method argument viewController: bridge.viewController,
                 let success: Bool! = handlerInstance.logout(call: call)
                 if success {
                     call.resolve();
                 } else {
-                    call.reject("ERR_CUSTOM_HANDLER_LOGOUT")
+                    call.reject(self.ERR_CUSTOM_HANDLER_LOGOUT)
                 }
             } else {
                 log("Handler instance not found! Bug!")
-                call.reject("ERR_CUSTOM_HANDLER_LOGOUT")
+                call.reject(self.ERR_CUSTOM_HANDLER_LOGOUT)
             }
         } else {
             if self.oauthSwift != nil {
@@ -319,29 +307,76 @@ public class OAuth2ClientPlugin: CAPPlugin {
             call.resolve()
         }
     }
-
-    @objc func handleRedirect(notification: NSNotification) {
-        guard let object = notification.object as? [String:Any?] else {
-            return
+    
+    // #################################
+    // ### Helper functions
+    // #################################
+    
+    private func handleAuthorizationResult(_ result: Result<OAuthSwift.TokenSuccess, OAuthSwiftError>, _ call: CAPPluginCall, _ responseType: String, _ requestState: String, _ resourceUrl: String?) {
+        switch result {
+        case .success(let (credential, response, parameters)):
+            // oauthSwift internally checks the state if response type is code therefore I only need the token check
+            if responseType == self.RESPONSE_TYPE_TOKEN {
+                guard let responseState = parameters["state"] as? String, responseState == requestState else {
+                    call.reject(self.ERR_STATES_NOT_MATCH)
+                    return
+                }
+            }
+            
+            if resourceUrl != nil {
+                self.oauthSwift!.client.get(
+                    resourceUrl!,
+                    parameters: parameters) { result in
+                        switch result {
+                        case .success(let response):
+                            do {
+                                var jsonObj = try JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject
+                                // send the access token to the caller so e.g. it can be stored on a backend
+                                jsonObj.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+                                call.resolve(jsonObj)
+                            } catch {
+                                self.log("Invalid json in resource response \(error.localizedDescription)")
+                                call.reject(self.ERR_GENERAL)
+                            }
+                        case .failure(let error):
+                            self.log("Access resource request failed with \(error.localizedDescription)");
+                            call.reject(self.ERR_GENERAL)
+                        }
+                }
+            } else {
+                do {
+                    let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                    call.resolve(jsonObj)
+                } catch {
+                    call.reject(self.ERR_GENERAL)
+                }
+            }
+        case .failure(let error):
+            switch error {
+            case .cancelled, .accessDenied(_, _):
+                call.reject(self.ERR_USER_CANCELLED)
+            case .stateNotEqual( _, _):
+                call.reject(self.ERR_STATES_NOT_MATCH)
+            default:
+                self.log("Authorization failed with \(error.localizedDescription)");
+                call.reject(self.ERR_NO_AUTHORIZATION_CODE)
+            }
         }
-        guard let url = object["url"] as? URL else {
-            return
-        }
-        OAuth2Swift.handle(url: url);
     }
-
+    
+    
     private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable:Any?]? {
         let parts = key.split(separator: ".")
-
+        
         var o = options
         for (_, k) in parts[0..<parts.count-1].enumerated() {
-            if (o != nil) {
+            if o != nil {
                 o = o?[String(k)] as? [String:Any?] ?? nil
             }
         }
         return o
     }
-
+    
     private func getConfigKey(_ key: String) -> String {
         let parts = key.split(separator: ".")
         if parts.last != nil {
@@ -367,13 +402,13 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return base;
     }
-
+    
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
         let k = getConfigKey(key)
         let o = getConfigObjectDeepest(call.options, key: key)
         return o?[k] ?? nil
     }
-
+    
     private func getString(_ call: CAPPluginCall, _ key: String) -> String? {
         let value = getValue(call, key)
         if value == nil {
@@ -381,30 +416,30 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return value as? String
     }
-
-    public func getOrLoadHandlerInstance(className: String) -> OAuth2CustomHandler? {
+    
+    private func getOrLoadHandlerInstance(className: String) -> OAuth2CustomHandler? {
         guard let instance = self.getHandlerInstance(className: className) ?? self.loadHandlerInstance(className: className) else {
             return nil
         }
         return instance
     }
-
-    public func getHandlerInstance(className: String) -> OAuth2CustomHandler? {
+    
+    private func getHandlerInstance(className: String) -> OAuth2CustomHandler? {
         return self.handlerInstances[className]
     }
     
-    func log(_ msg: String) {
+    private func log(_ msg: String) {
         print("@byteowls/capacitor-oauth2: \(msg).")
     }
-
-    public func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
+    
+    private func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
         guard let handlerClazz: OAuth2CustomHandler.Type = self.handlerClasses[className] else {
             log("Unable to load custom handler \(className). No such class found.")
             return nil
         }
-
+        
         let instance: OAuth2CustomHandler = handlerClazz.init()
-
+        
         self.handlerInstances[className] = instance
         return instance
     }
@@ -422,7 +457,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         }
         return randomString
     }
-
+    
 }
 
 // see https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce
@@ -434,7 +469,7 @@ extension String {
         data.withUnsafeBytes {
             _ = CC_SHA256($0, CC_LONG(data.count), &buffer)
         }
-        let hash = Data(bytes: buffer)
+        let hash = Data(buffer)
         return hash;
     }
 }
