@@ -610,42 +610,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ## Contribute
 
-### Fix a bug or create a new feature
-
-Please do not mix more than one issue in a feature branch. Each feature/bugfix should have its own branch and its own Pull Request (PR).
-
-1. Create a issue and describe what you want to do at [Issue Tracker](https://github.com/moberwasserlechner/capacitor-oauth2/issues)
-2. Create your feature branch (`git checkout -b feature/my-feature` or `git checkout -b bugfix/my-bugfix`)
-3. Test your changes to the best of your ability.
-5. Commit your changes (`git commit -m 'Describe feature or bug'`)
-6. Push to the branch (`git push origin feature/my-feature`)
-7. Create a Github pull request
-
-### Code Style
-
-This repo includes a .editorconfig file, which your IDE should pickup automatically.
-
-If not please use the sun coding convention. Please do not use tabs at all!
-
-Try to change only parts your feature or bugfix requires.
+See [Contribution Guidelines](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/.github/CONTRIBUTING.md).
 
 ## Changelog
 See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
 ## License
 
-MIT. Please see [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/LICENSE).
+MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/LICENSE).
 
 ## BYTEOWLS Software & Consulting
 
-This plugin is powered by BYTEOWLS Software & Consulting and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
-
-### Commercial support and consulting
-
-We create plugins for apps we build and share them **as it is** with the community.
-
-I you have a feature request, need support how to use the plugin or
-need a release breaking with our normal release cycle you have the possibility
-to sponsor the development by paying for this custom development or support.
-
-See the wiki page for how to request a quote.
+This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com) and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
