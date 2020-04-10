@@ -14,7 +14,7 @@ assignees: ''
 <!-- A clear and concise description of what the feature request is. Please include if your feature request is related to a problem. -->
 
 ### Platform(s) Support Requested
-<!-- Please select the chosen platforms by making them **bold** -->
+<!-- Please remove all items that are not relevant. -->
 
 - Android
 - iOS
