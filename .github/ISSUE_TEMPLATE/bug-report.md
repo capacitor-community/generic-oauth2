@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Template to report bugs
+about: Template to report bugs.
 title: 'bug: '
 labels: ''
 assignees: ''
@@ -44,7 +44,13 @@ Replace this with the commands output
 - [ ] Other: (Please fill in the provider you are using.)
 
 ## Your Plugin Configuration
-<!-- Without secret stuff of cource. -->
+<!-- Without secret stuff (of course). -->
+
+```typescript
+{
+    // Replace this with your plugin configuration 
+}
+```
 
 ## Affected Platform(s):
 
