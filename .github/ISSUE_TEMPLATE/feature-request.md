@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: Request a feature addition or change.
-title: 'feat: '
+title: 'Feat: '
 labels: ''
 assignees: ''
 
@@ -13,12 +13,13 @@ assignees: ''
 ### Describe the Feature
 <!-- A clear and concise description of what the feature request is. Please include if your feature request is related to a problem. -->
 
-### Platform Support Requested
+### Platform(s) Support Requested
+<!-- Please select the chosen platforms by making them **bold** -->
 
-- [ ] Android
-- [ ] iOS
-- [ ] Electron
-- [ ] Web
+- Android
+- iOS
+- Electron
+- Web
 
 ### Describe Preferred Solution
 <!-- A clear and concise description of what you want to happen. -->
