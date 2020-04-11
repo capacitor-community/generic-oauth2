@@ -9,8 +9,9 @@
   * Android: `activity` as 1st argument
 
 ### Added
-* If the user touches "done" in safari without entering the credentials 
+* iOS: If the user touches "done" in safari without entering the credentials 
 the USER_CANCELLED error is sent. closes #71
+* Web: Include all url params from the accessToken request if no resourceUrl is present. closes #72. thx [@sanjaywadhwani](https://github.com/sanjaywadhwani)
 
 ### Fixed
 

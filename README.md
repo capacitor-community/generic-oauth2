@@ -86,11 +86,14 @@ export class SignupComponent {
     onOAuthBtnClick() {
         Plugins.OAuth2Client.authenticate(
             oauth2Options
-        ).then(resourceUrlResponse => {
-            let accessToken = resourceUrlResponse["access_token"];
-            let oauthUserId = resourceUrlResponse["id"];
-            let name = resourceUrlResponse["name"];
-            this.refreshToken = resourceUrlResponse["refresh_token"];
+        ).then(response => {
+            let accessToken = response["access_token"];
+            this.refreshToken = response["refresh_token"];
+
+            // only if you include a resourceUrl protected user values are included in the response!
+            let oauthUserId = response["id"];
+            let name = response["name"];
+            
             // go to backend
         }).catch(reason => {
             console.error("OAuth rejected", reason);
@@ -129,7 +132,10 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` and `OAuth2RefreshTokenOptions` interface at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
+See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
+
+**NOTE:** Configuring a `resourceUrl` is optional. 
+But be aware that only the parameters from the accessToken request are included in the plugin's response if you do so!
 
 ### Error Codes
 

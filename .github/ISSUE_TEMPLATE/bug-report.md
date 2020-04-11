@@ -35,7 +35,7 @@ Replace this with the commands output
 - Google
 - Facebook
 - Azure AD
-- Microsoft App Registration
+- Azure App Registration
 - Github
 - Other: (Please fill in the provider you are using.)
 

@@ -72,13 +72,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                 if (urlParamObj.state === this.webOptions.state) {
                                     if (this.webOptions.responseType === "token") {
                                         // implicit flow
-                                        let accessToken = urlParamObj.access_token;
-                                        if (accessToken) {
-                                            this.requestResource(urlParamObj, resolve, reject);
-                                        } else {
-                                            reject(new Error("ERR_NO_ACCESS_TOKEN"));
-                                            this.closeWindow();
-                                        }
+                                        this.requestResource(urlParamObj, resolve, reject);
                                     } else if (this.webOptions.responseType === "code") {
                                         // code flow
                                         const self = this;
@@ -153,6 +147,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 this.closeWindow();
             }
         } else {
+            // if no resource url exists just return the accessToken response
             resolve(tokenObj);
             this.closeWindow();
         }
