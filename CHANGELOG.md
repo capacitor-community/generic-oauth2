@@ -7,7 +7,11 @@
 * Additional method argument for `OAuth2CustomHandler#logout`. closes #58
   * iOS: `viewController` as 1st argument
   * Android: `activity` as 1st argument
-  
+
+### Added
+* If the user touches "done" in safari without entering the credentials 
+the USER_CANCELLED error is sent. closes #71
+
 ### Fixed
 
 * XCode 11.4 crash on app start. closes #73. thx [@macdja38](https://github.com/macdja38)

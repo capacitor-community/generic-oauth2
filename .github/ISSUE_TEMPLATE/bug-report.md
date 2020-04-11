@@ -39,7 +39,7 @@ Replace this with the commands output
 - Github
 - Other: (Please fill in the provider you are using.)
 
-## Your Plugin Configuration
+### Your Plugin Configuration
 <!-- Without secret stuff (of course). -->
 
 ```typescript
@@ -48,28 +48,28 @@ Replace this with the commands output
 }
 ```
 
-## Affected Platform(s):
+### Affected Platform(s):
 <!-- Please remove all items that are not relevant. -->
 
 - Android
 - iOS
 - Web
 
-## Current Behavior
+### Current Behavior
 <!-- Describe the bug. Be specific. I need to understand you problem. -->
 
 
-## Expected Behavior
+### Expected Behavior
 <!-- Describe what the behavior would be without the bug. -->
 
 
-## Sample Code or Sample Application Repo
+### Sample Code or Sample Application Repo
 <!-- If you are able to illustrate the bug or feature request with an example, please provide sample code snippets or a sample application via a public repo. -->
 
 
-## Reproduction Steps
+### Reproduction Steps
 <!--  Please explain the steps required to duplicate the issue, especially if you are able to provide a sample application. -->
 
 
-## Other Information
+### Other Information
 <!-- List any other information that is relevant to your issue. Stack traces, related issues, suggestions on how to fix, Stack Overflow links, forum links, etc. -->

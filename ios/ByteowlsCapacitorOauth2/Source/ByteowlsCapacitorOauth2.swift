@@ -26,7 +26,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let RESPONSE_TYPE_TOKEN = "token"
     
     let ERR_GENERAL = "ERR_GENERAL"
-    let ERR_USER_CANCELLED = "USER_CANCELLED"
+    
     let ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID"
     let ERR_CUSTOM_HANDLER_LOGIN = "ERR_CUSTOM_HANDLER_LOGIN"
     let ERR_CUSTOM_HANDLER_LOGOUT = "ERR_CUSTOM_HANDLER_LOGOUT"
@@ -38,7 +38,12 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL"
     let ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE"
     
+    struct SharedConstants {
+        static let ERR_USER_CANCELLED = "USER_CANCELLED"
+    }
+
     var oauthSwift: OAuth2Swift?
+    var oauth2SafariDelegate: OAuth2SafariDelegate?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
     
@@ -126,7 +131,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             case .failure(let error):
                 switch error {
                 case .cancelled, .accessDenied(_, _):
-                    call.reject(self.ERR_USER_CANCELLED)
+                    call.reject(SharedConstants.ERR_USER_CANCELLED)
                 case .stateNotEqual( _, _):
                     call.reject(self.ERR_STATES_NOT_MATCH)
                 default:
@@ -146,6 +151,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return
         }
         let resourceUrl = getString(call, self.PARAM_RESOURCE_URL)
+        // Github issue #71
+        self.oauth2SafariDelegate = OAuth2SafariDelegate(call)
         
         // ######### Custom Handler ########
         
@@ -183,7 +190,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         call.resolve(jsonObj)
                     }
                 }, cancelled: {
-                    call.reject(self.ERR_USER_CANCELLED)
+                    call.reject(SharedConstants.ERR_USER_CANCELLED)
                 }, failure: { error in
                     self.log("Login failed because '\(error)'")
                     call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
@@ -238,8 +245,11 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 )
             }
             
+            let urlHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
+            // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
+            urlHandler.delegate = self.oauth2SafariDelegate
+            oauthSwift.authorizeURLHandler = urlHandler
             self.oauthSwift = oauthSwift
-            oauthSwift.authorizeURLHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
             
             // additional parameters #18
             let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
@@ -353,8 +363,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
         case .failure(let error):
             switch error {
             case .cancelled, .accessDenied(_, _):
-                call.reject(self.ERR_USER_CANCELLED)
-            case .stateNotEqual( _, _):
+                call.reject(SharedConstants.ERR_USER_CANCELLED)
+            case .stateNotEqual(_, _):
                 call.reject(self.ERR_STATES_NOT_MATCH)
             default:
                 self.log("Authorization failed with \(error.localizedDescription)");

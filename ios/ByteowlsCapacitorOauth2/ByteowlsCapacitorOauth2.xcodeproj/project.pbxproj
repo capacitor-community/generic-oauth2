@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		18DD3EC6FD926A19540AA106 /* Pods_ByteowlsCapacitorOauth2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50F94771610D9566B3ED5847 /* Pods_ByteowlsCapacitorOauth2.framework */; };
 		FE1C41BD21861FFC00F8236E /* ByteowlsCapacitorOauth2.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1C41BB21861FFC00F8236E /* ByteowlsCapacitorOauth2.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FE6A4CC02441A56C00C4A2EB /* OAuth2SafariDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE6A4CBF2441A56C00C4A2EB /* OAuth2SafariDelegate.swift */; };
 		FE9AC5F721862144009471A9 /* ByteowlsCapacitorOauth2.m in Sources */ = {isa = PBXBuildFile; fileRef = FE9AC5F421862144009471A9 /* ByteowlsCapacitorOauth2.m */; };
 		FE9AC5F821862144009471A9 /* ByteowlsCapacitorOauth2.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9AC5F521862144009471A9 /* ByteowlsCapacitorOauth2.swift */; };
 		FECF0E40218727CB000096F6 /* OAuth2CustomHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FECF0E3F218727CB000096F6 /* OAuth2CustomHandler.swift */; };
@@ -21,6 +22,7 @@
 		FE1C41B821861FFC00F8236E /* ByteowlsCapacitorOauth2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ByteowlsCapacitorOauth2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE1C41BB21861FFC00F8236E /* ByteowlsCapacitorOauth2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ByteowlsCapacitorOauth2.h; sourceTree = "<group>"; };
 		FE1C41BC21861FFC00F8236E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FE6A4CBF2441A56C00C4A2EB /* OAuth2SafariDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2SafariDelegate.swift; sourceTree = "<group>"; };
 		FE9AC5F421862144009471A9 /* ByteowlsCapacitorOauth2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ByteowlsCapacitorOauth2.m; sourceTree = "<group>"; };
 		FE9AC5F521862144009471A9 /* ByteowlsCapacitorOauth2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ByteowlsCapacitorOauth2.swift; sourceTree = "<group>"; };
 		FECF0E3F218727CB000096F6 /* OAuth2CustomHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OAuth2CustomHandler.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 				FE1C41BB21861FFC00F8236E /* ByteowlsCapacitorOauth2.h */,
 				FE1C41BC21861FFC00F8236E /* Info.plist */,
 				FECF0E3F218727CB000096F6 /* OAuth2CustomHandler.swift */,
+				FE6A4CBF2441A56C00C4A2EB /* OAuth2SafariDelegate.swift */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -187,6 +190,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE9AC5F821862144009471A9 /* ByteowlsCapacitorOauth2.swift in Sources */,
+				FE6A4CC02441A56C00C4A2EB /* OAuth2SafariDelegate.swift in Sources */,
 				FE9AC5F721862144009471A9 /* ByteowlsCapacitorOauth2.m in Sources */,
 				FECF0E40218727CB000096F6 /* OAuth2CustomHandler.swift in Sources */,
 			);
