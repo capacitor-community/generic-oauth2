@@ -7,8 +7,9 @@ assignees: ''
 
 ---
 
-## Bug Report
-
+<!--
+ATTENTION: Only issues using a filled template will be accepted!
+-->
 
 ### Capacitor version:
 <!-- Provide the version of Capacitor and related installed dependencies. 

@@ -7,8 +7,9 @@ assignees: ''
 
 ---
 
-## Feature Request
-<!-- NOTE: Leave these checkboxes EMPTY until after the issue is created. Once the issue is created, check one or more boxes in the below sections. Note that certain features may not be supported on some platforms (i.e. no web API is available, etc.) -->
+<!--
+ATTENTION: Only issues using a filled template will be accepted!
+-->
 
 ### Describe the Feature
 <!-- A clear and concise description of what the feature request is. Please include if your feature request is related to a problem. -->
