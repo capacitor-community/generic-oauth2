@@ -152,7 +152,7 @@ But be aware that only the parameters from the accessToken request are included 
 * ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_ANDROID_NO_BROWSER ... No suitable browser could be found! (Android)
-* ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid state but make sure you configured Android part correctly! See [Android Setup](#android)
+* ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
 * ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
 ## Platform: Web/PWA
@@ -191,8 +191,9 @@ public class MainActivity extends BridgeActivity {
 }
 ```
 
-### Standard Config
-Skip if you use a [Custom Handler](#)
+### Android Default Config
+
+Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler)
 
 #### AndroidManifest.xml
 The `AndroidManifest.xml` in your Capacitor Android project already contains
@@ -240,8 +241,8 @@ android.buildTypes.release.manifestPlaceholders = [
 ]
 ```
 
-2) "ERR_ANDROID_RESULT_NULL": See [this issue for details](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515)
- I cannot reproduce this behaviour. Moreover there might be situation this state is valid. In other cases e.g. in the linked issue it is not.
+2) "ERR_ANDROID_RESULT_NULL": See [Issue #52](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515) for details.
+I cannot reproduce this behaviour. Moreover there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
 
 ### Custom OAuth Handler
 
@@ -261,6 +262,8 @@ See a full working example below!
 On iOS the plugin is registered **automatically** by Capacitor.
 
 ### iOS Default Config
+
+Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler-1)
 
 Open `ios/App/App/Info.plist` in XCode and add the `customScheme` / `redirectUrl` from your config without `:/` like that
 
