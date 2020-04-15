@@ -1,7 +1,7 @@
 package com.byteowls.capacitor.oauth2;
 
 import com.getcapacitor.JSObject;
-import com.getcapacitor.PluginCall;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -14,22 +14,27 @@ import java.util.Random;
  */
 public abstract class ConfigUtils {
 
-    public static String getCallString(PluginCall call, String key) {
-        return getCallParam(String.class, call, key);
+    public static String getParamString(JSObject data, String key) {
+        return getParam(String.class, data, key);
     }
 
-    public static <T> T getCallParam(Class<T> clazz, PluginCall call, String key) {
-        return getCallParam(clazz, call, key, null);
+    public static <T> T getParam(Class<T> clazz, JSObject data, String key) {
+        return getCallParam(clazz, data, key, null);
     }
 
-    public static <T> T getCallParam(Class<T> clazz, PluginCall call, String key, T defaultValue) {
+    public static <T> T getCallParam(Class<T> clazz, JSObject data, String key, T defaultValue) {
         String k = getDeepestKey(key);
         try {
-            JSONObject o = getDeepestObject(call.getData(), key);
+            JSONObject o = getDeepestObject(data, key);
 
             Object value = null;
             if (clazz.isAssignableFrom(String.class)) {
-                value = o.getString(k);
+                String strValue = o.getString(k);
+                strValue = strValue.trim();
+                if (strValue.length() == 0) {
+                    strValue = null;
+                }
+                value = strValue;
             } else if (clazz.isAssignableFrom(Boolean.class)) {
                 value = o.optBoolean(k);
             } else if (clazz.isAssignableFrom(Double.class)) {
@@ -52,11 +57,11 @@ public abstract class ConfigUtils {
         return defaultValue;
     }
 
-    public static Map<String, String> getCallParamMap(PluginCall call, String key) {
+    public static Map<String, String> getParamMap(JSObject data, String key) {
         Map<String, String> map = new HashMap<>();
         String k = getDeepestKey(key);
         try {
-            JSONObject o = getDeepestObject(call.getData(), key);
+            JSONObject o = getDeepestObject(data, key);
             JSONObject jsonObject = o.getJSONObject(k);
             if (jsonObject != null) {
                 Iterator<String> keys = jsonObject.keys();
@@ -94,6 +99,23 @@ public abstract class ConfigUtils {
             o = o.getJSObject(k);
         }
         return o;
+    }
+
+    public static <T> T getOverwrittenAndroidParam(Class<T> clazz, JSObject data, String key) {
+        T baseParam = getParam(clazz, data, key);
+        T androidParam = getParam(clazz, data, "android." + key);
+        if (androidParam != null) {
+            baseParam = androidParam;
+        }
+        return baseParam;
+    }
+
+    public static Map<String, String> getOverwrittenAndroidParamMap(JSObject data, String key) {
+        Map<String, String> baseParam = getParamMap(data, key);
+        Map<String, String> androidParam = getParamMap(data, "android." + key);
+        Map<String, String> mergedParam = new HashMap<>(baseParam);
+        mergedParam.putAll(androidParam);
+        return mergedParam;
     }
 
     public static String getRandomString(int len) {

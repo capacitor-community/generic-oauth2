@@ -63,10 +63,10 @@ export class WebUtils {
         if (urlString && urlString.trim().length > 0) {
             urlString = urlString.trim();
             let idx = urlString.indexOf("#");
-            if (idx == -1) {
+            if (idx === -1) {
                 idx = urlString.indexOf("?");
             }
-            if (idx != -1 && urlString.length > (idx + 1)) {
+            if (idx !== -1 && urlString.length > (idx + 1)) {
                 const urlParamStr = urlString.slice(idx + 1);
                 const keyValuePairs: string[] = urlParamStr.split(`&`);
                 return keyValuePairs.reduce((acc, hash) => {
@@ -104,7 +104,7 @@ export class WebUtils {
             webOptions.responseType = "token";
         }
 
-        if (webOptions.responseType == "code") {
+        if (webOptions.responseType === "code") {
             if (!webOptions.pkceDisabled) {
                 webOptions.pkceCodeVerifier = this.randomString(64);
                 if (CryptoUtils.HAS_SUBTLE_CRYPTO) {

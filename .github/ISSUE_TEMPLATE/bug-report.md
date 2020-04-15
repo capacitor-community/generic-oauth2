@@ -12,7 +12,7 @@ ATTENTION: Only issues using a filled template will be accepted!
 -->
 
 ### Capacitor version:
-<!-- Provide the version of Capacitor and related installed dependencies. 
+<!-- Provide the version of Capacitor and related installed dependencies.
 You can use `npx cap doctor` for the output from the root directory of your project. -->
 
 Run `npx cap doctor`:
@@ -41,11 +41,11 @@ Replace this with the commands output
 - Other: (Please fill in the provider you are using.)
 
 ### Your Plugin Configuration
-<!-- Without secret stuff (of course). -->
+<!-- Mask but not remove your secret stuff (of course). I need to see the parameters you use! -->
 
 ```typescript
 {
-    // Replace this with your plugin configuration 
+    // Replace this with your plugin configuration
 }
 ```
 

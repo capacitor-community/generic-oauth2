@@ -39,7 +39,7 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         ResourceCallResult result = new ResourceCallResult();
         String accessToken = tokens[0];
 
-        if(isNullOrEmpty(resourceUrl)) {
+        if (isNullOrEmpty(resourceUrl)) {
             JSObject json = new JSObject();
             json.put("access_token", accessToken);
             result.setResponse(json);

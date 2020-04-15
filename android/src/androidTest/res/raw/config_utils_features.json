@@ -1,0 +1,31 @@
+{
+    "doubleValue": 123.4567,
+    "floatValue": 123.4,
+    "intValue": 1,
+    "stringValue": "string",
+    "booleanValue": true,
+    "first": {
+        "second": {
+            "third": {
+                "doubleValue": 5.4,
+                "floatValue": 5.9,
+                "intValue": 2,
+                "stringValue": "stringDeep",
+                "booleanValue": false
+            }
+        }
+    },
+    "map": {
+        "key1": "value1",
+        "key2": "value2"
+    },
+    "android": {
+        "stringValue": "stringAndroid",
+        "map": {
+            "key1": "value1Android",
+            "key3": "value3Android"
+        }
+    },
+    "empty": "",
+    "blank": " "
+}

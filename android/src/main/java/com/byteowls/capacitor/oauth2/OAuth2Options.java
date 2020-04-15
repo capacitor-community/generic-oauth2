@@ -162,4 +162,8 @@ public class OAuth2Options {
     public void setResponseMode(String responseMode) {
         this.responseMode = responseMode;
     }
+
+    public boolean hasCustomHandlerClass() {
+        return this.customHandlerClass != null && this.customHandlerClass.length() > 0;
+    }
 }

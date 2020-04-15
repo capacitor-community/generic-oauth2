@@ -52,7 +52,7 @@ export interface OAuth2AuthenticateOptions {
      */
     appId: string;
     /**
-     * The base url for retrieving the access_token from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
+     * The base url for retrieving tokens depending on the response type from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
      */
     authorizationBaseUrl: string;
     /**
