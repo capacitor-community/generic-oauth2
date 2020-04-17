@@ -151,7 +151,8 @@ export interface AndroidOptions extends OverwritableOptions {
     /**
      * How to handle the result. There are more than one possibility in Android/ Capacitor.
      */
-    handleResultMethod?: "new" | "old" | "both";
+    handleResultOnNewIntent?: boolean;
+    handleResultOnActivityResult?: boolean;
 }
 
 export interface IosOptions extends OverwritableOptions {

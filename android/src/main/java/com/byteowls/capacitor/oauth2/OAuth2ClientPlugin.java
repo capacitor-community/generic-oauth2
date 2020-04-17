@@ -29,7 +29,7 @@ import java.util.Map;
 @NativePlugin(requestCodes = {OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
 
-    static final int REQ_OAUTH_AUTHORIZATION = 12548894;
+    static final int REQ_OAUTH_AUTHORIZATION = 56854;
 
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
@@ -46,7 +46,9 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
-    private static final String PARAM_ANDROID_HANDLE_RESULT_METHOD = "android.handleResultMethod";
+    // Activity result handling
+    private static final String PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT = "android.handleResultOnNewIntent";
+    private static final String PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT = "android.handleResultOnActivityResult";
 
     // Refresh token params
     private static final String PARAM_REFRESH_TOKEN = "refreshToken";
@@ -85,8 +87,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private AuthorizationService authService;
     private AuthState authState;
 
-    public OAuth2ClientPlugin() {
-    }
+    public OAuth2ClientPlugin() {}
 
     @PluginMethod()
     public void refreshToken(final PluginCall call) {
@@ -306,27 +307,27 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @Override
     protected void handleOnNewIntent(Intent intent) {
-        if (this.oauth2Options.getHandleResultMethod() == OAuth2Options.HandleResultMethod.NEW || this.oauth2Options.getHandleResultMethod() == OAuth2Options.HandleResultMethod.BOTH) {
+        // this is a experimental hook and only usable if the android system kills the app between
+        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnNewIntent()) {
             // with this I have no way to check if this intent is for this plugin
             PluginCall savedCall = getSavedCall();
             if (savedCall == null) {
                 return;
             }
-            handleAuthorizationRequestActivity(intent, getSavedCall());
+            handleAuthorizationRequestActivity(intent, savedCall);
         }
     }
 
     @Override
     protected void handleOnActivityResult(int requestCode, int resultCode, Intent intent) {
         super.handleOnActivityResult(requestCode, resultCode, intent);
-        if (this.oauth2Options.getHandleResultMethod() == OAuth2Options.HandleResultMethod.OLD || this.oauth2Options.getHandleResultMethod() == OAuth2Options.HandleResultMethod.BOTH) {
+        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
             if (REQ_OAUTH_AUTHORIZATION == requestCode) {
                 PluginCall savedCall = getSavedCall();
-
                 if (savedCall == null) {
                     return;
                 }
-                handleAuthorizationRequestActivity(intent, getSavedCall());
+                handleAuthorizationRequestActivity(intent, savedCall);
             }
         }
     }
@@ -467,19 +468,10 @@ public class OAuth2ClientPlugin extends Plugin {
             }
         }
         o.setCustomHandlerClass(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_HANDLER_CLASS)));
-
-        String methodStr = ConfigUtils.getParamString(callData, PARAM_ANDROID_HANDLE_RESULT_METHOD);
-        if (methodStr != null) {
-            try {
-                OAuth2Options.HandleResultMethod handleResultMethod = OAuth2Options.HandleResultMethod.valueOf(methodStr.toUpperCase());
-                o.setHandleResultMethod(handleResultMethod);
-            } catch (IllegalArgumentException ignore) {
-
-            }
-        }
-
-        if (o.getHandleResultMethod() == null) {
-            o.setHandleResultMethod(OAuth2Options.HandleResultMethod.NEW);
+        o.setHandleResultOnNewIntent(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT, false));
+        o.setHandleResultOnActivityResult(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT, false));
+        if (!o.isHandleResultOnNewIntent() && !o.isHandleResultOnActivityResult()) {
+            o.setHandleResultOnActivityResult(true);
         }
         return o;
     }

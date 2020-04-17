@@ -8,10 +8,6 @@ import java.util.Map;
  */
 public class OAuth2Options {
 
-    public enum HandleResultMethod {
-        OLD, NEW, BOTH
-    }
-
     // required
     private String appId;
     private String authorizationBaseUrl;
@@ -30,7 +26,8 @@ public class OAuth2Options {
 
     private String customHandlerClass;
     // Activity result handling
-    private HandleResultMethod handleResultMethod = HandleResultMethod.NEW;
+    private boolean handleResultOnNewIntent;
+    private boolean handleResultOnActivityResult = true;
 
     private String display;
     private String loginHint;
@@ -175,12 +172,20 @@ public class OAuth2Options {
         this.responseMode = responseMode;
     }
 
-    public HandleResultMethod getHandleResultMethod() {
-        return handleResultMethod;
+
+    public boolean isHandleResultOnNewIntent() {
+        return handleResultOnNewIntent;
     }
 
-    public void setHandleResultMethod(HandleResultMethod handleResultMethod) {
-        this.handleResultMethod = handleResultMethod;
+    public void setHandleResultOnNewIntent(boolean handleResultOnNewIntent) {
+        this.handleResultOnNewIntent = handleResultOnNewIntent;
     }
 
+    public boolean isHandleResultOnActivityResult() {
+        return handleResultOnActivityResult;
+    }
+
+    public void setHandleResultOnActivityResult(boolean handleResultOnActivityResult) {
+        this.handleResultOnActivityResult = handleResultOnActivityResult;
+    }
 }
