@@ -148,6 +148,10 @@ export interface AndroidOptions extends OverwritableOptions {
      * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
      */
     customHandlerClass?: string;
+    /**
+     * How to handle the result. There are more than one possibility in Android/ Capacitor.
+     */
+    handleResultMethod?: "new" | "old" | "both";
 }
 
 export interface IosOptions extends OverwritableOptions {

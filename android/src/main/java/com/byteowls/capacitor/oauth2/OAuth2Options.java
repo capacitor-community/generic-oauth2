@@ -29,14 +29,14 @@ public class OAuth2Options {
     private Map<String, String> additionalParameters;
 
     private String customHandlerClass;
+    // Activity result handling
+    private HandleResultMethod handleResultMethod = HandleResultMethod.NEW;
 
     private String display;
     private String loginHint;
     private String prompt;
     private String responseMode;
 
-    // Activity result handling
-    private HandleResultMethod handleResultMethod = HandleResultMethod.NEW;
 
     public String getAppId() {
         return appId;
