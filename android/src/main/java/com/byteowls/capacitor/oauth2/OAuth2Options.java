@@ -8,23 +8,32 @@ import java.util.Map;
  */
 public class OAuth2Options {
 
+    // required
     private String appId;
     private String authorizationBaseUrl;
-    private String accessTokenEndpoint;
-    private String resourceUrl;
     private String responseType;
+    private String redirectUrl;
+
     private String scope;
     private String state;
-    private String redirectUrl;
-    private String customHandlerClass;
+
+    private String accessTokenEndpoint;
+    private String resourceUrl;
+
     private boolean pkceDisabled;
     private String pkceCodeVerifier;
     private Map<String, String> additionalParameters;
+
+    private String customHandlerClass;
+    // Activity result handling
+    private boolean handleResultOnNewIntent;
+    private boolean handleResultOnActivityResult = true;
 
     private String display;
     private String loginHint;
     private String prompt;
     private String responseMode;
+
 
     public String getAppId() {
         return appId;
@@ -161,5 +170,22 @@ public class OAuth2Options {
 
     public void setResponseMode(String responseMode) {
         this.responseMode = responseMode;
+    }
+
+
+    public boolean isHandleResultOnNewIntent() {
+        return handleResultOnNewIntent;
+    }
+
+    public void setHandleResultOnNewIntent(boolean handleResultOnNewIntent) {
+        this.handleResultOnNewIntent = handleResultOnNewIntent;
+    }
+
+    public boolean isHandleResultOnActivityResult() {
+        return handleResultOnActivityResult;
+    }
+
+    public void setHandleResultOnActivityResult(boolean handleResultOnActivityResult) {
+        this.handleResultOnActivityResult = handleResultOnActivityResult;
     }
 }

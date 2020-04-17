@@ -52,7 +52,7 @@ export interface OAuth2AuthenticateOptions {
      */
     appId: string;
     /**
-     * The base url for retrieving the access_token from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
+     * The base url for retrieving tokens depending on the response type from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
      */
     authorizationBaseUrl: string;
     /**
@@ -64,7 +64,7 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl?: string;
     /**
-     * Defaults to 'token' aka implicit flow if emtpy.
+     * Defaults to 'token' aka implicit flow if empty.
      *
      * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
      *
@@ -148,6 +148,14 @@ export interface AndroidOptions extends OverwritableOptions {
      * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
      */
     customHandlerClass?: string;
+    /**
+     * Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in.
+     */
+    handleResultOnNewIntent?: boolean;
+    /**
+     * Default handling the activity result.
+     */
+    handleResultOnActivityResult?: boolean;
 }
 
 export interface IosOptions extends OverwritableOptions {

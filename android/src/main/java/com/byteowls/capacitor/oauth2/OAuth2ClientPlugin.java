@@ -24,27 +24,31 @@ import net.openid.appauth.TokenRequest;
 
 import org.json.JSONException;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @NativePlugin(requestCodes = {OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
 
-    static final int REQ_OAUTH_AUTHORIZATION = 2000;
+    static final int REQ_OAUTH_AUTHORIZATION = 56854;
 
     private static final String PARAM_APP_ID = "appId";
-    private static final String PARAM_RESPONSE_TYPE = "responseType";
-    private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
-    private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
-    private static final String PARAM_PKCE_DISABLED = "pkceDisabled";
+    private static final String PARAM_RESPONSE_TYPE = "responseType";
+    // private static final String PARAM_REDIRECT_URL = "redirectUrl";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
+
+    private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
+    private static final String PARAM_PKCE_DISABLED = "pkceDisabled";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
     private static final String RESPONSE_TYPE_CODE = "code";
     private static final String RESPONSE_TYPE_TOKEN = "token";
+    private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
+    // Activity result handling
+    private static final String PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT = "android.handleResultOnNewIntent";
+    private static final String PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT = "android.handleResultOnActivityResult";
 
     // Refresh token params
     private static final String PARAM_REFRESH_TOKEN = "refreshToken";
@@ -60,12 +64,17 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID";
     private static final String ERR_PARAM_NO_AUTHORIZATION_BASE_URL = "ERR_PARAM_NO_AUTHORIZATION_BASE_URL";
     private static final String ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL";
+    private static final String ERR_PARAM_NO_RESPONSE_TYPE = "ERR_PARAM_NO_RESPONSE_TYPE";
+
     private static final String ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE";
+
     private static final String ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT";
     private static final String ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN";
 
+    private static final String ERR_AUTHORIZATION_FAILED = "ERR_AUTHORIZATION_FAILED";
     private static final String ERR_NO_ACCESS_TOKEN = "ERR_NO_ACCESS_TOKEN";
     private static final String ERR_ANDROID_NO_BROWSER = "ERR_ANDROID_NO_BROWSER";
+    private static final String ERR_ANDROID_RESULT_NULL = "ERR_ANDROID_NO_INTENT";
 
     private static final String ERR_CUSTOM_HANDLER_LOGIN = "ERR_CUSTOM_HANDLER_LOGIN";
     private static final String ERR_CUSTOM_HANDLER_LOGOUT = "ERR_CUSTOM_HANDLER_LOGOUT";
@@ -78,13 +87,12 @@ public class OAuth2ClientPlugin extends Plugin {
     private AuthorizationService authService;
     private AuthState authState;
 
-    public OAuth2ClientPlugin() {
-    }
+    public OAuth2ClientPlugin() {}
 
     @PluginMethod()
     public void refreshToken(final PluginCall call) {
         disposeAuthService();
-        OAuth2RefreshTokenOptions oAuth2RefreshTokenOptions = buildRefreshTokenOptions(call);
+        OAuth2RefreshTokenOptions oAuth2RefreshTokenOptions = buildRefreshTokenOptions(call.getData());
 
         if (oAuth2RefreshTokenOptions.getAppId() == null) {
             call.reject(ERR_PARAM_NO_APP_ID);
@@ -143,8 +151,8 @@ public class OAuth2ClientPlugin extends Plugin {
     @PluginMethod()
     public void authenticate(final PluginCall call) {
         disposeAuthService();
-        oauth2Options = buildOptions(call);
-        if (oauth2Options.getCustomHandlerClass() != null && oauth2Options.getCustomHandlerClass().length() > 0) {
+        oauth2Options = buildAuthenticateOptions(call.getData());
+        if (oauth2Options.getCustomHandlerClass() != null) {
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(oauth2Options.getCustomHandlerClass());
                 OAuth2CustomHandler handler = handlerClass.newInstance();
@@ -161,21 +169,27 @@ public class OAuth2ClientPlugin extends Plugin {
 
                     @Override
                     public void onError(Exception error) {
-                        Log.e(getLogTag(), ERR_CUSTOM_HANDLER_LOGIN + ": {}", error);
-                        call.reject(ERR_CUSTOM_HANDLER_LOGIN);
+                        call.reject(ERR_CUSTOM_HANDLER_LOGIN, error);
                     }
                 });
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                Log.e(getLogTag(), ERR_CUSTOM_HANDLER_LOGIN + ": {}", e);
-                call.reject(ERR_CUSTOM_HANDLER_LOGIN);
+                call.reject(ERR_CUSTOM_HANDLER_LOGIN, e);
+            } catch (Exception e) {
+                call.reject(ERR_GENERAL, e);
             }
         } else {
             if (oauth2Options.getAppId() == null) {
                 call.reject(ERR_PARAM_NO_APP_ID);
                 return;
             }
+
             if (oauth2Options.getAuthorizationBaseUrl() == null) {
                 call.reject(ERR_PARAM_NO_AUTHORIZATION_BASE_URL);
+                return;
+            }
+
+            if (oauth2Options.getResponseType() == null) {
+                call.reject(ERR_PARAM_NO_RESPONSE_TYPE);
                 return;
             }
 
@@ -184,20 +198,28 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
+            // TODO remove check #46, #48, #49
             if (!RESPONSE_TYPE_CODE.equals(oauth2Options.getResponseType()) && !RESPONSE_TYPE_TOKEN.equals(oauth2Options.getResponseType())) {
                 call.reject(ERR_PARAM_INVALID_RESPONSE_TYPE);
                 return;
             }
 
+            // TODO remove check. If there is a accessTokenEndpoint given the plugin will try it regardless of the given responseType
             if (RESPONSE_TYPE_CODE.equals(oauth2Options.getResponseType()) && oauth2Options.getAccessTokenEndpoint() == null) {
                 call.reject(ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT);
                 return;
             }
 
-            AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(
-                Uri.parse(oauth2Options.getAuthorizationBaseUrl()),
-                Uri.parse(oauth2Options.getAccessTokenEndpoint())
-            );
+            Uri authorizationUri = Uri.parse(oauth2Options.getAuthorizationBaseUrl());
+            Uri accessTokenUri;
+            if (oauth2Options.getAccessTokenEndpoint() != null) {
+                accessTokenUri = Uri.parse(oauth2Options.getAccessTokenEndpoint());
+            } else {
+                // appAuth does not allow to be the accessTokenUri empty although it is not used unit performTokenRequest
+                accessTokenUri = authorizationUri;
+            }
+
+            AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authorizationUri, accessTokenUri);
 
             if (this.authState == null) {
                 this.authState = new AuthState(config);
@@ -210,7 +232,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 Uri.parse(oauth2Options.getRedirectUrl())
             );
 
-            // appauth always uses a state
+            // app auth always uses a state
             if (oauth2Options.getState() != null) {
                 builder.setState(oauth2Options.getState());
             }
@@ -250,14 +272,17 @@ public class OAuth2ClientPlugin extends Plugin {
                 saveCall(call);
                 startActivityForResult(call, authIntent, REQ_OAUTH_AUTHORIZATION);
             } catch (ActivityNotFoundException e) {
-                call.reject(ERR_ANDROID_NO_BROWSER);
+                call.reject(ERR_ANDROID_NO_BROWSER, e);
+            } catch (Exception e) {
+                Log.e(getLogTag(), "Unexpected exception on open browser for authorization request!");
+                call.reject(ERR_GENERAL, e);
             }
         }
     }
 
     @PluginMethod()
     public void logout(final PluginCall call) {
-        String customHandlerClassname = ConfigUtils.getCallParam(String.class, call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
+        String customHandlerClassname = ConfigUtils.getParam(String.class, call.getData(), PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(customHandlerClassname);
@@ -269,8 +294,9 @@ public class OAuth2ClientPlugin extends Plugin {
                     call.reject(ERR_CUSTOM_HANDLER_LOGOUT);
                 }
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
-                Log.e(getLogTag(), ERR_CUSTOM_HANDLER_LOGOUT, e);
-                call.reject(ERR_CUSTOM_HANDLER_LOGOUT);
+                call.reject(ERR_CUSTOM_HANDLER_LOGOUT, e);
+            } catch (Exception e) {
+                call.reject(ERR_GENERAL, e);
             }
         } else {
             this.disposeAuthService();
@@ -280,17 +306,42 @@ public class OAuth2ClientPlugin extends Plugin {
     }
 
     @Override
-    protected void handleOnActivityResult(int requestCode, int resultCode, Intent data) {
-        if (REQ_OAUTH_AUTHORIZATION == requestCode) {
-            final PluginCall savedCall = getSavedCall();
+    protected void handleOnNewIntent(Intent intent) {
+        // this is a experimental hook and only usable if the android system kills the app between
+        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnNewIntent()) {
+            // with this I have no way to check if this intent is for this plugin
+            PluginCall savedCall = getSavedCall();
+            if (savedCall == null) {
+                return;
+            }
+            handleAuthorizationRequestActivity(intent, savedCall);
+        }
+    }
 
-            AuthorizationResponse response;
+    @Override
+    protected void handleOnActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.handleOnActivityResult(requestCode, resultCode, intent);
+        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
+            if (REQ_OAUTH_AUTHORIZATION == requestCode) {
+                PluginCall savedCall = getSavedCall();
+                if (savedCall == null) {
+                    return;
+                }
+                handleAuthorizationRequestActivity(intent, savedCall);
+            }
+        }
+    }
+
+    void handleAuthorizationRequestActivity(Intent intent, PluginCall savedCall) {
+        // there are valid situation when the Intent is null, but
+        if (intent != null) {
+            AuthorizationResponse authorizationResponse;
             AuthorizationException error;
             try {
-                response = AuthorizationResponse.fromIntent(data);
-                error = AuthorizationException.fromIntent(data);
-                this.authState.update(response, error);
-            } catch (IllegalArgumentException e) {
+                authorizationResponse = AuthorizationResponse.fromIntent(intent);
+                error = AuthorizationException.fromIntent(intent);
+                this.authState.update(authorizationResponse, error);
+            } catch (Exception e) {
                 savedCall.reject(ERR_GENERAL, e);
                 return;
             }
@@ -306,69 +357,101 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
-            // get authorization code
-            if (response != null) {
-                this.authService = new AuthorizationService(getContext());
-                TokenRequest tokenExchangeRequest;
-                try {
-                    tokenExchangeRequest = response.createTokenExchangeRequest();
-                    this.authService.performTokenRequest(tokenExchangeRequest, (response1, ex) -> {
-                        authState.update(response1, ex);
-                        if (ex != null) {
-                            savedCall.reject(ERR_GENERAL, ex);
-                        } else {
-                            if (response1 != null) {
-                                if (oauth2Options.getResourceUrl() != null) {
-                                    authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
-                                        -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
+            // this response may contain the authorizationCode but also idToken and accessToken depending on the flow chosen by responseType
+            if (authorizationResponse != null) {
+                // if the accessToken already exists because of the implicit flow
+                if (authorizationResponse.accessToken != null) {
+                    // we try to make the resource call if there was a resource url provided
+                    if (oauth2Options.getResourceUrl() != null) {
+                        ResourceUrlAsyncTask asyncTask = new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag());
+                        asyncTask.execute(authorizationResponse.accessToken);
+                    } else {
+                        // if there is no resource url we resolve the call with the whole response incl. the accessToken
+                        createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
+                    }
+                } else {
+                    // if no accessToken was found it was
+                    if (oauth2Options.getAccessTokenEndpoint() != null) {
+
+                        this.authService = new AuthorizationService(getContext());
+                        TokenRequest tokenExchangeRequest;
+                        try {
+                            tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest();
+                            this.authService.performTokenRequest(tokenExchangeRequest, (accessTokenResponse, exception) -> {
+                                authState.update(accessTokenResponse, exception);
+                                if (exception != null) {
+                                    savedCall.reject(ERR_AUTHORIZATION_FAILED, exception);
                                 } else {
-                                    try {
-                                        JSObject json = new JSObject(response1.jsonSerializeString());
-                                        savedCall.resolve(json);
-                                    } catch (JSONException e) {
-                                        savedCall.reject(ERR_GENERAL, e);
+                                    if (accessTokenResponse != null) {
+                                        if (oauth2Options.getResourceUrl() != null) {
+                                            authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
+                                                -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
+                                        } else {
+                                            createJsObjAndResolve(savedCall, accessTokenResponse.jsonSerializeString());
+                                        }
+                                    } else {
+                                        savedCall.reject(ERR_NO_ACCESS_TOKEN);
                                     }
                                 }
-                            } else {
-                                savedCall.reject(ERR_NO_ACCESS_TOKEN);
-                            }
+                            });
+                        } catch (Exception e) {
+                            savedCall.reject(ERR_NO_AUTHORIZATION_CODE, e);
                         }
-
-                    });
-                } catch (IllegalStateException e) {
-                    savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
+                    } else {
+                        createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
+                    }
                 }
+            } else {
+                savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
             }
+        } else {
+            // the intent is null because the provider send the redirect to the server, which would be valid
+            // the intent is null because the plugin user configured sth wrong incl.
+            // the provider does not support redirecting to a android app, which would be invalid
+            savedCall.reject(ERR_ANDROID_RESULT_NULL);
         }
     }
 
-    private OAuth2Options buildOptions(PluginCall call) {
-        OAuth2Options o = new OAuth2Options();
-        o.setAppId(getOverwritableParam(String.class, call, PARAM_APP_ID));
-        o.setPkceDisabled(getOverwritableParam(Boolean.class, call, PARAM_PKCE_DISABLED));
-        o.setAuthorizationBaseUrl(ConfigUtils.getCallString(call, PARAM_AUTHORIZATION_BASE_URL));
-        o.setAccessTokenEndpoint(ConfigUtils.getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT));
-        o.setResourceUrl(ConfigUtils.getCallString(call, PARAM_RESOURCE_URL));
-        o.setResponseType(getOverwritableParam(String.class, call, PARAM_RESPONSE_TYPE));
-        o.setScope(ConfigUtils.getCallString(call, PARAM_SCOPE));
-        o.setState(ConfigUtils.getCallString(call, PARAM_STATE));
-        if (o.getState() == null || o.getState().trim().length() == 0) {
-            o.setState(ConfigUtils.getRandomString(20));
+    void createJsObjAndResolve(PluginCall call, String jsonStr) {
+        try {
+            JSObject json = new JSObject(jsonStr);
+            call.resolve(json);
+        } catch (JSONException e) {
+            call.reject(ERR_GENERAL, e);
         }
+    }
 
-        if (o.getResponseType() == null || o.getResponseType().length() == 0) {
+    OAuth2Options buildAuthenticateOptions(JSObject callData) {
+        OAuth2Options o = new OAuth2Options();
+        // required
+        o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
+        o.setAuthorizationBaseUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_AUTHORIZATION_BASE_URL)));
+        o.setResponseType(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESPONSE_TYPE)));
+        if (o.getResponseType() == null) {
             // fallback to token
             o.setResponseType(RESPONSE_TYPE_TOKEN);
         }
+        // TODO #84 base redirectUrl
+        o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_SCHEME)));
 
+        // optional
+        o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_RESOURCE_URL)));
+        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setPkceDisabled(ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_DISABLED));
         if (RESPONSE_TYPE_CODE.equals(o.getResponseType())) {
             if (!o.isPkceDisabled()) {
                 o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
             }
         }
 
-        Map<String, String> additionalParameters = getOverwritableParamMap(call, PARAM_ADDITIONAL_PARAMETERS);
-        if (additionalParameters != null && !additionalParameters.isEmpty()) {
+        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_SCOPE)));
+        o.setState(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_STATE)));
+        if (o.getState() == null) {
+            o.setState(ConfigUtils.getRandomString(20));
+        }
+
+        Map<String, String> additionalParameters = ConfigUtils.getOverwrittenAndroidParamMap(callData, PARAM_ADDITIONAL_PARAMETERS);
+        if (!additionalParameters.isEmpty()) {
             for (Map.Entry<String, String> entry : additionalParameters.entrySet()) {
                 String key = entry.getKey();
                 if (PARAM_DISPLAY.equals(key)) {
@@ -384,37 +467,22 @@ public class OAuth2ClientPlugin extends Plugin {
                 }
             }
         }
-        o.setRedirectUrl(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_SCHEME));
-        o.setCustomHandlerClass(ConfigUtils.getCallString(call, PARAM_ANDROID_CUSTOM_HANDLER_CLASS));
+        o.setCustomHandlerClass(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_HANDLER_CLASS)));
+        o.setHandleResultOnNewIntent(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT, false));
+        o.setHandleResultOnActivityResult(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT, false));
+        if (!o.isHandleResultOnNewIntent() && !o.isHandleResultOnActivityResult()) {
+            o.setHandleResultOnActivityResult(true);
+        }
         return o;
     }
 
-    private OAuth2RefreshTokenOptions buildRefreshTokenOptions(PluginCall call) {
+    OAuth2RefreshTokenOptions buildRefreshTokenOptions(JSObject callData) {
         OAuth2RefreshTokenOptions o = new OAuth2RefreshTokenOptions();
-        o.setAppId(getOverwritableParam(String.class, call, PARAM_APP_ID));
-        o.setAccessTokenEndpoint(ConfigUtils.getCallString(call, PARAM_ACCESS_TOKEN_ENDPOINT));
-        o.setScope(ConfigUtils.getCallString(call, PARAM_SCOPE));
-        o.setRefreshToken(getOverwritableParam(String.class, call, PARAM_REFRESH_TOKEN));
+        o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
+        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_SCOPE)));
+        o.setRefreshToken(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REFRESH_TOKEN)));
         return o;
-    }
-
-    private <T> T getOverwritableParam(Class<T> clazz, PluginCall call, String key) {
-        T baseParam = ConfigUtils.getCallParam(clazz, call, key);
-        T androidParam = ConfigUtils.getCallParam(clazz, call, "android." + key);
-        if (androidParam != null) {
-            baseParam = androidParam;
-        }
-        return baseParam;
-    }
-
-    private Map<String, String> getOverwritableParamMap(PluginCall call, String key) {
-        Map<String, String> baseParam = ConfigUtils.getCallParamMap(call, key);
-        Map<String, String> androidParam = ConfigUtils.getCallParamMap(call, "android." + key);
-        Map<String, String> mergedParam = new HashMap<>(baseParam);
-        if (androidParam != null) {
-            mergedParam.putAll(androidParam);
-        }
-        return mergedParam;
     }
 
     @Override

@@ -21,6 +21,21 @@ For further details on what has changed see the [CHANGELOG](https://github.com/m
 
 ## Supported flows
 
+Starting with version **2.0.0** the plugin will no longer restrict the `responseType` to `token` or `code`.
+
+Developers can configure anything. It is their responsibility to use the options the chosen OAuth Provider supports.
+
+The plugin on the other will behave differently depending on the existence of certain config parameters:
+
+These parameters are:
+
+* `accessTokenEndpoint`
+* `resourceUrl`
+
+e.g.
+
+If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
+
 ### Implicit flow (response type: token)
 
 Status: **ok**
@@ -93,7 +108,7 @@ export class SignupComponent {
             // only if you include a resourceUrl protected user values are included in the response!
             let oauthUserId = response["id"];
             let name = response["name"];
-            
+
             // go to backend
         }).catch(reason => {
             console.error("OAuth rejected", reason);
@@ -134,24 +149,27 @@ export class SignupComponent {
 
 See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
 
-**NOTE:** Configuring a `resourceUrl` is optional. 
+**NOTE:** Configuring a `resourceUrl` is optional.
 But be aware that only the parameters from the accessToken request are included in the plugin's response if you do so!
 
 ### Error Codes
 
 * ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android, ios)
 * ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
+* ERR_PARAM_NO_RESPONSE_TYPE ... The response type is missing. (web, android, ios)
 * ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android, ios)
 * ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android, ios)
 * ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android, ios)
 * ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing (only when obtaining an access token based on a refresh token, android/ios)
+* ERR_AUTHORIZATION_FAILED ... The authorization failed.
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 * ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
 * ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
 * USER_CANCELLED ... The user cancelled the login flow. (web, android, ios)
 * ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
-* ERR_ANDROID_NO_BROWSER ... On Android not suitable browser could be found! (android)
+* ERR_ANDROID_NO_BROWSER ... No suitable browser could be found! (Android)
+* ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
 * ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
 ## Platform: Web/PWA
@@ -163,24 +181,87 @@ impact using this plugin in a web application.
 
 ## Platform: Android
 
-**Register the plugin** in `com.companyname.appname.MainActivity#onCreate`
+Prerequisite: [Capacitor Android Docs](https://capacitor.ionicframework.com/docs/android/configuration)
 
-```
+### Register the plugin
+
+The plugin must be manually added to your `com.companyname.appname.MainActivity`.
+See the [Capacitor Docs](https://capacitor.ionicframework.com/docs/plugins/android#export-to-capacitor) or below:
+
+```java
+// Other imports...
+import com.byteowls.capacitor.oauth2.OAuth2ClientPlugin;
+
+public class MainActivity extends BridgeActivity {
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        List<Class<? extends Plugin>> additionalPlugins = new ArrayList<>();
-        // Additional plugins you've installed go here
-        // Ex: additionalPlugins.add(TotallyAwesomePlugin.class);
-        additionalPlugins.add(OAuth2ClientPlugin.class);
-
         // Initializes the Bridge
-        this.init(savedInstanceState, additionalPlugins);
+        this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+            // Additional plugins you've installed go here
+            // Ex: add(TotallyAwesomePlugin.class);
+            add(OAuth2ClientPlugin.class);
+        }});
     }
+}
 ```
 
-**Custom OAuth Handler**
+### Android Default Config
+
+Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler)
+
+#### AndroidManifest.xml
+The `AndroidManifest.xml` in your Capacitor Android project already contains
+```xml
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/custom_url_scheme" />
+    </intent-filter>
+```
+
+Find the line
+```xml
+<data android:scheme="@string/custom_url_scheme" />
+```
+and change it to
+```xml
+<data android:scheme="@string/custom_url_scheme" android:host="oauth" />
+```
+Note: Actually any value for `android:host` will do. It does not has to be `oauth`.
+
+This will fix an issues within the oauth workflow when the application is shown twice.
+See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
+
+#### android/app/build.gradle
+
+```groovy
+android.defaultConfig.manifestPlaceholders = [
+  "appAuthRedirectScheme": "<@string/custom_url_scheme from string.xml>"
+]
+```
+
+**Troubleshooting**
+
+1) If your `appAuthRedirectScheme` does not get recognized because you are using a library that replaces it
+(e.g.: onesignal-cordova-plugin), you will have to add it to your `buildTypes` like the following:
+
+```groovy
+android.buildTypes.debug.manifestPlaceholders =  [
+  'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
+]
+android.buildTypes.release.manifestPlaceholders = [
+  'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
+]
+```
+
+2) "ERR_ANDROID_RESULT_NULL": See [Issue #52](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515) for details.
+I cannot reproduce this behaviour. Moreover there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
+
+### Custom OAuth Handler
 
 Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
@@ -194,11 +275,30 @@ See a full working example below!
 
 ## Platform: iOS
 
-On iOS the plugin is registered automatically by Capacitor.
+### Register plugin
+On iOS the plugin is registered **automatically** by Capacitor.
 
-**Custom OAuth Handler**
+### iOS Default Config
 
-Some OAuth provider (Facebook) force developers to use their SDK on iOS.
+Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler-1)
+
+Open `ios/App/App/Info.plist` in XCode and add the `customScheme` / `redirectUrl` from your config without `:/` like that
+
+```xml
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.companyname.appname</string>
+			</array>
+		</dict>
+	</array>
+```
+
+### Custom OAuth Handler
+
+Some OAuth provider (e.g. Facebook) force developers to use their SDK on iOS.
 
 This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
@@ -260,48 +360,11 @@ googleLogin() {
 
 #### Android
 
-Add the value of the `android.customScheme` parameter in `android/app/build.gradle` as well, but remove the suffix `:/`
-
-Then in your `AndroidManifest.xml` file find the line
-```
-<data android:scheme="@string/custom_url_scheme" />
-```
-and change it to
-```
-<data android:scheme="@string/custom_url_scheme" android:host="oauth" />
-```
-Note: Actually any value for `android:host` will do. It does not has to be `oauth`.
-
-This will fix an issues within the oauth workflow when the application is shown twice.
-See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
-
-Notice: If your appAuthRedirectScheme doesn't get recognized because you are using a library that replaces it
-(e.g.: onesignal-cordova-plugin), you will have to add it to your buildTypes like the following:
-
-```
-android.buildTypes.debug.manifestPlaceholders =  [
-  'appAuthRedirectScheme': 'com.companyname.appname'
-]
-android.buildTypes.release.manifestPlaceholders = [
-  'appAuthRedirectScheme': 'com.companyname.appname'
-]
-```
+See [Android Default Config](#android-default-config)
 
 #### iOS
 
-Open `ios/App/App/Info.plist` in a XML editor and add the customScheme without `:/` like that
-
-```xml
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.companyname.appname</string>
-			</array>
-		</dict>
-	</array>
-```
+See [iOS Default Config](#ios-default-config)
 
 ### Facebook
 

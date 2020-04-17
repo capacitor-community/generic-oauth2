@@ -29,9 +29,6 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         this.options = options;
         this.logTag = logTag;
     }
-    private boolean isNullOrEmpty(String s) {
-        return s == null || s.trim().length() == 0;
-    }
 
     @Override
     protected ResourceCallResult doInBackground(String... tokens) {
@@ -39,7 +36,7 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         ResourceCallResult result = new ResourceCallResult();
         String accessToken = tokens[0];
 
-        if(isNullOrEmpty(resourceUrl)) {
+        if (resourceUrl == null) {
             JSObject json = new JSObject();
             json.put("access_token", accessToken);
             result.setResponse(json);
