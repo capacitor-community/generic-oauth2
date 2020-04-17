@@ -13,10 +13,13 @@
 the USER_CANCELLED error is sent. closes #71
 * Web: Include all url params from the accessToken request if no resourceUrl is present. closes #72. thx [@sanjaywadhwani](https://github.com/sanjaywadhwani)
 * Android: Allow no resource url and just return every we got until so far. closes #75. thx [@0x4AMiller](https://github.com/0x4AMiller)
+* Android: Add an alternative to handle the activity result intent.
+This is controlled by Android specific parameters `handleResultOnNewIntent` for the alternative and `handleResultOnActivityResult` for the default. closes #52, #55.
 
 ### Fixed
 
-* XCode 11.4 crash on app start. closes #73. thx [@macdja38](https://github.com/macdja38)
+* iOS: XCode 11.4 crash on app start. closes #73. thx [@macdja38](https://github.com/macdja38)
+
 
 ### Docs
 

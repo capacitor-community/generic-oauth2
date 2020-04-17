@@ -53,7 +53,9 @@ Replace this with the commands output
 <!-- Please remove all items that are not relevant. -->
 
 - Android
+ - Replace with Android version and device model
 - iOS
+ - Replace with iOS version
 - Web
 
 ### Current Behavior

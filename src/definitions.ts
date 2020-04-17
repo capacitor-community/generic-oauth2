@@ -149,9 +149,12 @@ export interface AndroidOptions extends OverwritableOptions {
      */
     customHandlerClass?: string;
     /**
-     * How to handle the result. There are more than one possibility in Android/ Capacitor.
+     * Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in.
      */
     handleResultOnNewIntent?: boolean;
+    /**
+     * Default handling the activity result.
+     */
     handleResultOnActivityResult?: boolean;
 }
 
