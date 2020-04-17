@@ -64,7 +64,7 @@ export interface OAuth2AuthenticateOptions {
      */
     resourceUrl?: string;
     /**
-     * Defaults to 'token' aka implicit flow if emtpy.
+     * Defaults to 'token' aka implicit flow if empty.
      *
      * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
      *

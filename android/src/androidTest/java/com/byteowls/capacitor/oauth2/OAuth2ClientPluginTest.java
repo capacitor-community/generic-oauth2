@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.*;
 
 import com.byteowls.capacitor.oauth2.test.R;
 import com.getcapacitor.JSObject;
@@ -22,37 +21,41 @@ public class OAuth2ClientPluginTest {
 
     @Before
     public void setup() {
-         plugin = new OAuth2ClientPlugin();
+        plugin = new OAuth2ClientPlugin();
     }
 
+//    @Test
+//    public void handleAuthorizationRequestActivity() {
+////        plugin.handleAuthorizationRequestActivity();
+//    }
 
     @Test
-    public void handleOnActivityResult() {
-
-        plugin.handleOnActivityResult(OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION, 0, null);
-
-
-    }
-
-    @Test
-    public void buildAuthenticateOptions() {
-        try (InputStream in = getInstrumentation().getContext().getResources().openRawResource(R.raw.config_no_resouce_url)) {
-            JSObject jsObject = new JSObject(IOUtils.toString(in, UTF_8));
-            OAuth2Options oAuth2Options = plugin.buildAuthenticateOptions(jsObject);
-            Assert.assertNotNull(oAuth2Options);
-        } catch (Exception e) {
-            Log.e("OAuth2", "", e);
-        }
+    public void responseTypeToken() {
+        JSObject jsObject = loadJson(R.raw.response_type_token);
+        OAuth2Options options = plugin.buildAuthenticateOptions(jsObject);
+        Assert.assertNotNull(options);
+        Assert.assertEquals("CLIENT_ID_ANDROID", options.getAppId());
+        Assert.assertEquals("token", options.getResponseType().toLowerCase());
+        Assert.assertNotNull(options.getHandleResultMethod());
     }
 
     @Test
     public void buildRefreshTokenOptions() {
-        try (InputStream in = getInstrumentation().getContext().getResources().openRawResource(R.raw.config_no_resouce_url)) {
-            JSObject jsObject = new JSObject(IOUtils.toString(in, UTF_8));
-            OAuth2Options oAuth2Options = plugin.buildAuthenticateOptions(jsObject);
-            Assert.assertNotNull(oAuth2Options);
+        JSObject jsObject = loadJson(R.raw.refresh_token_config);
+        OAuth2RefreshTokenOptions options = plugin.buildRefreshTokenOptions(jsObject);
+        Assert.assertNotNull(options);
+        Assert.assertNotNull(options.getAppId());
+        Assert.assertNotNull(options.getAccessTokenEndpoint());
+        Assert.assertNotNull(options.getRefreshToken());
+        Assert.assertNotNull(options.getScope());
+    }
+
+    private JSObject loadJson(int resource) {
+        try (InputStream in = getInstrumentation().getContext().getResources().openRawResource(resource)) {
+            return new JSObject(IOUtils.toString(in, UTF_8));
         } catch (Exception e) {
             Log.e("OAuth2", "", e);
         }
+        return null;
     }
 }

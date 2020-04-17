@@ -21,6 +21,21 @@ For further details on what has changed see the [CHANGELOG](https://github.com/m
 
 ## Supported flows
 
+Starting with version **2.0.0** the plugin will no longer restrict the `responseType` to `token` or `code`.
+
+Developers can configure anything. It is their responsibility to use the options the chosen OAuth Provider supports.
+
+The plugin on the other will behave differently depending on the existence of certain config parameters:
+
+These parameters are:
+
+* `accessTokenEndpoint`
+* `resourceUrl`
+
+e.g.
+
+If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
+
 ### Implicit flow (response type: token)
 
 Status: **ok**
@@ -141,10 +156,12 @@ But be aware that only the parameters from the accessToken request are included 
 
 * ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android, ios)
 * ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
+* ERR_PARAM_NO_RESPONSE_TYPE ... The response type is missing. (web, android, ios)
 * ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android, ios)
 * ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android, ios)
 * ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android, ios)
 * ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing (only when obtaining an access token based on a refresh token, android/ios)
+* ERR_AUTHORIZATION_FAILED ... The authorization failed.
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 * ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
 * ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)

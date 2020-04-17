@@ -86,10 +86,22 @@ public class ConfigUtilsTest {
     public void getOverwrittenAndroidParamMap() {
         Map<String, String> map = ConfigUtils.getOverwrittenAndroidParamMap(jsObject, "map");
         Assert.assertNotNull(map);
-        Assert.assertEquals(3, map.size());
         Assert.assertEquals("value1Android", map.get("key1"));
         Assert.assertEquals("value2", map.get("key2"));
         Assert.assertEquals("value3Android", map.get("key3"));
+    }
+
+    @Test
+    public void overwriteWithEmpty() {
+        String accessTokenEndpoint = "accessTokenEndpoint";
+        Assert.assertNotNull(ConfigUtils.getParamString(jsObject, accessTokenEndpoint));
+        Assert.assertEquals("", ConfigUtils.getOverwrittenAndroidParam(String.class, jsObject, accessTokenEndpoint));
+
+        String inMapNullable = "inMapNullable";
+        Map<String, String> paramMap = ConfigUtils.getParamMap(jsObject, "map");
+        Assert.assertNotNull(paramMap.get(inMapNullable));
+        Map<String, String> androidParamMap = ConfigUtils.getOverwrittenAndroidParamMap(jsObject, "map");
+        Assert.assertEquals("", androidParamMap.get(inMapNullable));
     }
 
     @Test
@@ -100,12 +112,24 @@ public class ConfigUtilsTest {
     }
 
     @Test
-    public void checkEmptyToNull() {
+    public void empty() {
+        // make sure the empty value stays empty
         String emptyValue = ConfigUtils.getParamString(jsObject, "empty");
-        Assert.assertNull(emptyValue);
+        Assert.assertEquals(0, emptyValue.length());
+    }
 
+    @Test
+    public void blank() {
+        // make sure the blank value stays blank
         String blankValue = ConfigUtils.getParamString(jsObject, "blank");
-        Assert.assertNull(blankValue);
+        Assert.assertEquals(" ", blankValue);
+    }
 
+    @Test
+    public void trimToNull() {
+        Assert.assertNull(ConfigUtils.trimToNull("  "));
+        Assert.assertNull(ConfigUtils.trimToNull(" "));
+        Assert.assertNull(ConfigUtils.trimToNull(""));
+        Assert.assertEquals("a", ConfigUtils.trimToNull("a"));
     }
 }

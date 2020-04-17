@@ -4,6 +4,7 @@
     "intValue": 1,
     "stringValue": "string",
     "booleanValue": true,
+    "accessTokenEndpoint": "https://byteowls.com",
     "first": {
         "second": {
             "third": {
@@ -17,13 +18,16 @@
     },
     "map": {
         "key1": "value1",
-        "key2": "value2"
+        "key2": "value2",
+        "inMapNullable": "notEmpty"
     },
     "android": {
         "stringValue": "stringAndroid",
+        "accessTokenEndpoint": "",
         "map": {
             "key1": "value1Android",
-            "key3": "value3Android"
+            "key3": "value3Android",
+            "inMapNullable": ""
         }
     },
     "empty": "",
