@@ -41,10 +41,10 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
         }
     },
     android: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
     },
     ios: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
     }
 };
 
@@ -60,10 +60,10 @@ const redirectUrlOptions: OAuth2AuthenticateOptions = {
     web: {
     },
     android: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
     },
     ios: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
     }
 };
 
