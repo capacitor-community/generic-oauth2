@@ -91,7 +91,7 @@ export interface OAuth2AuthenticateBaseOptions {
     /**
      * Additional parameters for the created authorization url
      */
-    additionalParameters?: {[key: string]: string}
+    additionalParameters?: { [key: string]: string }
 }
 
 export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
@@ -123,11 +123,6 @@ export interface WebOption extends OAuth2AuthenticateBaseOptions {
 
 export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
     /**
-     * Use your app's custom scheme here. e.g. com.companyname.appname:/
-     * @deprecated use redirectUrl instead
-     */
-    customScheme?: string;
-    /**
      * Some oauth provider especially Facebook forces us to use their SDK for apps.
      *
      * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
@@ -144,11 +139,6 @@ export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
 }
 
 export interface IosOptions extends OAuth2AuthenticateBaseOptions {
-    /**
-     * Use your app's custom scheme here. e.g. com.companyname.appname:/
-     * @deprecated use redirectUrl instead
-     */
-    customScheme?: string;
     /**
      * Some oauth provider especially Facebook forces us to use their SDK for apps.
      *

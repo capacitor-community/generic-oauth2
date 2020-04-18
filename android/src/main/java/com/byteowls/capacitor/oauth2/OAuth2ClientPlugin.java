@@ -45,7 +45,6 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String RESPONSE_TYPE_TOKEN = "token";
     private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
-    private static final String PARAM_ANDROID_CUSTOM_SCHEME = "android.customScheme";
     // Activity result handling
     private static final String PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT = "android.handleResultOnNewIntent";
     private static final String PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT = "android.handleResultOnActivityResult";
@@ -433,11 +432,6 @@ public class OAuth2ClientPlugin extends Plugin {
             o.setResponseType(RESPONSE_TYPE_TOKEN);
         }
         o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
-        // #84 backward compatibility
-        String customScheme = ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_SCHEME));
-        if (customScheme != null) {
-            o.setRedirectUrl(customScheme);
-        }
 
         // optional
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
