@@ -359,47 +359,35 @@ public class OAuth2ClientPlugin extends Plugin {
 
             // this response may contain the authorizationCode but also idToken and accessToken depending on the flow chosen by responseType
             if (authorizationResponse != null) {
-                // if the accessToken already exists because of the implicit flow
-                if (authorizationResponse.accessToken != null) {
-                    // we try to make the resource call if there was a resource url provided
-                    if (oauth2Options.getResourceUrl() != null) {
-                        ResourceUrlAsyncTask asyncTask = new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag());
-                        asyncTask.execute(authorizationResponse.accessToken);
-                    } else {
-                        // if there is no resource url we resolve the call with the whole response incl. the accessToken
-                        createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
+                // if there is a tokenEndpoint configured try to get the accessToken from it.
+                // it might be already in the authorizationResponse but tokenEndpoint might deliver other tokens.
+                if (oauth2Options.getAccessTokenEndpoint() != null) {
+                    this.authService = new AuthorizationService(getContext());
+                    TokenRequest tokenExchangeRequest;
+                    try {
+                        tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest();
+                        this.authService.performTokenRequest(tokenExchangeRequest, (accessTokenResponse, exception) -> {
+                            authState.update(accessTokenResponse, exception);
+                            if (exception != null) {
+                                savedCall.reject(ERR_AUTHORIZATION_FAILED, exception);
+                            } else {
+                                if (accessTokenResponse != null) {
+                                    if (oauth2Options.getResourceUrl() != null) {
+                                        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
+                                            -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
+                                    } else {
+                                        createJsObjAndResolve(savedCall, accessTokenResponse.jsonSerializeString());
+                                    }
+                                } else {
+                                    savedCall.reject(ERR_NO_ACCESS_TOKEN);
+                                }
+                            }
+                        });
+                    } catch (Exception e) {
+                        savedCall.reject(ERR_NO_AUTHORIZATION_CODE, e);
                     }
                 } else {
-                    // if no accessToken was found it was
-                    if (oauth2Options.getAccessTokenEndpoint() != null) {
-
-                        this.authService = new AuthorizationService(getContext());
-                        TokenRequest tokenExchangeRequest;
-                        try {
-                            tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest();
-                            this.authService.performTokenRequest(tokenExchangeRequest, (accessTokenResponse, exception) -> {
-                                authState.update(accessTokenResponse, exception);
-                                if (exception != null) {
-                                    savedCall.reject(ERR_AUTHORIZATION_FAILED, exception);
-                                } else {
-                                    if (accessTokenResponse != null) {
-                                        if (oauth2Options.getResourceUrl() != null) {
-                                            authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
-                                                -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
-                                        } else {
-                                            createJsObjAndResolve(savedCall, accessTokenResponse.jsonSerializeString());
-                                        }
-                                    } else {
-                                        savedCall.reject(ERR_NO_ACCESS_TOKEN);
-                                    }
-                                }
-                            });
-                        } catch (Exception e) {
-                            savedCall.reject(ERR_NO_AUTHORIZATION_CODE, e);
-                        }
-                    } else {
-                        createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
-                    }
+                    createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
                 }
             } else {
                 savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
