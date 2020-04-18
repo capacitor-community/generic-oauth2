@@ -10,32 +10,41 @@ public class OAuth2ClientPlugin: CAPPlugin {
     
     let JSON_KEY_ACCESS_TOKEN = "access_token"
     
+    let PARAM_REFRESH_TOKEN = "refreshToken"
+    
+    // required
     let PARAM_APP_ID = "appId"
-    let PARAM_RESPONSE_TYPE = "responseType"
-    let PARAM_IOS_CUSTOM_SCHEME = "ios.customScheme"
-    let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
     let PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl"
+    let PARAM_RESPONSE_TYPE = "responseType"
+    let PARAM_REDIRECT_URL = "redirectUrl"
+    // controlling
+    let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
+    let PARAM_RESOURCE_URL = "resourceUrl"
+    
     let PARAM_ADDITIONAL_PARAMETERS = "additionalParameters"
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
     let PARAM_PKCE_DISABLED = "pkceDisabled"
-    let PARAM_RESOURCE_URL = "resourceUrl"
-    let PARAM_REFRESH_TOKEN = "refreshToken"
+
     let RESPONSE_TYPE_CODE = "code"
     let RESPONSE_TYPE_TOKEN = "token"
     
     let ERR_GENERAL = "ERR_GENERAL"
     
     let ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID"
+    let ERR_PARAM_NO_AUTHORIZATION_BASE_URL = "ERR_PARAM_NO_AUTHORIZATION_BASE_URL"
+    let ERR_PARAM_NO_RESPONSE_TYPE = "ERR_PARAM_NO_RESPONSE_TYPE"
+    let ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL"
+    
+    
     let ERR_CUSTOM_HANDLER_LOGIN = "ERR_CUSTOM_HANDLER_LOGIN"
     let ERR_CUSTOM_HANDLER_LOGOUT = "ERR_CUSTOM_HANDLER_LOGOUT"
     let ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH"
     let ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"
     let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
     let ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN"
-    let ERR_PARAM_NO_AUTHORIZATION_BASE_URL = "ERR_PARAM_NO_AUTHORIZATION_BASE_URL"
-    let ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL"
+
     let ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE"
     
     struct SharedConstants {
@@ -112,7 +121,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         self.oauthSwift = oauthSwift
         
-        let scope = getString(call, PARAM_SCOPE) ?? nil;
+        let scope = getOverwritableString(call, PARAM_SCOPE) ?? nil;
         var parameters: OAuthSwift.Parameters = [:];
         
         if scope != nil {
@@ -146,11 +155,11 @@ public class OAuth2ClientPlugin: CAPPlugin {
      * Plugin function to authenticate
      */
     @objc func authenticate(_ call: CAPPluginCall) {
-        guard let appId = getOverwritableString(call, PARAM_APP_ID) else {
+        guard let appId = getOverwritableString(call, PARAM_APP_ID), !appId.isEmpty else {
             call.reject(self.ERR_PARAM_NO_APP_ID)
             return
         }
-        let resourceUrl = getString(call, self.PARAM_RESOURCE_URL)
+        let resourceUrl = getOverwritableString(call, self.PARAM_RESOURCE_URL)
         // Github issue #71
         self.oauth2SafariDelegate = OAuth2SafariDelegate(call)
         
@@ -200,25 +209,18 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
             }
         } else {
-            guard let baseUrl = getString(call, PARAM_AUTHORIZATION_BASE_URL) else {
+            guard let baseUrl = getOverwritableString(call, PARAM_AUTHORIZATION_BASE_URL), !baseUrl.isEmpty else {
                 call.reject(self.ERR_PARAM_NO_AUTHORIZATION_BASE_URL)
                 return
             }
             
-            guard let redirectUrl = getString(call, PARAM_IOS_CUSTOM_SCHEME) else {
-                call.reject(self.ERR_PARAM_NO_REDIRECT_URL)
+            guard let responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE), !responseType.isEmpty else {
+                call.reject(self.ERR_PARAM_NO_RESPONSE_TYPE)
                 return
             }
-            
-            var responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE)
-            if responseType == nil {
-                // on native apps the response type is most probably "code"
-                responseType = RESPONSE_TYPE_CODE
-            }
-            
-            let accessTokenEndpoint = getString(call, PARAM_ACCESS_TOKEN_ENDPOINT)
-            if accessTokenEndpoint == nil && responseType == RESPONSE_TYPE_CODE {
-                call.reject(self.ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT)
+
+            guard let redirectUrl = getOverwritableString(call, PARAM_REDIRECT_URL), !redirectUrl.isEmpty else {
+                call.reject(self.ERR_PARAM_NO_REDIRECT_URL)
                 return
             }
             
@@ -228,20 +230,20 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
             
             var oauthSwift: OAuth2Swift
-            if responseType == RESPONSE_TYPE_CODE {
+            if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
                 oauthSwift = OAuth2Swift(
                     consumerKey: appId,
                     consumerSecret: "", // never ever store the app secret on client!
                     authorizeUrl: baseUrl,
-                    accessTokenUrl: accessTokenEndpoint!,
-                    responseType: responseType!
+                    accessTokenUrl: accessTokenEndpoint,
+                    responseType: responseType
                 )
             } else {
                 oauthSwift = OAuth2Swift(
                     consumerKey: appId,
                     consumerSecret: "", // never ever store the app secret on client!
                     authorizeUrl: baseUrl,
-                    responseType: responseType!
+                    responseType: responseType
                 )
             }
             
@@ -264,7 +266,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }
             }
             
-            let requestState = getString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
+            let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
             let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
             // if response type is code and pkce is not disabled
             if responseType == RESPONSE_TYPE_CODE && !pkceDisabled {
@@ -274,20 +276,20 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 
                 oauthSwift.authorize(
                     withCallbackURL: redirectUrl,
-                    scope: getString(call, PARAM_SCOPE) ?? "",
+                    scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
                     state: requestState,
                     codeChallenge: pkceCodeChallenge,
                     codeVerifier: pkceCodeVerifier,
                     parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType!, requestState, resourceUrl)
+                        self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
                 }
             } else {
                 oauthSwift.authorize(
                     withCallbackURL: redirectUrl,
-                    scope: getString(call, PARAM_SCOPE) ?? "",
+                    scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
                     state: requestState,
                     parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType!, requestState, resourceUrl)
+                        self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
                 }
             }
         }
@@ -332,7 +334,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }
             }
             
-            if resourceUrl != nil {
+            if resourceUrl != nil && !resourceUrl!.isEmpty {
                 self.oauthSwift!.client.get(
                     resourceUrl!,
                     parameters: parameters) { result in
