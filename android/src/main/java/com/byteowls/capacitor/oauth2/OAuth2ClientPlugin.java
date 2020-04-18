@@ -34,7 +34,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
     private static final String PARAM_RESPONSE_TYPE = "responseType";
-    // private static final String PARAM_REDIRECT_URL = "redirectUrl";
+    private static final String PARAM_REDIRECT_URL = "redirectUrl";
     private static final String PARAM_SCOPE = "scope";
     private static final String PARAM_STATE = "state";
 
@@ -87,7 +87,8 @@ public class OAuth2ClientPlugin extends Plugin {
     private AuthorizationService authService;
     private AuthState authState;
 
-    public OAuth2ClientPlugin() {}
+    public OAuth2ClientPlugin() {
+    }
 
     @PluginMethod()
     public void refreshToken(final PluginCall call) {
@@ -425,18 +426,22 @@ public class OAuth2ClientPlugin extends Plugin {
         OAuth2Options o = new OAuth2Options();
         // required
         o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
-        o.setAuthorizationBaseUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_AUTHORIZATION_BASE_URL)));
+        o.setAuthorizationBaseUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_AUTHORIZATION_BASE_URL)));
         o.setResponseType(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESPONSE_TYPE)));
         if (o.getResponseType() == null) {
             // fallback to token
             o.setResponseType(RESPONSE_TYPE_TOKEN);
         }
-        // TODO #84 base redirectUrl
-        o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_SCHEME)));
+        o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
+        // #84 backward compatibility
+        String customScheme = ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_SCHEME));
+        if (customScheme != null) {
+            o.setRedirectUrl(customScheme);
+        }
 
         // optional
-        o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_RESOURCE_URL)));
-        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
+        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
         o.setPkceDisabled(ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_DISABLED));
         if (RESPONSE_TYPE_CODE.equals(o.getResponseType())) {
             if (!o.isPkceDisabled()) {
@@ -444,8 +449,8 @@ public class OAuth2ClientPlugin extends Plugin {
             }
         }
 
-        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_SCOPE)));
-        o.setState(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_STATE)));
+        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));
+        o.setState(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_STATE)));
         if (o.getState() == null) {
             o.setState(ConfigUtils.getRandomString(20));
         }
@@ -467,6 +472,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 }
             }
         }
+        // android only
         o.setCustomHandlerClass(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_HANDLER_CLASS)));
         o.setHandleResultOnNewIntent(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT, false));
         o.setHandleResultOnActivityResult(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT, false));
@@ -479,8 +485,8 @@ public class OAuth2ClientPlugin extends Plugin {
     OAuth2RefreshTokenOptions buildRefreshTokenOptions(JSObject callData) {
         OAuth2RefreshTokenOptions o = new OAuth2RefreshTokenOptions();
         o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
-        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
-        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_SCOPE)));
+        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));
         o.setRefreshToken(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REFRESH_TOKEN)));
         return o;
     }

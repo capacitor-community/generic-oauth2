@@ -48,6 +48,25 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
     }
 };
 
+const redirectUrlOptions: OAuth2AuthenticateOptions = {
+    appId: "appId",
+    authorizationBaseUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    responseType: "code",
+    redirectUrl: "https://mycompany.server.com/oauth",
+    scope: "files.readwrite offline_access",
+    additionalParameters: {
+        "willbeoverwritten": "foobar"
+    },
+    web: {
+    },
+    android: {
+        customScheme: "com.byteowls.oauth2://authorize"
+    },
+    ios: {
+        customScheme: "com.byteowls.oauth2://authorize"
+    }
+};
+
 describe('base options processing', () => {
 
     it('should build a nested appId', () => {
@@ -75,6 +94,11 @@ describe('base options processing', () => {
         const additionalParameters = WebUtils.getOverwritableValue<{[key: string]: string}>(oneDriveOptions, "additionalParameters");
         expect(additionalParameters["willbeoverwritten"]).toBeUndefined();
     });
+
+    it('must have a base redirect url', () => {
+        const redirectUrl = WebUtils.getOverwritableValue<string>(redirectUrlOptions, "redirectUrl");
+        expect(redirectUrl).toBeDefined();
+    })
 });
 
 describe('web options', () => {

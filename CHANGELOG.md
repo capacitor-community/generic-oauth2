@@ -12,9 +12,14 @@
 * iOS: If the user touches "done" in safari without entering the credentials
 the USER_CANCELLED error is sent. closes #71
 * Web: Include all url params from the accessToken request if no resourceUrl is present. closes #72. thx [@sanjaywadhwani](https://github.com/sanjaywadhwani)
-* Android: Allow no resource url and just return every we got until so far. closes #75. thx [@0x4AMiller](https://github.com/0x4AMiller)
 * Android: Add an alternative to handle the activity result intent.
 This is controlled by Android specific parameters `handleResultOnNewIntent` for the alternative and `handleResultOnActivityResult` for the default. closes #52, #55.
+* Web, iOS, Android: Add `redirectUrl` to base parameter and make it overwritable in the platform sections. closes #84.
+
+### Changed
+* Android: Allow no resource url and just return every we got until so far. closes #75. thx [@0x4AMiller](https://github.com/0x4AMiller)
+* Web, iOS, Android: All base parameters are overwritable in the platform sections. closes #84.
+
 
 ### Fixed
 

@@ -1,0 +1,17 @@
+{
+    "appId": "CLIENT_ID",
+    "authorizationBaseUrl": "https://accounts.google.com/o/oauth2/auth",
+    "responseType": "code id_token",
+    "redirectUrl": "https://project.myserver.com/oauth",
+    "resourceUrl": "https://www.googleapis.com/userinfo/v2/me",
+    "scope": "email profile",
+    "web": {
+        "windowOptions": "height=600,left=0,top=0"
+    },
+    "android": {
+        "appId": "CLIENT_ID_ANDROID"
+    },
+    "ios": {
+        "appId":  "CLIENT_ID_IOS"
+    }
+}
