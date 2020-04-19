@@ -154,23 +154,31 @@ But be aware that only the parameters from the accessToken request are included 
 
 ### Error Codes
 
+#### authenticate()
+
 * ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (web, android, ios)
 * ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
 * ERR_PARAM_NO_RESPONSE_TYPE ... The response type is missing. (web, android, ios)
-* ERR_PARAM_NO_REDIRECT_URL ... The redirect url / custom scheme url is missing. (web, android, ios)
-* ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed if code flow is used. (web, android, ios)
-* ERR_PARAM_INVALID_RESPONSE_TYPE ... You configured a invalid responseType. Only "token" or "code" are allowed. (web, android, ios)
-* ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing (only when obtaining an access token based on a refresh token, android/ios)
+* ERR_PARAM_NO_REDIRECT_URL ... The redirect url is missing. (web, android, ios)
+
+* ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
 * ERR_AUTHORIZATION_FAILED ... The authorization failed.
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 * ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
-* ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
 * USER_CANCELLED ... The user cancelled the login flow. (web, android, ios)
 * ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
 * ERR_ANDROID_NO_BROWSER ... No suitable browser could be found! (Android)
 * ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
 * ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
+
+#### refreshToken()
+
+* ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (android, ios)
+* ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed on refresh, on authenticate it is optional. (android, ios)
+* ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing. (android, ios)
+* ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
+* ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (android, ios)
 
 ## Platform: Web/PWA
 

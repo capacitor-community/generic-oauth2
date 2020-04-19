@@ -37,8 +37,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 reject(new Error("ERR_PARAM_NO_AUTHORIZATION_BASE_URL"));
             } else if (!this.webOptions.redirectUrl) {
                 reject(new Error("ERR_PARAM_NO_REDIRECT_URL"));
-            } else if ("code" !== this.webOptions.responseType && "token" !== this.webOptions.responseType) {
-                reject(new Error("ERR_PARAM_INVALID_RESPONSE_TYPE"));
+            } else if (!this.webOptions.responseType) {
+                reject(new Error("ERR_PARAM_NO_RESPONSE_TYPE"));
             } else {
                 // init internal control params
                 let loopCount = this.loopCount;

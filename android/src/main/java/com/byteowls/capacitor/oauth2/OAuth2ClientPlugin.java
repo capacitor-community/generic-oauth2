@@ -65,8 +65,6 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL";
     private static final String ERR_PARAM_NO_RESPONSE_TYPE = "ERR_PARAM_NO_RESPONSE_TYPE";
 
-    private static final String ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE";
-
     private static final String ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT";
     private static final String ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN";
 
@@ -178,6 +176,11 @@ public class OAuth2ClientPlugin extends Plugin {
                 call.reject(ERR_GENERAL, e);
             }
         } else {
+
+            // ###################################
+            // ### Validate required parameter ###
+            // ###################################
+
             if (oauth2Options.getAppId() == null) {
                 call.reject(ERR_PARAM_NO_APP_ID);
                 return;
@@ -198,17 +201,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 return;
             }
 
-            // TODO remove check #46, #48, #49
-            if (!RESPONSE_TYPE_CODE.equals(oauth2Options.getResponseType()) && !RESPONSE_TYPE_TOKEN.equals(oauth2Options.getResponseType())) {
-                call.reject(ERR_PARAM_INVALID_RESPONSE_TYPE);
-                return;
-            }
-
-            // TODO remove check. If there is a accessTokenEndpoint given the plugin will try it regardless of the given responseType
-            if (RESPONSE_TYPE_CODE.equals(oauth2Options.getResponseType()) && oauth2Options.getAccessTokenEndpoint() == null) {
-                call.reject(ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT);
-                return;
-            }
+            // ### Configure
 
             Uri authorizationUri = Uri.parse(oauth2Options.getAuthorizationBaseUrl());
             Uri accessTokenUri;

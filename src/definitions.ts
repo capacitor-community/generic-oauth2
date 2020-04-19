@@ -44,26 +44,31 @@ export interface OAuth2RefreshTokenOptions {
     scope?: string;
 }
 
-type ResponseTypeType = "token" | "code";
-
 export interface OAuth2AuthenticateBaseOptions {
     /**
      * The app id (client id) you get from the oauth provider like Google, Facebook,...
+     *
+     * required!
      */
     appId?: string;
     /**
      * The base url for retrieving tokens depending on the response type from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
+     *
+     * required!
      */
     authorizationBaseUrl?: string;
     /**
-     * Defaults to 'token' aka implicit flow if empty.
+     * Tells the authorization server which grant to execute. Be aware that a full code flow is not supported as clientCredentials are not included in requests.
      *
-     * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
+     * But you can retrieve the authorizationCode if you don't set a accessTokenEndpoint.
      *
+     * required!
      */
-    responseType?: ResponseTypeType
+    responseType?: string;
     /**
      * Url to  which the oauth provider redirects after authentication.
+     *
+     * required!
      */
     redirectUrl?: string;
     /**
