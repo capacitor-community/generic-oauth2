@@ -25,7 +25,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
-    let PARAM_PKCE_DISABLED = "pkceDisabled"
+    let PARAM_PKCE_ENABLED = "pkceEnabled"
     
     let ERR_GENERAL = "ERR_GENERAL"
     
@@ -258,10 +258,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
             
             let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
-            let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
+            let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
             // if response type is code and pkce is not disabled
-            if !pkceDisabled {
-                // oauthSwift.accessTokenBasicAuthentification = true
+            if pkceEnabled {
                 let pkceCodeVerifier = generateRandom(withLength: 64)
                 let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
                 
