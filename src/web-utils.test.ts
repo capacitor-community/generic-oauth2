@@ -9,6 +9,7 @@ const googleOptions: OAuth2AuthenticateOptions = {
     resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
     pkceDisabled: false,
     web: {
+        accessTokenEndpoint: "",
         redirectUrl: "https://oauth2.byteowls.com/authorize",
         appId: "webAppId",
         pkceDisabled: true
@@ -98,7 +99,17 @@ describe('base options processing', () => {
     it('must have a base redirect url', () => {
         const redirectUrl = WebUtils.getOverwritableValue<string>(redirectUrlOptions, "redirectUrl");
         expect(redirectUrl).toBeDefined();
-    })
+    });
+
+    it('must be overwritten by empty string from web section', () => {
+        const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, "accessTokenEndpoint");
+        expect(accessTokenEndpoint).toStrictEqual("");
+    });
+
+    it('must not be overwritten if no key exists in web section', () => {
+        const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, "scope");
+        expect(accessTokenEndpoint).toStrictEqual("email profile");
+    });
 });
 
 describe('web options', () => {

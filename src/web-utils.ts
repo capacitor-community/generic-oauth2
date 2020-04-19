@@ -12,7 +12,7 @@ export class WebUtils {
 
     static getOverwritableValue<T>(options: OAuth2AuthenticateOptions | any, key: string): T {
         let base = options[key];
-        if (options.web && options.web[key]) {
+        if (options.web && key in options.web) {
             base = options.web[key];
         }
         return base;
