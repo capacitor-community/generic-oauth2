@@ -26,9 +26,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
     let PARAM_PKCE_DISABLED = "pkceDisabled"
-
-    let RESPONSE_TYPE_CODE = "code"
-    let RESPONSE_TYPE_TOKEN = "token"
     
     let ERR_GENERAL = "ERR_GENERAL"
     
@@ -44,8 +41,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"
     let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
     let ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN"
-
-    let ERR_PARAM_INVALID_RESPONSE_TYPE = "ERR_PARAM_INVALID_RESPONSE_TYPE"
     
     struct SharedConstants {
         static let ERR_USER_CANCELLED = "USER_CANCELLED"
@@ -116,7 +111,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             consumerSecret: "", // never ever store the app secret on client!
             authorizeUrl: "",
             accessTokenUrl: accessTokenEndpoint,
-            responseType: RESPONSE_TYPE_CODE
+            responseType: "code"
         )
         
         self.oauthSwift = oauthSwift
@@ -224,10 +219,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 return
             }
             
-            if responseType != RESPONSE_TYPE_CODE && responseType != RESPONSE_TYPE_TOKEN {
-                call.reject(self.ERR_PARAM_INVALID_RESPONSE_TYPE)
-                return
-            }
             
             var oauthSwift: OAuth2Swift
             if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
@@ -269,7 +260,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
             let pkceDisabled: Bool = getOverwritable(call, PARAM_PKCE_DISABLED) as? Bool ?? false
             // if response type is code and pkce is not disabled
-            if responseType == RESPONSE_TYPE_CODE && !pkceDisabled {
+            if !pkceDisabled {
                 // oauthSwift.accessTokenBasicAuthentification = true
                 let pkceCodeVerifier = generateRandom(withLength: 64)
                 let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
@@ -327,11 +318,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
         switch result {
         case .success(let (credential, response, parameters)):
             // oauthSwift internally checks the state if response type is code therefore I only need the token check
-            if responseType == self.RESPONSE_TYPE_TOKEN {
-                guard let responseState = parameters["state"] as? String, responseState == requestState else {
-                    call.reject(self.ERR_STATES_NOT_MATCH)
-                    return
-                }
+            // I hope checking the state twice is no problem
+            guard let responseState = parameters["state"] as? String, responseState == requestState else {
+                call.reject(self.ERR_STATES_NOT_MATCH)
+                return
             }
             
             if resourceUrl != nil && !resourceUrl!.isEmpty {
@@ -374,7 +364,6 @@ public class OAuth2ClientPlugin: CAPPlugin {
             }
         }
     }
-    
     
     private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable:Any?]? {
         let parts = key.split(separator: ".")
