@@ -331,12 +331,14 @@ These are some of the providers that can be configured with this plugin. I'm hap
 ```typescript
 googleLogin() {
     Plugins.OAuth2Client.authenticate({
-      appId: environment.oauthAppId.google.web,
       authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
       accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
       scope: "email profile",
       resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
       web: {
+        appId: environment.oauthAppId.google.web,
+        responseType: "token", // implicit flow
+        accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
         redirectUrl: "http://localhost:4200",
         windowOptions: "height=600,left=0,top=0"
       },
@@ -376,9 +378,9 @@ facebookLogin() {
     Plugins.OAuth2Client.authenticate({
       appId: "YOUR_FACEBOOK_APP_ID",
       authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
-      accessTokenEndpoint:  "https://graph.facebook.com/v" + fbApiVersion + "/oauth/access_token",
       resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
       web: {
+        responseType: "token",
         redirectUrl: "http://localhost:4200",
         windowOptions: "height=600,left=0,top=0"
       },

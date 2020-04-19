@@ -4,6 +4,8 @@
 
 ### Breaking
 * Core: Capacitor 2.x is new minimum peer dependency. closes #80
+* Configuration: If a flow must not have a `accessTokenEndpoint` but you configured one as base parameter you have to
+overwrite it in the according platform sections. `accessTokenEndpoint: ""` see Google example in README.
 * Add `redirectUrl` to base parameter and make it overwritable in the platform sections. closes #84.
   * Android: `customScheme` replaced by `redirectUrl`
   * iOS: `customScheme` replaced by `redirectUrl`
@@ -25,7 +27,6 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 ### Fixed
 
 * iOS: XCode 11.4 crash on app start. closes #73. thx [@macdja38](https://github.com/macdja38)
-
 
 ### Docs
 
