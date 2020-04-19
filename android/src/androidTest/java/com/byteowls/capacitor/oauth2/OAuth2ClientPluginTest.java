@@ -24,11 +24,6 @@ public class OAuth2ClientPluginTest {
         plugin = new OAuth2ClientPlugin();
     }
 
-//    @Test
-//    public void handleAuthorizationRequestActivity() {
-////        plugin.handleAuthorizationRequestActivity();
-//    }
-
     @Test
     public void responseTypeToken() {
         JSObject jsObject = loadJson(R.raw.response_type_token);
@@ -36,7 +31,17 @@ public class OAuth2ClientPluginTest {
         Assert.assertNotNull(options);
         Assert.assertEquals("CLIENT_ID_ANDROID", options.getAppId());
         Assert.assertEquals("token", options.getResponseType().toLowerCase());
-        Assert.assertNotNull(options.getHandleResultMethod());
+        Assert.assertTrue(options.isHandleResultOnActivityResult());
+    }
+
+    @Test
+    public void serverAuthorizationHandling() {
+        JSObject jsObject = loadJson(R.raw.server_authorization_handling);
+        OAuth2Options options = plugin.buildAuthenticateOptions(jsObject);
+        Assert.assertNotNull(options.getAppId());
+        Assert.assertNotNull(options.getAuthorizationBaseUrl());
+        Assert.assertNotNull(options.getResponseType());
+        Assert.assertNotNull(options.getRedirectUrl());
     }
 
     @Test

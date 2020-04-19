@@ -46,15 +46,26 @@ export interface OAuth2RefreshTokenOptions {
 
 type ResponseTypeType = "token" | "code";
 
-export interface OAuth2AuthenticateOptions {
+export interface OAuth2AuthenticateBaseOptions {
     /**
      * The app id (client id) you get from the oauth provider like Google, Facebook,...
      */
-    appId: string;
+    appId?: string;
     /**
      * The base url for retrieving tokens depending on the response type from a OAuth 2 provider. e.g. https://accounts.google.com/o/oauth2/auth
      */
-    authorizationBaseUrl: string;
+    authorizationBaseUrl?: string;
+    /**
+     * Defaults to 'token' aka implicit flow if empty.
+     *
+     * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
+     *
+     */
+    responseType?: ResponseTypeType
+    /**
+     * Url to  which the oauth provider redirects after authentication.
+     */
+    redirectUrl?: string;
     /**
      * Url for retrieving the access_token by the authorization code flow.
      */
@@ -63,13 +74,6 @@ export interface OAuth2AuthenticateOptions {
      * Protected resource url. For authentification you only need the basic user details.
      */
     resourceUrl?: string;
-    /**
-     * Defaults to 'token' aka implicit flow if empty.
-     *
-     * Be aware that this plugin does not support authorization code flow with client secrets because of security reason.
-     *
-     */
-    responseType?: ResponseTypeType
     /**
      * PKCE is enabled by default when using @responseType 'code'. This options disables it if needed.
      */
@@ -87,7 +91,11 @@ export interface OAuth2AuthenticateOptions {
     /**
      * Additional parameters for the created authorization url
      */
-    additionalParameters?: {[key: string]: string}
+    additionalParameters?: { [key: string]: string }
+}
+
+export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
+
     /**
      * Custom options for the platform "web"
      */
@@ -102,31 +110,7 @@ export interface OAuth2AuthenticateOptions {
     ios?: IosOptions,
 }
 
-export interface OverwritableOptions {
-    /**
-     * Parameter for overwriting the root app id.
-     * This is useful e.g. Google OAuth because you have to use different client ids for web, android, ios
-     */
-    appId?: string;
-    /**
-     * Parameter for overwriting the root or default responseType.
-     */
-    responseType?: ResponseTypeType
-    /**
-     * Parameter for overwriting the root or default option.
-     */
-    pkceDisabled?: boolean;
-    /**
-     * Parameter for overwriting the root or default option.
-     */
-    additionalParameters?: {[key: string]: string}
-}
-
-export interface WebOption extends OverwritableOptions {
-    /**
-     * Url to  which the oauth provider redirects after authentication.
-     */
-    redirectUrl: string;
+export interface WebOption extends OAuth2AuthenticateBaseOptions {
     /**
      * Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0
      */
@@ -137,11 +121,7 @@ export interface WebOption extends OverwritableOptions {
     windowTarget?: string;
 }
 
-export interface AndroidOptions extends OverwritableOptions {
-    /**
-     * Use your app's custom scheme here. e.g. com.companyname.appname:/
-     */
-    customScheme?: string;
+export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
     /**
      * Some oauth provider especially Facebook forces us to use their SDK for apps.
      *
@@ -158,11 +138,7 @@ export interface AndroidOptions extends OverwritableOptions {
     handleResultOnActivityResult?: boolean;
 }
 
-export interface IosOptions extends OverwritableOptions {
-    /**
-     * Use your app's custom scheme here. e.g. com.companyname.appname:/
-     */
-    customScheme?: string;
+export interface IosOptions extends OAuth2AuthenticateBaseOptions {
     /**
      * Some oauth provider especially Facebook forces us to use their SDK for apps.
      *

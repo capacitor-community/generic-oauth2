@@ -282,7 +282,7 @@ On iOS the plugin is registered **automatically** by Capacitor.
 
 Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler-1)
 
-Open `ios/App/App/Info.plist` in XCode and add the `customScheme` / `redirectUrl` from your config without `:/` like that
+Open `ios/App/App/Info.plist` in XCode and add the value of `redirectUrl` from your config without `:/` like that
 
 ```xml
 	<key>CFBundleURLTypes</key>
@@ -331,24 +331,26 @@ These are some of the providers that can be configured with this plugin. I'm hap
 ```typescript
 googleLogin() {
     Plugins.OAuth2Client.authenticate({
-      appId: environment.oauthAppId.google.web,
       authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
       accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
       scope: "email profile",
       resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
       web: {
+        appId: environment.oauthAppId.google.web,
+        responseType: "token", // implicit flow
+        accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
         redirectUrl: "http://localhost:4200",
         windowOptions: "height=600,left=0,top=0"
       },
       android: {
         appId: environment.oauthAppId.google.android,
         responseType: "code", // if you configured a android app in google dev console the value must be "code"
-        customScheme: "com.companyname.appname:/" // package name from google dev console
+        redirectUrl: "com.companyname.appname:/" // package name from google dev console
       },
       ios: {
         appId: environment.oauthAppId.google.ios,
         responseType: "code", // if you configured a ios app in google dev console the value must be "code"
-        customScheme: "com.companyname.appname:/" // Bundle ID from google dev console
+        redirectUrl: "com.companyname.appname:/" // Bundle ID from google dev console
       }
     }).then(resourceUrlResponse => {
       // do sth e.g. check with your backend
@@ -376,9 +378,9 @@ facebookLogin() {
     Plugins.OAuth2Client.authenticate({
       appId: "YOUR_FACEBOOK_APP_ID",
       authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
-      accessTokenEndpoint:  "https://graph.facebook.com/v" + fbApiVersion + "/oauth/access_token",
       resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
       web: {
+        responseType: "token",
         redirectUrl: "http://localhost:4200",
         windowOptions: "height=600,left=0,top=0"
       },

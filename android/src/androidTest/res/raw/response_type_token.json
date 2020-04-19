@@ -10,12 +10,12 @@
     },
     "android": {
         "appId": "CLIENT_ID_ANDROID",
-        "customScheme": "com.company.project:/",
+        "redirectUrl": "com.company.project:/",
         "handleResultMethod": "TEST"
     },
     "ios": {
         "appId":  "CLIENT_ID_IOS",
         "responseType": "code",
-        "customScheme": "com.company.project:/"
+        "redirectUrl": "com.company.project:/"
     }
 }

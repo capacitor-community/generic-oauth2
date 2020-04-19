@@ -9,6 +9,7 @@ const googleOptions: OAuth2AuthenticateOptions = {
     resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
     pkceDisabled: false,
     web: {
+        accessTokenEndpoint: "",
         redirectUrl: "https://oauth2.byteowls.com/authorize",
         appId: "webAppId",
         pkceDisabled: true
@@ -41,10 +42,29 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
         }
     },
     android: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
     },
     ios: {
-        customScheme: "com.byteowls.oauth2://authorize"
+        redirectUrl: "com.byteowls.oauth2://authorize"
+    }
+};
+
+const redirectUrlOptions: OAuth2AuthenticateOptions = {
+    appId: "appId",
+    authorizationBaseUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+    responseType: "code",
+    redirectUrl: "https://mycompany.server.com/oauth",
+    scope: "files.readwrite offline_access",
+    additionalParameters: {
+        "willbeoverwritten": "foobar"
+    },
+    web: {
+    },
+    android: {
+        redirectUrl: "com.byteowls.oauth2://authorize"
+    },
+    ios: {
+        redirectUrl: "com.byteowls.oauth2://authorize"
     }
 };
 
@@ -74,6 +94,21 @@ describe('base options processing', () => {
     it('must not contain overwritten additional parameters', () => {
         const additionalParameters = WebUtils.getOverwritableValue<{[key: string]: string}>(oneDriveOptions, "additionalParameters");
         expect(additionalParameters["willbeoverwritten"]).toBeUndefined();
+    });
+
+    it('must have a base redirect url', () => {
+        const redirectUrl = WebUtils.getOverwritableValue<string>(redirectUrlOptions, "redirectUrl");
+        expect(redirectUrl).toBeDefined();
+    });
+
+    it('must be overwritten by empty string from web section', () => {
+        const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, "accessTokenEndpoint");
+        expect(accessTokenEndpoint).toStrictEqual("");
+    });
+
+    it('must not be overwritten if no key exists in web section', () => {
+        const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, "scope");
+        expect(accessTokenEndpoint).toStrictEqual("email profile");
     });
 });
 
