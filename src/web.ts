@@ -31,13 +31,13 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         this.webOptions = await WebUtils.buildWebOptions(options);
         return new Promise<any>((resolve, reject) => {
             // validate
-            if (!this.webOptions.appId) {
+            if (!this.webOptions.appId || this.webOptions.appId.length == 0) {
                 reject(new Error("ERR_PARAM_NO_APP_ID"));
-            } else if (!this.webOptions.authorizationBaseUrl) {
+            } else if (!this.webOptions.authorizationBaseUrl || this.webOptions.authorizationBaseUrl.length == 0) {
                 reject(new Error("ERR_PARAM_NO_AUTHORIZATION_BASE_URL"));
-            } else if (!this.webOptions.redirectUrl) {
+            } else if (!this.webOptions.redirectUrl || this.webOptions.redirectUrl.length == 0) {
                 reject(new Error("ERR_PARAM_NO_REDIRECT_URL"));
-            } else if (!this.webOptions.responseType) {
+            } else if (!this.webOptions.responseType || this.webOptions.responseType.length == 0) {
                 reject(new Error("ERR_PARAM_NO_RESPONSE_TYPE"));
             } else {
                 // init internal control params
