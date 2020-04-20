@@ -2,11 +2,14 @@ import Foundation
 import Capacitor
 import OAuthSwift
 import CommonCrypto
+import AuthenticationServices
 
 typealias JSObject = [String:Any]
 
 @objc(OAuth2ClientPlugin)
 public class OAuth2ClientPlugin: CAPPlugin {
+    
+    var savedPluginCall: CAPPluginCall?
     
     let JSON_KEY_ACCESS_TOKEN = "access_token"
     
@@ -29,18 +32,21 @@ public class OAuth2ClientPlugin: CAPPlugin {
     
     let ERR_GENERAL = "ERR_GENERAL"
     
+    // authenticate param validation
     let ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID"
     let ERR_PARAM_NO_AUTHORIZATION_BASE_URL = "ERR_PARAM_NO_AUTHORIZATION_BASE_URL"
     let ERR_PARAM_NO_RESPONSE_TYPE = "ERR_PARAM_NO_RESPONSE_TYPE"
     let ERR_PARAM_NO_REDIRECT_URL = "ERR_PARAM_NO_REDIRECT_URL"
     
+    // refreshToken param validation
+    let ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN"
+    let ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"
     
     let ERR_CUSTOM_HANDLER_LOGIN = "ERR_CUSTOM_HANDLER_LOGIN"
     let ERR_CUSTOM_HANDLER_LOGOUT = "ERR_CUSTOM_HANDLER_LOGOUT"
     let ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH"
-    let ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT = "ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT"
     let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
-    let ERR_PARAM_NO_REFRESH_TOKEN = "ERR_PARAM_NO_REFRESH_TOKEN"
+    let ERR_AUTHORIZATION_FAILED = "ERR_AUTHORIZATION_FAILED"
     
     struct SharedConstants {
         static let ERR_USER_CANCELLED = "USER_CANCELLED"
@@ -140,7 +146,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     call.reject(self.ERR_STATES_NOT_MATCH)
                 default:
                     self.log("Authorization failed with \(error.localizedDescription)");
-                    call.reject(self.ERR_NO_AUTHORIZATION_CODE)
+                    call.reject(self.ERR_AUTHORIZATION_FAILED)
                 }
             }
         }
@@ -209,79 +215,86 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 return
             }
             
-            guard let responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE), !responseType.isEmpty else {
-                call.reject(self.ERR_PARAM_NO_RESPONSE_TYPE)
-                return
-            }
-
-            guard let redirectUrl = getOverwritableString(call, PARAM_REDIRECT_URL), !redirectUrl.isEmpty else {
-                call.reject(self.ERR_PARAM_NO_REDIRECT_URL)
-                return
-            }
-            
-            
-            var oauthSwift: OAuth2Swift
-            if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
-                oauthSwift = OAuth2Swift(
-                    consumerKey: appId,
-                    consumerSecret: "", // never ever store the app secret on client!
-                    authorizeUrl: baseUrl,
-                    accessTokenUrl: accessTokenEndpoint,
-                    responseType: responseType
-                )
+            // Sign in with Apple
+            if baseUrl.contains("appleid.apple.com"), #available(iOS 13.0, *) {
+                self.handleSignInWithApple(call)
             } else {
-                oauthSwift = OAuth2Swift(
-                    consumerKey: appId,
-                    consumerSecret: "", // never ever store the app secret on client!
-                    authorizeUrl: baseUrl,
-                    responseType: responseType
-                )
-            }
-            
-            let urlHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
-            // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
-            urlHandler.delegate = self.oauth2SafariDelegate
-            oauthSwift.authorizeURLHandler = urlHandler
-            self.oauthSwift = oauthSwift
-            
-            // additional parameters #18
-            let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
-            var additionalParameters: [String: String] = [:]
-            for (key, value) in callParameter {
-                // only non empty string values are allowed
-                if !key.isEmpty && value is String {
-                    let str = value as! String;
-                    if !str.isEmpty {
-                        additionalParameters[key] = str
+                guard let responseType = getOverwritableString(call, PARAM_RESPONSE_TYPE), !responseType.isEmpty else {
+                    call.reject(self.ERR_PARAM_NO_RESPONSE_TYPE)
+                    return
+                }
+                
+                guard let redirectUrl = getOverwritableString(call, PARAM_REDIRECT_URL), !redirectUrl.isEmpty else {
+                    call.reject(self.ERR_PARAM_NO_REDIRECT_URL)
+                    return
+                }
+                
+                
+                var oauthSwift: OAuth2Swift
+                if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
+                    oauthSwift = OAuth2Swift(
+                        consumerKey: appId,
+                        consumerSecret: "", // never ever store the app secret on client!
+                        authorizeUrl: baseUrl,
+                        accessTokenUrl: accessTokenEndpoint,
+                        responseType: responseType
+                    )
+                } else {
+                    oauthSwift = OAuth2Swift(
+                        consumerKey: appId,
+                        consumerSecret: "", // never ever store the app secret on client!
+                        authorizeUrl: baseUrl,
+                        responseType: responseType
+                    )
+                }
+                
+                let urlHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
+                // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
+                urlHandler.delegate = self.oauth2SafariDelegate
+                oauthSwift.authorizeURLHandler = urlHandler
+                self.oauthSwift = oauthSwift
+                
+                // additional parameters #18
+                let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
+                var additionalParameters: [String: String] = [:]
+                for (key, value) in callParameter {
+                    // only non empty string values are allowed
+                    if !key.isEmpty && value is String {
+                        let str = value as! String;
+                        if !str.isEmpty {
+                            additionalParameters[key] = str
+                        }
+                    }
+                }
+                
+                let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
+                let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
+                // if response type is code and pkce is not disabled
+                if pkceEnabled {
+                    let pkceCodeVerifier = generateRandom(withLength: 64)
+                    let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
+                    
+                    oauthSwift.authorize(
+                        withCallbackURL: redirectUrl,
+                        scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
+                        state: requestState,
+                        codeChallenge: pkceCodeChallenge,
+                        codeVerifier: pkceCodeVerifier,
+                        parameters: additionalParameters) { result in
+                            self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
+                    }
+                } else {
+                    oauthSwift.authorize(
+                        withCallbackURL: redirectUrl,
+                        scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
+                        state: requestState,
+                        parameters: additionalParameters) { result in
+                            self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
                     }
                 }
             }
             
-            let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
-            let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
-            // if response type is code and pkce is not disabled
-            if pkceEnabled {
-                let pkceCodeVerifier = generateRandom(withLength: 64)
-                let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
-                
-                oauthSwift.authorize(
-                    withCallbackURL: redirectUrl,
-                    scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
-                    state: requestState,
-                    codeChallenge: pkceCodeChallenge,
-                    codeVerifier: pkceCodeVerifier,
-                    parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
-                }
-            } else {
-                oauthSwift.authorize(
-                    withCallbackURL: redirectUrl,
-                    scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
-                    state: requestState,
-                    parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
-                }
-            }
+            
         }
     }
     
@@ -475,4 +488,102 @@ extension Data {
             .replacingOccurrences(of: "=", with: "")
             .trimmingCharacters(in: .whitespaces)
     }
+}
+
+@available(iOS 13.0, *)
+extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
+    
+    func handleSignInWithApple(_ call: CAPPluginCall) {
+        self.savedPluginCall = call
+        
+        let appleIDProvider = ASAuthorizationAppleIDProvider()
+        let request = appleIDProvider.createRequest()
+        
+        if let scopeStr = getOverwritableString(call, PARAM_SCOPE), !scopeStr.isEmpty {
+            var scopeArr: Array<ASAuthorization.Scope> = []
+            if scopeStr.localizedCaseInsensitiveContains("email") {
+                scopeArr.append(.email)
+            }
+            
+            if scopeStr.localizedCaseInsensitiveContains("fullName")
+                || scopeStr.localizedCaseInsensitiveContains("name") {
+                scopeArr.append(.fullName)
+            }
+            request.requestedScopes = scopeArr
+        }
+        
+        
+        let authorizationController = ASAuthorizationController(authorizationRequests: [request])
+        authorizationController.delegate = self
+        authorizationController.performRequests()
+    }
+    
+    public func authorizationController(controller: ASAuthorizationController,
+                                        didCompleteWithAuthorization authorization: ASAuthorization) {
+        
+        switch authorization.credential {
+        case let appleIDCredential as ASAuthorizationAppleIDCredential:
+            var realUserStatus: String
+            switch appleIDCredential.realUserStatus {
+            case .likelyReal:
+                realUserStatus = "likelyReal"
+            case .unknown:
+                realUserStatus = "unknown"
+            case .unsupported:
+                realUserStatus = "unsupported"
+            @unknown default:
+                realUserStatus = ""
+            }
+            
+            let result = [
+                "id": appleIDCredential.user,
+                "email": appleIDCredential.email,
+                "given_name": appleIDCredential.fullName?.givenName,
+                "family_name": appleIDCredential.fullName?.familyName,
+                "real_user_status": realUserStatus,
+                "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8),
+                "authorization_code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8)
+            ]
+            self.savedPluginCall?.resolve(result as PluginResultData)
+        default:
+            self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
+        }
+        
+        // TODO check state
+        //        let user = appleIDCredential.user
+        //        provider.getCredentialState(forUserID: appleIDCredential.user) { state, error in
+        //            // Check for error and examine the state.
+        //            if state ==
+        //        }
+    }
+    
+    public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
+        // Handle error.
+        guard let error = error as? ASAuthorizationError else {
+            return
+        }
+        
+        switch error.code {
+        case .canceled:
+            self.savedPluginCall?.reject(SharedConstants.ERR_USER_CANCELLED)
+        case .unknown:
+            self.log("SIWA: Error.unknown.")
+            self.savedPluginCall?.reject(self.ERR_GENERAL)
+        case .invalidResponse:
+            self.log("SIWA: Error.invalidResponse")
+            self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
+        case .notHandled:
+            self.log("SIWA: Error.notHandled")
+            self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
+        case .failed:
+            self.log("SIWA: Error.failed")
+            self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
+        @unknown default:
+            self.log("SIWA: Error.default")
+            self.savedPluginCall?.reject(self.ERR_GENERAL)
+        }
+    }
+    
+    
+    
 }

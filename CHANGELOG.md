@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+* Sign in with Apple. closes #45.
+
 ## [2.0.0] - 2020-04-20
 
 ### Breaking
