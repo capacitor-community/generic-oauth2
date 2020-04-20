@@ -316,13 +316,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     private func handleAuthorizationResult(_ result: Result<OAuthSwift.TokenSuccess, OAuthSwiftError>, _ call: CAPPluginCall, _ responseType: String, _ requestState: String, _ resourceUrl: String?) {
         switch result {
         case .success(let (credential, response, parameters)):
-            // oauthSwift internally checks the state if response type is code therefore I only need the token check
-            // I hope checking the state twice is no problem
-            guard let responseState = parameters["state"] as? String, responseState == requestState else {
-                call.reject(self.ERR_STATES_NOT_MATCH)
-                return
-            }
-            
+            // state is aready checked by the lib
             if resourceUrl != nil && !resourceUrl!.isEmpty {
                 self.oauthSwift!.client.get(
                     resourceUrl!,
