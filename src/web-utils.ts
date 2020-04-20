@@ -108,19 +108,17 @@ export class WebUtils {
         webOptions.resourceUrl = this.getOverwritableValue(configOptions, "resourceUrl");
         webOptions.accessTokenEndpoint = this.getOverwritableValue(configOptions, "accessTokenEndpoint");
 
-        webOptions.pkceDisabled = this.getOverwritableValue(configOptions, "pkceDisabled");
-        if (webOptions.responseType === "code") {
-            if (!webOptions.pkceDisabled) {
-                webOptions.pkceCodeVerifier = this.randomString(64);
-                if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
-                    await CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(c => {
-                        webOptions.pkceCodeChallenge = c;
-                        webOptions.pkceCodeChallengeMethod = "S256";
-                    });
-                } else {
-                    webOptions.pkceCodeChallenge = webOptions.pkceCodeVerifier;
-                    webOptions.pkceCodeChallengeMethod = "plain";
-                }
+        webOptions.pkceEnabled = this.getOverwritableValue(configOptions, "pkceEnabled");
+        if (webOptions.pkceEnabled) {
+            webOptions.pkceCodeVerifier = this.randomString(64);
+            if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
+                await CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(c => {
+                    webOptions.pkceCodeChallenge = c;
+                    webOptions.pkceCodeChallengeMethod = "S256";
+                });
+            } else {
+                webOptions.pkceCodeChallenge = webOptions.pkceCodeVerifier;
+                webOptions.pkceCodeChallengeMethod = "plain";
             }
         }
         webOptions.scope = this.getOverwritableValue(configOptions, "scope");
@@ -222,7 +220,7 @@ export class WebOptions {
     windowOptions: string;
     windowTarget: string = "_blank";
 
-    pkceDisabled: boolean;
+    pkceEnabled: boolean;
     pkceCodeVerifier: string;
     pkceCodeChallenge: string;
     pkceCodeChallengeMethod: string;

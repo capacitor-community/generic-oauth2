@@ -5,7 +5,8 @@
 ### Breaking
 * Core: Capacitor 2.x is new minimum peer dependency. closes #80.
 * `responseType` is required. Default values were removed. In favor of configuring anything. closes #86.
-* Configuration: If a flow must not have a `accessTokenEndpoint` but you configured one as base parameter you have to
+* `pkceDisabled` was replaced with `pkceEnabled`, which is NOT enabled by default. If you like to use PKCE set this to true.
+* If a flow must not have a `accessTokenEndpoint` but you configured one as base parameter you have to
 overwrite it in the according platform sections. `accessTokenEndpoint: ""` see Google example in README.
 * Add `redirectUrl` to base parameter and make it overwritable in the platform sections. closes #84.
   * Android: `customScheme` replaced by `redirectUrl`

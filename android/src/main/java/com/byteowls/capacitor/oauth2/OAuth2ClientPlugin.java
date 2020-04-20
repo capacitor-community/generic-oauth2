@@ -39,10 +39,8 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_STATE = "state";
 
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
-    private static final String PARAM_PKCE_DISABLED = "pkceDisabled";
+    private static final String PARAM_PKCE_ENABLED = "pkceEnabled";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
-    private static final String RESPONSE_TYPE_CODE = "code";
-    private static final String RESPONSE_TYPE_TOKEN = "token";
     private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     // Activity result handling
@@ -230,7 +228,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 builder.setState(oauth2Options.getState());
             }
             builder.setScope(oauth2Options.getScope());
-            if (!oauth2Options.isPkceDisabled()) {
+            if (oauth2Options.isPkceEnabled()) {
                 builder.setCodeVerifier(oauth2Options.getPkceCodeVerifier());
             } else {
                 builder.setCodeVerifier(null);
@@ -408,20 +406,15 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
         o.setAuthorizationBaseUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_AUTHORIZATION_BASE_URL)));
         o.setResponseType(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESPONSE_TYPE)));
-        if (o.getResponseType() == null) {
-            // fallback to token
-            o.setResponseType(RESPONSE_TYPE_TOKEN);
-        }
         o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
 
         // optional
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
         o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
-        o.setPkceDisabled(ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_DISABLED));
-        if (RESPONSE_TYPE_CODE.equals(o.getResponseType())) {
-            if (!o.isPkceDisabled()) {
-                o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
-            }
+        Boolean pkceEnabledObj = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_ENABLED);
+        o.setPkceEnabled(pkceEnabledObj == null ? false : pkceEnabledObj);
+        if (o.isPkceEnabled()) {
+            o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
         }
 
         o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));

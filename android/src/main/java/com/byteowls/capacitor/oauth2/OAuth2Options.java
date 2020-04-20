@@ -20,7 +20,7 @@ public class OAuth2Options {
     private String accessTokenEndpoint;
     private String resourceUrl;
 
-    private boolean pkceDisabled;
+    private boolean pkceEnabled;
     private String pkceCodeVerifier;
     private Map<String, String> additionalParameters;
 
@@ -107,12 +107,12 @@ public class OAuth2Options {
         this.customHandlerClass = customHandlerClass;
     }
 
-    public boolean isPkceDisabled() {
-        return pkceDisabled;
+    public boolean isPkceEnabled() {
+        return pkceEnabled;
     }
 
-    public void setPkceDisabled(boolean pkceDisabled) {
-        this.pkceDisabled = pkceDisabled;
+    public void setPkceEnabled(boolean pkceEnabled) {
+        this.pkceEnabled = pkceEnabled;
     }
 
     public String getPkceCodeVerifier() {
