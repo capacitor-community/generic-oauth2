@@ -3,7 +3,8 @@
 ## [Unreleased]
 
 ### Breaking
-* Core: Capacitor 2.x is new minimum peer dependency. closes #80
+* Core: Capacitor 2.x is new minimum peer dependency. closes #80.
+* `responseType` is required. Default values were removed. In favor of configuring anything. closes #86.
 * Configuration: If a flow must not have a `accessTokenEndpoint` but you configured one as base parameter you have to
 overwrite it in the according platform sections. `accessTokenEndpoint: ""` see Google example in README.
 * Add `redirectUrl` to base parameter and make it overwritable in the platform sections. closes #84.
@@ -23,6 +24,7 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 ### Changed
 * Android: Allow no resource url and just return every we got until so far. closes #75. thx [@0x4AMiller](https://github.com/0x4AMiller)
 * Web, iOS, Android: All base parameters are overwritable in the platform sections. closes #84.
+* Restriction to the response type `code` and `token` was removed. Devs can configure anything but are responsible for it as well. closes #86.
 
 ### Fixed
 
