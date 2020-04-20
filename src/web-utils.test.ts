@@ -7,12 +7,12 @@ const googleOptions: OAuth2AuthenticateOptions = {
     accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
     scope: "email profile",
     resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
-    pkceDisabled: false,
+    pkceEnabled: false,
     web: {
         accessTokenEndpoint: "",
         redirectUrl: "https://oauth2.byteowls.com/authorize",
         appId: "webAppId",
-        pkceDisabled: true
+        pkceEnabled: true
     },
     android: {
         responseType: "code",
@@ -33,7 +33,7 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
     },
     web: {
         redirectUrl: "https://oauth2.byteowls.com/authorize",
-        pkceDisabled: true,
+        pkceEnabled: false,
         additionalParameters: {
             "resource": "resource_id",
             "emptyParam": null,
@@ -81,8 +81,8 @@ describe('base options processing', () => {
     });
 
     it('should build a overwritable boolean value', () => {
-        const pkceDisabled = WebUtils.getOverwritableValue<boolean>(googleOptions, "pkceDisabled");
-        expect(pkceDisabled).toBeTruthy();
+        const pkceEnabled = WebUtils.getOverwritableValue<boolean>(googleOptions, "pkceEnabled");
+        expect(pkceEnabled).toBeTruthy();
     });
 
     it('should build a overwritable additional parameters map', () => {

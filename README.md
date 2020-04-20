@@ -35,14 +35,30 @@ These parameters are:
 e.g.
 
 If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
+This only works for web and Android. On iOS the used lib does not allows to cancel after the authorization request see #13
 
-### Implicit flow (response type: token)
+See the excellent article about OAuth2 response type combinations.
 
-Status: **ok**
+https://medium.com/@darutk/diagrams-of-all-the-openid-connect-flows-6968e3990660
 
-### Code flow + PKCE (response type: code)
+### Tested / working flows
 
-Status: **ok**
+These flows are already working and were tested by me.
+
+#### Implicit flow
+
+```
+responseType: "token"
+```
+
+#### Code flow + PKCE
+
+```
+...
+responseType: "code"
+pkceEnable: true
+...
+```
 
 Please be aware that some providers (OneDrive, Auth0) allow **Code Flow + PKCE** only for native apps. Web apps have to use implicit flow.
 
