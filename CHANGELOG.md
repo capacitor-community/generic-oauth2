@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.0.0] - 2020-04-20
+
 ### Breaking
 * Core: Capacitor 2.x is new minimum peer dependency. closes #80.
 * `responseType` is required. Default values were removed. In favor of configuring anything. closes #86.
@@ -67,8 +69,7 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 - Android: Fix Java compiler error #36 (thx @Anthbs)
 - Fix github security error by updating Jest lib
 
-
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...master
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...master
 [2.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.0...1.0.1

@@ -5,7 +5,7 @@
 [![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
-This is a simple OAuth 2 client plugin. **No OpenID** support!
+This is a simple OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [providers](#list-of-providers) the community has already used this plugin with.
@@ -14,7 +14,7 @@ See [providers](#list-of-providers) the community has already used this plugin w
 
 | Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md) | XCode 11.4 needs this version  |
+| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
@@ -24,6 +24,10 @@ For further details on what has changed see the [CHANGELOG](https://github.com/m
 Starting with version **2.0.0** the plugin will no longer restrict the `responseType` to `token` or `code`.
 
 Developers can configure anything. It is their responsibility to use the options the chosen OAuth Provider supports.
+
+See the excellent article about OAuth2 response type combinations.
+
+https://medium.com/@darutk/diagrams-of-all-the-openid-connect-flows-6968e3990660
 
 The plugin on the other will behave differently depending on the existence of certain config parameters:
 
@@ -35,11 +39,7 @@ These parameters are:
 e.g.
 
 If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
-This only works for web and Android. On iOS the used lib does not allows to cancel after the authorization request see #13
-
-See the excellent article about OAuth2 response type combinations.
-
-https://medium.com/@darutk/diagrams-of-all-the-openid-connect-flows-6968e3990660
+This only works for the Web and Android. On iOS the used lib does not allows to cancel after the authorization request see #13.
 
 ### Tested / working flows
 
@@ -78,7 +78,7 @@ Minimum Capacitor version is **2.0.0**
 
 This example shows the common process of configuring this plugin.
 
-Although it was taken from a Angular 6 application, it should work in other frameworks as well.
+Although it was taken from a Angular application, it should work in other frameworks as well.
 
 ### Register plugin
 
@@ -176,7 +176,6 @@ But be aware that only the parameters from the accessToken request are included 
 * ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
 * ERR_PARAM_NO_RESPONSE_TYPE ... The response type is missing. (web, android, ios)
 * ERR_PARAM_NO_REDIRECT_URL ... The redirect url is missing. (web, android, ios)
-
 * ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
 * ERR_AUTHORIZATION_FAILED ... The authorization failed.
 * ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
