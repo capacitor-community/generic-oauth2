@@ -5,6 +5,8 @@
 ### Added
 
 * Sign in with Apple. closes #45.
+The plugin will detect that the iOS 13+ buildin UI is needed, when `authorizationBaseUrl` contains `https://appleid.apple.com/auth/authorize`. 
+This is needed for other platforms and iOS <=12 anyway.
 
 ## [2.0.0] - 2020-04-20
 

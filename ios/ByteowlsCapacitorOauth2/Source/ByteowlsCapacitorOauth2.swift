@@ -29,6 +29,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
     let PARAM_PKCE_ENABLED = "pkceEnabled"
+    let PARAM_IOS_USE_SCOPE = "ios.siwaUseScope"
     
     let ERR_GENERAL = "ERR_GENERAL"
     
@@ -499,19 +500,22 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
         let appleIDProvider = ASAuthorizationAppleIDProvider()
         let request = appleIDProvider.createRequest()
         
-        if let scopeStr = getOverwritableString(call, PARAM_SCOPE), !scopeStr.isEmpty {
-            var scopeArr: Array<ASAuthorization.Scope> = []
-            if scopeStr.localizedCaseInsensitiveContains("email") {
-                scopeArr.append(.email)
+        if let _: Bool = getValue(call, PARAM_IOS_USE_SCOPE) as? Bool {
+            if let scopeStr = getOverwritableString(call, PARAM_SCOPE), !scopeStr.isEmpty {
+                var scopeArr: Array<ASAuthorization.Scope> = []
+                if scopeStr.localizedCaseInsensitiveContains("email") {
+                    scopeArr.append(.email)
+                }
+                
+                if scopeStr.localizedCaseInsensitiveContains("fullName")
+                    || scopeStr.localizedCaseInsensitiveContains("name") {
+                    scopeArr.append(.fullName)
+                }
+                request.requestedScopes = scopeArr
             }
-            
-            if scopeStr.localizedCaseInsensitiveContains("fullName")
-                || scopeStr.localizedCaseInsensitiveContains("name") {
-                scopeArr.append(.fullName)
-            }
-            request.requestedScopes = scopeArr
+        } else {
+            request.requestedScopes = [.email, .fullName]
         }
-        
         
         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
         authorizationController.delegate = self
@@ -537,24 +541,22 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             
             let result = [
                 "id": appleIDCredential.user,
-                "email": appleIDCredential.email,
-                "given_name": appleIDCredential.fullName?.givenName,
-                "family_name": appleIDCredential.fullName?.familyName,
+                "user": [
+                    "name": [
+                        "firstName": appleIDCredential.fullName?.givenName,
+                        "lastName": appleIDCredential.fullName?.familyName
+                    ],
+                    "email": appleIDCredential.email as Any
+                ],
                 "real_user_status": realUserStatus,
-                "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8),
-                "authorization_code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8)
-            ]
+                "state": appleIDCredential.state  as Any,
+                "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8) as Any,
+                "code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8) as Any
+                ] as [String : Any]
             self.savedPluginCall?.resolve(result as PluginResultData)
         default:
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
         }
-        
-        // TODO check state
-        //        let user = appleIDCredential.user
-        //        provider.getCredentialState(forUserID: appleIDCredential.user) { state, error in
-        //            // Check for error and examine the state.
-        //            if state ==
-        //        }
     }
     
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {

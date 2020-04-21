@@ -145,6 +145,12 @@ export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
 
 export interface IosOptions extends OAuth2AuthenticateBaseOptions {
     /**
+     * If true the iOS 13+ feature Sign in with Apple (SiWA) try to build the scope from the standard "scope" parameter.
+     *
+     * If false scope is set to email and fullName.
+     */
+    siwaUseScope?: boolean
+    /**
      * Some oauth provider especially Facebook forces us to use their SDK for apps.
      *
      * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
