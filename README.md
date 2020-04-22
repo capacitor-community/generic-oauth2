@@ -163,10 +163,86 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
+See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts for details.
 
-**NOTE:** Configuring a `resourceUrl` is optional.
-But be aware that only the parameters from the accessToken request are included in the plugin's response if you do so!
+Example:
+```
+{
+      authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+      accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+      scope: "email profile",
+      resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+      web: {
+        appId: environment.oauthAppId.google.web,
+        responseType: "token", // implicit flow
+        accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
+        redirectUrl: "http://localhost:4200",
+        windowOptions: "height=600,left=0,top=0"
+      },
+      android: {
+        appId: environment.oauthAppId.google.android,
+        responseType: "code", // if you configured a android app in google dev console the value must be "code"
+        redirectUrl: "com.companyname.appname:/" // package name from google dev console
+      },
+      ios: {
+        appId: environment.oauthAppId.google.ios,
+        responseType: "code", // if you configured a ios app in google dev console the value must be "code"
+        redirectUrl: "com.companyname.appname:/" // Bundle ID from google dev console
+      }
+    }
+ ```
+
+
+#### authenticate() and logout()
+
+**Overwritable Base Parameter**
+
+These parameters are overwritable in every platform
+
+| parameter            	| default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
+|----------------------	|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
+| appId                	|         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
+| authorizationBaseUrl 	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| responseType         	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| redirectUrl          	|         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
+| accessTokenEndpoint  	|         	|          	| If empty the authorization response incl code is return. Known issue: Not on iOS!                                                                                                                                                      	|       	|
+| resourceUrl          	|         	|          	| If emtpy the tokens are return instead.                                                                                                                                                                                                	|       	|
+| pkceEnabled          	| `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|       	|
+| scope                	|         	|          	|                                                                                                                                                                                                                                        	|       	|
+| state                	|         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
+| additionalParameters 	|         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	|       	|
+
+**Platform Web**
+
+| parameter     	| default 	| required 	| description                            	| since 	|
+|---------------	|---------	|----------	|----------------------------------------	|-------	|
+| windowOptions 	|         	|          	| e.g. width=500,height=600,left=0,top=0 	|       	|
+| windowTarget  	| `_blank`  |       	|                                        	|       	|
+
+**Platform Android**
+
+| parameter                    	| default 	| required 	| description                                                                                                              	| since 	|
+|------------------------------	|---------	|----------	|--------------------------------------------------------------------------------------------------------------------------	|-------	|
+| customHandlerClass           	|         	|          	| Provide a class name implementing `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`                            	|       	|
+| handleResultOnNewIntent      	| `false` 	|          	| Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in. 	|       	|
+| handleResultOnActivityResult 	| `true`  	|          	|                                                                                                                          	|       	|
+
+**Platform iOS**
+
+| parameter          	| default 	| required 	| description                                                                                    	| since 	|
+|--------------------	|---------	|----------	|------------------------------------------------------------------------------------------------	|-------	|
+| customHandlerClass 	|         	|          	| Provide a class name implementing `ByteowlsCapacitorOauth2.OAuth2CustomHandler`                	|       	|
+| siwaUseScope       	|         	|          	| SiWA default scope is `name email` if you want to use the configured one set this param `true` 	| 2.1.0 	|
+
+
+#### refreshToken()
+
+| parameter           	| default 	| required 	| description                  	| since 	|
+|---------------------	|---------	|----------	|------------------------------	|-------	|
+| appId               	|         	| yes      	| aka clientId, serviceId, ... 	|       	|
+| accessTokenEndpoint 	|         	| yes      	|                              	|       	|
+| refreshToken        	|         	| yes      	|                              	|       	|
+| scope               	|         	|          	|                              	|       	|
 
 ### Error Codes
 
