@@ -420,9 +420,52 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |----------|------------------------|-------|
 | Google   | [see below](#google)   |       |
 | Facebook | [see below](#facebook) |       |
+| Azure    | [see below](#azure-b2c)|       |
 
 
-## Full examples
+## Examples
+
+### Azure B2C
+
+In case of problems please read the discusssion leading to this config in [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+
+#### PWA
+```typescript
+
+azureLogin() {
+  Plugins.OAuth2Client.authenticate({
+    appId: "xxxxxxxxx",
+    authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
+    accessTokenEndpoint: "",
+    scope: "openid offline_access https://tenantb2c.onmicrosoft.com/capacitor-api/demo.read",
+    responseType: "token",
+    web: {
+        redirectUrl: "http://localhost:8100/auth"
+    },
+    android: {
+        pkceEnabled: true,
+        responseType: "code",
+        redirectUrl: "com.tenant.app://oauth/auth",
+        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+        handleResultOnNewIntent: true,
+        handleResultOnActivityResult: true
+    },
+    ios: {
+        pkceEnabled: true,
+        responseType: "code",
+        redirectUrl: "msauth.com.tenant://oauth",
+        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+    }
+  }
+}
+```
+#### Android
+
+See [Android Default Config](#android-default-config)
+
+#### iOS
+
+See [iOS Default Config](#ios-default-config)
 
 ### Google
 
