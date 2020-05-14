@@ -311,7 +311,8 @@ public class MainActivity extends BridgeActivity {
 
 Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler)
 
-#### AndroidManifest.xml
+#### android/app/src/main/res/AndroidManifest.xml
+
 The `AndroidManifest.xml` in your Capacitor Android project already contains
 ```xml
     <intent-filter>
@@ -322,7 +323,7 @@ The `AndroidManifest.xml` in your Capacitor Android project already contains
     </intent-filter>
 ```
 
-Find the line
+Find the following line in your `AndroidManifest.xml`
 ```xml
 <data android:scheme="@string/custom_url_scheme" />
 ```
@@ -335,11 +336,23 @@ Note: Actually any value for `android:host` will do. It does not has to be `oaut
 This will fix an issues within the oauth workflow when the application is shown twice.
 See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
 
+#### android/app/src/main/res/values/strings.xml
+
+In your `strings.xml` change the `custom_url_scheme` string to your actual scheme value. Do NOT include `://oauth/redirect` or other endpoint urls here!
+
+```xml
+<string name="custom_url_scheme">com.example.yourapp</string>
+
+<!-- wrong -->
+<!-- <string name="custom_url_scheme">com.example.yourapp://endpoint/path</string> -->
+```
+
 #### android/app/build.gradle
 
 ```groovy
 android.defaultConfig.manifestPlaceholders = [
-  "appAuthRedirectScheme": "<@string/custom_url_scheme from string.xml>"
+  // change to the 'custom_url_scheme' value in your strings.xml. They need to be the same. e.g.
+  "appAuthRedirectScheme": "com.example.yourapp"
 ]
 ```
 
