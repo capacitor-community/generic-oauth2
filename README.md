@@ -299,9 +299,9 @@ public class MainActivity extends BridgeActivity {
 
         // Initializes the Bridge
         this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-            // Additional plugins you've installed go here
-            // Ex: add(TotallyAwesomePlugin.class);
-            add(OAuth2ClientPlugin.class);
+            // Additional plugins you've installed go here. Use a import or the full qualified class name of the plugin (FQCN).
+            add(com.byteowls.capacitor.oauth2.OAuth2ClientPlugin.class);
+            // NOTE: The FQCN is redundant but it is clearer especially if someone is not familiar with Android/Java programming.
         }});
     }
 }
@@ -429,20 +429,26 @@ See a full working example below!
 
 These are some of the providers that can be configured with this plugin. I'm happy to add others ot the list, if you let me know.
 
-| Name     | Example (config,...)   | Notes |
-|----------|------------------------|-------|
-| Google   | [see below](#google)   |       |
-| Facebook | [see below](#facebook) |       |
-| Azure    | [see below](#azure-b2c)|       |
+| Name      | Example (config,...)   | Notes |
+|-----------|------------------------|-------|
+| Google    | [see below](#google)   |       |
+| Facebook  | [see below](#facebook) |       |
+| Azure B2C | [see below](#azure-b2c)|       |
 
 
 ## Examples
 
 ### Azure B2C
 
-In case of problems please read the discusssion leading to this config in [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
+
+See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
 
 #### PWA
+
+See these 2 configs that should work.
+
 ```typescript
 
 azureLogin() {
@@ -472,6 +478,34 @@ azureLogin() {
   }
 }
 ```
+
+```typescript
+Plugins.OAuth2Client.authenticate({
+    appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
+    authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
+    accessTokenEndpoint: '',
+    scope: 'https://XXXXXXX.onmicrosoft.com/TestApi4/demo.read',
+    responseType: 'token',
+    web: {
+      redirectUrl: 'http://localhost:8100/'
+    },
+    android: {
+      pkceEnabled: true,
+      responseType: 'code',
+      redirectUrl: 'com.company.project://oauth/redirect',
+      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+      handleResultOnNewIntent: true,
+      handleResultOnActivityResult: true
+    },
+    ios: {
+      pkceEnabled: true,
+      responseType: 'code',
+      redirectUrl: 'com.company.project://oauth',
+      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+    }
+};
+```
+
 #### Android
 
 See [Android Default Config](#android-default-config)
