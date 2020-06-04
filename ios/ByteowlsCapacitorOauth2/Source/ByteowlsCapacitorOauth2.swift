@@ -337,7 +337,23 @@ public class OAuth2ClientPlugin: CAPPlugin {
                             call.reject(self.ERR_GENERAL)
                         }
                 }
-            } else {
+            }
+           // patched by Zeiss (Tobias Bley, onexip GmbH)
+           else if response == nil {
+               do {
+                   let dict = [
+                           "id_token": parameters["id_token"],
+                           "access_token": parameters["access_token"],
+                           "expires_in": parameters["expires_in"],
+                           "state": parameters["state"]
+                  ]
+                       
+                   call.resolve(dict as PluginResultData)
+               } catch {
+                       call.reject(self.ERR_GENERAL)
+                   }
+           }
+            else {
                 do {
                     let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
                     call.resolve(jsonObj)
