@@ -5,10 +5,18 @@
 [![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
-This is a simple OAuth 2 client plugin.
+This a generic OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [providers](#list-of-providers) the community has already used this plugin with.
+
+## Maintainers
+
+| Maintainer | GitHub | Social |
+| -----------| -------| -------|
+| Michael Oberwasserlechner | [moberwasserlechner](https://github.com/moberwasserlechner) | [@michaelowl_web](https://twitter.com/michaelowl_web) |
+
+Actively maintained: YES
 
 ## Versions
 
