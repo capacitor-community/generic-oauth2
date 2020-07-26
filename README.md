@@ -5,10 +5,18 @@
 [![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
-This is a simple OAuth 2 client plugin.
+This a generic OAuth 2 client plugin.
 
 It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [providers](#list-of-providers) the community has already used this plugin with.
+
+## Maintainers
+
+| Maintainer | GitHub | Social |
+| -----------| -------| -------|
+| Michael Oberwasserlechner | [moberwasserlechner](https://github.com/moberwasserlechner) | [@michaelowl_web](https://twitter.com/michaelowl_web) |
+
+Actively maintained: YES
 
 ## Versions
 
@@ -163,10 +171,86 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts
+See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts for details.
 
-**NOTE:** Configuring a `resourceUrl` is optional.
-But be aware that only the parameters from the accessToken request are included in the plugin's response if you do so!
+Example:
+```
+{
+      authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+      accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+      scope: "email profile",
+      resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+      web: {
+        appId: environment.oauthAppId.google.web,
+        responseType: "token", // implicit flow
+        accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
+        redirectUrl: "http://localhost:4200",
+        windowOptions: "height=600,left=0,top=0"
+      },
+      android: {
+        appId: environment.oauthAppId.google.android,
+        responseType: "code", // if you configured a android app in google dev console the value must be "code"
+        redirectUrl: "com.companyname.appname:/" // package name from google dev console
+      },
+      ios: {
+        appId: environment.oauthAppId.google.ios,
+        responseType: "code", // if you configured a ios app in google dev console the value must be "code"
+        redirectUrl: "com.companyname.appname:/" // Bundle ID from google dev console
+      }
+    }
+ ```
+
+
+#### authenticate() and logout()
+
+**Overwritable Base Parameter**
+
+These parameters are overwritable in every platform
+
+| parameter            	| default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
+|----------------------	|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
+| appId                	|         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
+| authorizationBaseUrl 	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| responseType         	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| redirectUrl          	|         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
+| accessTokenEndpoint  	|         	|          	| If empty the authorization response incl code is return. Known issue: Not on iOS!                                                                                                                                                      	|       	|
+| resourceUrl          	|         	|          	| If emtpy the tokens are return instead.                                                                                                                                                                                                	|       	|
+| pkceEnabled          	| `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|       	|
+| scope                	|         	|          	|                                                                                                                                                                                                                                        	|       	|
+| state                	|         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
+| additionalParameters 	|         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	|       	|
+
+**Platform Web**
+
+| parameter     	| default 	| required 	| description                            	| since 	|
+|---------------	|---------	|----------	|----------------------------------------	|-------	|
+| windowOptions 	|         	|          	| e.g. width=500,height=600,left=0,top=0 	|       	|
+| windowTarget  	| `_blank`  |       	|                                        	|       	|
+
+**Platform Android**
+
+| parameter                    	| default 	| required 	| description                                                                                                              	| since 	|
+|------------------------------	|---------	|----------	|--------------------------------------------------------------------------------------------------------------------------	|-------	|
+| customHandlerClass           	|         	|          	| Provide a class name implementing `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`                            	|       	|
+| handleResultOnNewIntent      	| `false` 	|          	| Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in. 	|       	|
+| handleResultOnActivityResult 	| `true`  	|          	|                                                                                                                          	|       	|
+
+**Platform iOS**
+
+| parameter          	| default 	| required 	| description                                                                                    	| since 	|
+|--------------------	|---------	|----------	|------------------------------------------------------------------------------------------------	|-------	|
+| customHandlerClass 	|         	|          	| Provide a class name implementing `ByteowlsCapacitorOauth2.OAuth2CustomHandler`                	|       	|
+| siwaUseScope       	|         	|          	| SiWA default scope is `name email` if you want to use the configured one set this param `true` 	| 2.1.0 	|
+
+
+#### refreshToken()
+
+| parameter           	| default 	| required 	| description                  	| since 	|
+|---------------------	|---------	|----------	|------------------------------	|-------	|
+| appId               	|         	| yes      	| aka clientId, serviceId, ... 	|       	|
+| accessTokenEndpoint 	|         	| yes      	|                              	|       	|
+| refreshToken        	|         	| yes      	|                              	|       	|
+| scope               	|         	|          	|                              	|       	|
 
 ### Error Codes
 
@@ -223,9 +307,9 @@ public class MainActivity extends BridgeActivity {
 
         // Initializes the Bridge
         this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-            // Additional plugins you've installed go here
-            // Ex: add(TotallyAwesomePlugin.class);
-            add(OAuth2ClientPlugin.class);
+            // Additional plugins you've installed go here. Use a import or the full qualified class name of the plugin (FQCN).
+            add(com.byteowls.capacitor.oauth2.OAuth2ClientPlugin.class);
+            // NOTE: The FQCN is redundant but it is clearer especially if someone is not familiar with Android/Java programming.
         }});
     }
 }
@@ -235,7 +319,8 @@ public class MainActivity extends BridgeActivity {
 
 Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler)
 
-#### AndroidManifest.xml
+#### android/app/src/main/res/AndroidManifest.xml
+
 The `AndroidManifest.xml` in your Capacitor Android project already contains
 ```xml
     <intent-filter>
@@ -246,7 +331,7 @@ The `AndroidManifest.xml` in your Capacitor Android project already contains
     </intent-filter>
 ```
 
-Find the line
+Find the following line in your `AndroidManifest.xml`
 ```xml
 <data android:scheme="@string/custom_url_scheme" />
 ```
@@ -259,11 +344,23 @@ Note: Actually any value for `android:host` will do. It does not has to be `oaut
 This will fix an issues within the oauth workflow when the application is shown twice.
 See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
 
+#### android/app/src/main/res/values/strings.xml
+
+In your `strings.xml` change the `custom_url_scheme` string to your actual scheme value. Do NOT include `://oauth/redirect` or other endpoint urls here!
+
+```xml
+<string name="custom_url_scheme">com.example.yourapp</string>
+
+<!-- wrong -->
+<!-- <string name="custom_url_scheme">com.example.yourapp://endpoint/path</string> -->
+```
+
 #### android/app/build.gradle
 
 ```groovy
 android.defaultConfig.manifestPlaceholders = [
-  "appAuthRedirectScheme": "<@string/custom_url_scheme from string.xml>"
+  // change to the 'custom_url_scheme' value in your strings.xml. They need to be the same. e.g.
+  "appAuthRedirectScheme": "com.example.yourapp"
 ]
 ```
 
@@ -340,13 +437,90 @@ See a full working example below!
 
 These are some of the providers that can be configured with this plugin. I'm happy to add others ot the list, if you let me know.
 
-| Name     | Example (config,...)   | Notes |
-|----------|------------------------|-------|
-| Google   | [see below](#google)   |       |
-| Facebook | [see below](#facebook) |       |
+| Name      | Example (config,...)   | Notes |
+|-----------|------------------------|-------|
+| Google    | [see below](#google)   |       |
+| Facebook  | [see below](#facebook) |       |
+| Azure B2C | [see below](#azure-b2c)|       |
 
 
-## Full examples
+## Examples
+
+### Azure B2C
+
+In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
+
+See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
+
+#### PWA
+
+See these 2 configs that should work.
+
+```typescript
+
+azureLogin() {
+  Plugins.OAuth2Client.authenticate({
+    appId: "xxxxxxxxx",
+    authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
+    accessTokenEndpoint: "",
+    scope: "openid offline_access https://tenantb2c.onmicrosoft.com/capacitor-api/demo.read",
+    responseType: "token",
+    web: {
+        redirectUrl: "http://localhost:8100/auth"
+    },
+    android: {
+        pkceEnabled: true,
+        responseType: "code",
+        redirectUrl: "com.tenant.app://oauth/auth",
+        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+        handleResultOnNewIntent: true,
+        handleResultOnActivityResult: true
+    },
+    ios: {
+        pkceEnabled: true,
+        responseType: "code",
+        redirectUrl: "msauth.com.tenant://oauth",
+        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+    }
+  }
+}
+```
+
+```typescript
+Plugins.OAuth2Client.authenticate({
+    appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
+    authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
+    accessTokenEndpoint: '',
+    scope: 'https://XXXXXXX.onmicrosoft.com/TestApi4/demo.read',
+    responseType: 'token',
+    web: {
+      redirectUrl: 'http://localhost:8100/'
+    },
+    android: {
+      pkceEnabled: true,
+      responseType: 'code',
+      redirectUrl: 'com.company.project://oauth/redirect',
+      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+      handleResultOnNewIntent: true,
+      handleResultOnActivityResult: true
+    },
+    ios: {
+      pkceEnabled: true,
+      responseType: 'code',
+      redirectUrl: 'com.company.project://oauth',
+      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+    }
+};
+```
+
+#### Android
+
+See [Android Default Config](#android-default-config)
+
+#### iOS
+
+See [iOS Default Config](#ios-default-config)
 
 ### Google
 
