@@ -503,18 +503,19 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
         if let _: Bool = getValue(call, PARAM_IOS_USE_SCOPE) as? Bool {
             if let scopeStr = getOverwritableString(call, PARAM_SCOPE), !scopeStr.isEmpty {
                 var scopeArr: Array<ASAuthorization.Scope> = []
+                if scopeStr.localizedCaseInsensitiveContains("fullName")
+                   || scopeStr.localizedCaseInsensitiveContains("name") {
+                   scopeArr.append(.fullName)
+               }
+                
                 if scopeStr.localizedCaseInsensitiveContains("email") {
                     scopeArr.append(.email)
                 }
-                
-                if scopeStr.localizedCaseInsensitiveContains("fullName")
-                    || scopeStr.localizedCaseInsensitiveContains("name") {
-                    scopeArr.append(.fullName)
-                }
+               
                 request.requestedScopes = scopeArr
             }
         } else {
-            request.requestedScopes = [.email, .fullName]
+            request.requestedScopes = [.fullName, .email]
         }
         
         let authorizationController = ASAuthorizationController(authorizationRequests: [request])
@@ -541,18 +542,14 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             
             let result = [
                 "id": appleIDCredential.user,
-                "user": [
-                    "name": [
-                        "firstName": appleIDCredential.fullName?.givenName,
-                        "lastName": appleIDCredential.fullName?.familyName
-                    ],
-                    "email": appleIDCredential.email as Any
-                ],
+                "given_name": appleIDCredential.fullName?.givenName as Any,
+                "family_name": appleIDCredential.fullName?.familyName as Any,
+                "email": appleIDCredential.email as Any,
                 "real_user_status": realUserStatus,
                 "state": appleIDCredential.state  as Any,
                 "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8) as Any,
                 "code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8) as Any
-                ] as [String : Any]
+            ] as [String : Any]
             self.savedPluginCall?.resolve(result as PluginResultData)
         default:
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
