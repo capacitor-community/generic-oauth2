@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+
+## [2.1.0] - 2020-08-28
+
+### Added
+
+* Sign in with Apple. closes #45.
+The plugin will detect that the iOS 13+ buildin UI is needed, when `authorizationBaseUrl` contains `https://appleid.apple.com/auth/authorize`. 
+This is needed for other platforms and iOS <=12 anyway, although other platforms are not yet supported.
+
+### Changed
+
+* iOS: Upgrade SwiftOAuth2 to head
+
 ## [2.0.0] - 2020-04-20
 
 ### Breaking
@@ -69,7 +82,8 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 - Android: Fix Java compiler error #36 (thx @Anthbs)
 - Fix github security error by updating Jest lib
 
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...master
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.1.0...master
+[2.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...2.0.0
 [1.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.0.0...1.0.1

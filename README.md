@@ -442,9 +442,83 @@ These are some of the providers that can be configured with this plugin. I'm hap
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
 | Azure B2C | [see below](#azure-b2c)|       |
+| Apple     | [see below](#apple)    | ios only |
 
 
 ## Examples
+
+### Apple
+
+#### iOS 13+
+Minimum config
+
+```typescript
+appleLogin() {
+  Plugins.OAuth2Client.authenticate({
+    appId: "xxxxxxxxx",
+    authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
+  });
+}
+```
+
+The plugin requires `authorizationBaseUrl` as it triggers the native support and because it is needed for other platforms anyway. Those platforms are not supported yet.
+
+`appId` is required as well for internal, generic reasons and any not blank value is fine.
+
+It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add `siwaUseScope: true` to the ios block
+and then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false. 
+
+```typescript
+appleLogin() {
+  Plugins.OAuth2Client.authenticate({
+    appId: "xxxxxxxxx",
+    authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
+    ios: {
+      siwaUseScope: true,
+      scope: "fullName"
+    }
+  });
+}
+```
+
+As "Signin with Apple" is only supported since iOS 13 you should show the according button only in that case.
+
+In Angular I do sth like
+```typescript
+import {Component, OnInit} from '@angular/core';
+import {DeviceInfo, Plugins} from '@capacitor/core';
+
+@Component({
+  templateUrl: './siwa.component.html'
+})
+export class SiwaComponent implements OnInit {
+
+  ios: boolean;
+  siwaSupported: boolean;
+  deviceInfo: DeviceInfo;
+
+  async ngOnInit() {
+    this.deviceInfo = await Plugins.Device.getInfo();
+    this.ios = this.deviceInfo.platform === "ios";
+    this.siwaSupported = (this.ios && this.deviceInfo.osVersion.startsWith("13"));
+  }
+}
+
+```
+
+And show the button only if `siwaSupported` is `true`.
+
+#### iOS <12
+
+not supported
+
+#### PWA
+
+not supported
+
+#### Android
+
+not supported
 
 ### Azure B2C
 
@@ -458,7 +532,6 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 See these 2 configs that should work.
 
 ```typescript
-
 azureLogin() {
   Plugins.OAuth2Client.authenticate({
     appId: "xxxxxxxxx",
@@ -483,12 +556,13 @@ azureLogin() {
         redirectUrl: "msauth.com.tenant://oauth",
         accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
     }
-  }
-}
+  });
+}  
 ```
 
 ```typescript
-Plugins.OAuth2Client.authenticate({
+azureLogin() {
+  Plugins.OAuth2Client.authenticate({
     appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
     authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
     accessTokenEndpoint: '',
@@ -511,7 +585,8 @@ Plugins.OAuth2Client.authenticate({
       redirectUrl: 'com.company.project://oauth',
       accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
     }
-};
+  });
+}
 ```
 
 #### Android
@@ -524,7 +599,7 @@ See [iOS Default Config](#ios-default-config)
 
 ### Google
 
-**PWA**
+#### PWA
 ```typescript
 googleLogin() {
     Plugins.OAuth2Client.authenticate({
@@ -567,7 +642,7 @@ See [iOS Default Config](#ios-default-config)
 
 ### Facebook
 
-**PWA**
+#### PWA
 
 ```typescript
 facebookLogin() {
@@ -611,7 +686,7 @@ I don't want to have a dependency to facebook for users, who don't need Facebook
 
 To address this problem I created a integration with custom code in your app `customHandlerClass`
 
-**Android**
+#### Android
 
 See https://developers.facebook.com/docs/facebook-login/android/ for more background on how to configure Facebook in your Android app.
 

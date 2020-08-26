@@ -50,7 +50,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     this.webOptions.windowOptions,
                     true);
                 // wait for redirect and resolve the
-                this.intervalId = setInterval(() => {
+                this.intervalId = window.setInterval(() => {
                     if (loopCount-- < 0) {
                         this.closeWindow();
                     } else if (this.windowHandle.closed && !this.windowClosedByPlugin) {
@@ -67,7 +67,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                         if (href != null) {
                             let urlParamObj = WebUtils.getUrlParams(href);
                             if (urlParamObj) {
-                                clearInterval(this.intervalId);
+                                window.clearInterval(this.intervalId);
                                 // check state
                                 if (urlParamObj.state === this.webOptions.state) {
                                     if (this.webOptions.accessTokenEndpoint) {
@@ -155,7 +155,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     private closeWindow() {
-        clearInterval(this.intervalId);
+        window.clearInterval(this.intervalId);
         this.windowHandle.close();
         this.windowClosedByPlugin = true;
     }
