@@ -508,6 +508,19 @@ export class SiwaComponent implements OnInit {
 
 And show the button only if `siwaSupported` is `true`.
 
+The response contains these fields:
+
+```
+"id"
+"given_name"
+"family_name"
+"email"
+"real_user_status"
+"state"
+"id_token"
+"code"
+```
+
 #### iOS <12
 
 not supported
