@@ -137,6 +137,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     let jsonObj = try JSONSerialization.jsonObject(with: tokenSuccess.response!.data, options: []) as! JSObject
                     call.resolve(jsonObj)
                 } catch {
+                    self.log("Invalid json in renew access token response \(error.localizedDescription)")
                     call.reject(self.ERR_GENERAL)
                 }
             case .failure(let error):
@@ -144,6 +145,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 case .cancelled, .accessDenied(_, _):
                     call.reject(SharedConstants.ERR_USER_CANCELLED)
                 case .stateNotEqual( _, _):
+                    self.log("The given state does not match the one in the respond!")
                     call.reject(self.ERR_STATES_NOT_MATCH)
                 default:
                     self.log("Authorization failed with \(error.localizedDescription)");
@@ -187,6 +189,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                     jsonObj.updateValue(accessToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
                                     call.resolve(jsonObj)
                                 } else {
+                                    self.log("Invalid json in resource response. '\(response.data)'")
                                     call.reject(self.ERR_GENERAL)
                                 }
                             case .failure(let error):
@@ -309,6 +312,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 if success {
                     call.resolve();
                 } else {
+                    self.log("Custom handler logout failed!")
                     call.reject(self.ERR_CUSTOM_HANDLER_LOGOUT)
                 }
             } else {
@@ -356,6 +360,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
                     call.resolve(jsonObj)
                 } catch {
+                    self.log("Invalid json in response \(error.localizedDescription)")
                     call.reject(self.ERR_GENERAL)
                 }
             }
@@ -364,6 +369,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
             case .cancelled, .accessDenied(_, _):
                 call.reject(SharedConstants.ERR_USER_CANCELLED)
             case .stateNotEqual(_, _):
+                self.log("The given state does not match the one in the respond!")
                 call.reject(self.ERR_STATES_NOT_MATCH)
             default:
                 self.log("Authorization failed with \(error.localizedDescription)");
@@ -552,6 +558,7 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             ] as [String : Any]
             self.savedPluginCall?.resolve(result as PluginResultData)
         default:
+            self.log("SIWA: Authorization failed!")
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
         }
     }
@@ -567,7 +574,7 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             self.savedPluginCall?.reject(SharedConstants.ERR_USER_CANCELLED)
         case .unknown:
             self.log("SIWA: Error.unknown.")
-            self.savedPluginCall?.reject(self.ERR_GENERAL)
+            self.savedPluginCall?.reject(SharedConstants.ERR_USER_CANCELLED)
         case .invalidResponse:
             self.log("SIWA: Error.invalidResponse")
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
