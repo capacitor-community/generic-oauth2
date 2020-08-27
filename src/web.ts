@@ -54,7 +54,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     if (loopCount-- < 0) {
                         this.closeWindow();
                     } else if (this.windowHandle.closed && !this.windowClosedByPlugin) {
-                        clearInterval(this.intervalId);
+                        window.clearInterval(this.intervalId);
                         reject(new Error("USER_CANCELLED"));
                     } else {
                         let href: string;
@@ -64,7 +64,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             // ignore DOMException: Blocked a frame with origin "http://localhost:4200" from accessing a cross-origin frame.
                         }
 
-                        if (href != null) {
+                        if (href != null && href.indexOf(this.webOptions.redirectUrl) >= 0) {
                             let urlParamObj = WebUtils.getUrlParams(href);
                             if (urlParamObj) {
                                 window.clearInterval(this.intervalId);

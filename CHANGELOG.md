@@ -3,17 +3,21 @@
 ## [Unreleased]
 
 
-## [2.1.0] - 2020-08-28
+## [2.1.0] - 2020-08-27
 
 ### Added
 
-* Sign in with Apple. closes #45.
-The plugin will detect that the iOS 13+ buildin UI is needed, when `authorizationBaseUrl` contains `https://appleid.apple.com/auth/authorize`. 
-This is needed for other platforms and iOS <=12 anyway, although other platforms are not yet supported.
+* ios: Sign in with Apple. Closes [#45](https://github.com/moberwasserlechner/capacitor-oauth2/issues/45).
+The plugin will detect that the iOS 13+ buildin UI is needed, when `authorizationBaseUrl` contains `appleid.apple.com`.
+This is needed for other platforms and iOS <=12 anyway. Android, web, iOS <12 are not supported in this release.
+
+### Fixed
+
+* web: Make web flow work if server and client are hosted on same server. Closes [#94](https://github.com/moberwasserlechner/capacitor-oauth2/issues/94). thx [@klot-git](https://github.com/klot-git)
 
 ### Changed
 
-* iOS: Upgrade SwiftOAuth2 to head
+* iOS: Upgrade SwiftOAuth2 to head. Closes [#105](https://github.com/moberwasserlechner/capacitor-oauth2/issues/105)
 
 ## [2.0.0] - 2020-04-20
 
