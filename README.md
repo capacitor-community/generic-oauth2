@@ -46,8 +46,13 @@ These parameters are:
 
 e.g.
 
+1)
 If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
 This only works for the Web and Android. On iOS the used lib does not allows to cancel after the authorization request see #13.
+
+2)
+If you just need the `id_token` JWT you have to set `accessTokenEndpoint` and `resourceUrl` to `null`.
+
 
 ### Tested / working flows
 
@@ -466,7 +471,7 @@ The plugin requires `authorizationBaseUrl` as it triggers the native support and
 `appId` is required as well for internal, generic reasons and any not blank value is fine.
 
 It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add `siwaUseScope: true` to the ios block
-and then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false. 
+and then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false.
 
 ```typescript
 appleLogin() {
@@ -570,7 +575,7 @@ azureLogin() {
         accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
     }
   });
-}  
+}
 ```
 
 ```typescript
