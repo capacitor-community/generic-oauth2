@@ -1,9 +1,12 @@
 package com.byteowls.capacitor.oauth2;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
+
+import androidx.activity.result.ActivityResult;
 
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
@@ -12,6 +15,8 @@ import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
+import com.getcapacitor.annotation.CapacitorPlugin;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -26,10 +31,8 @@ import org.json.JSONException;
 
 import java.util.Map;
 
-@NativePlugin(requestCodes = {OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
+@CapacitorPlugin(name = "CapacitorOAuth2")
 public class OAuth2ClientPlugin extends Plugin {
-
-    static final int REQ_OAUTH_AUTHORIZATION = 56854;
 
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
@@ -261,7 +264,7 @@ public class OAuth2ClientPlugin extends Plugin {
             try {
                 Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
                 saveCall(call);
-                startActivityForResult(call, authIntent, REQ_OAUTH_AUTHORIZATION);
+                startActivityForResult(call, authIntent, "handleIntentResult");
             } catch (ActivityNotFoundException e) {
                 call.reject(ERR_ANDROID_NO_BROWSER, e);
             } catch (Exception e) {
@@ -309,16 +312,22 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    @Override
-    protected void handleOnActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.handleOnActivityResult(requestCode, resultCode, intent);
+    @ActivityCallback
+    protected void handleIntentResult(PluginCall call, ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_CANCELED) {
+            call.reject(USER_CANCELLED);
+        } else {
+            handleAuthorizationRequestActivity(result.getData(), call);
+        }
+
         if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
+            result.getResultCode()
             if (REQ_OAUTH_AUTHORIZATION == requestCode) {
                 PluginCall savedCall = getSavedCall();
                 if (savedCall == null) {
                     return;
                 }
-                handleAuthorizationRequestActivity(intent, savedCall);
+
             }
         }
     }

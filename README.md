@@ -1,8 +1,8 @@
 # Capacitor OAuth 2 client plugin
 
-[![npm](https://img.shields.io/npm/v/@byteowls/capacitor-oauth2.svg)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
+[![npm](https://img.shields.io/npm/v/@capacitor-community/oauth2.svg)](https://www.npmjs.com/package/@capacitor-community/oauth2)
 [![Travis](https://img.shields.io/travis/moberwasserlechner/capacitor-oauth2/master.svg?maxAge=2592000)](https://travis-ci.org/moberwasserlechner/capacitor-oauth2)
-[![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
+[![npm](https://img.shields.io/npm/dt/@capacitor-community/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@capacitor-community/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
 This a generic OAuth 2 client plugin.
@@ -18,11 +18,19 @@ See [providers](#list-of-providers) the community has already used this plugin w
 
 Actively maintained: YES
 
+## Install
+
+```bash
+npm install @capacitor-community/oauth2
+npx cap sync
+```
+
 ## Versions
 
 | Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version  |
+| 3.x    | 3.0.0             | [README](https://github.com/capacitor-community/oauth2/blob/master/README.md)          |
+| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
@@ -80,12 +88,6 @@ For security reasons this plugin does/will not support Code Flow without PKCE.
 
 That would include storing your **client secret** in client code which is highly insecure and not recommended.
 That flow should only be used on the backend (server).
-
-## Installation
-
-`npm i -E @byteowls/capacitor-oauth2`
-
-Minimum Capacitor version is **2.0.0**
 
 ## Configuration
 

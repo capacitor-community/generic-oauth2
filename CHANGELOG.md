@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2021-03-21
+
+### Breaking
+* Capacitor 3
+
+
 ## [2.1.1] - 2021-02-21
 
 ### Fixed

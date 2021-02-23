@@ -1,9 +1,9 @@
 {
-    "name": "@byteowls/capacitor-oauth2",
-    "version": "2.1.1",
-    "description": "Simple Capacitor OAuth 2 client plugin",
+    "name": "@capacitor-community/oauth2",
+    "version": "3.0.0",
+    "description": "Capacitor OAuth 2 client plugin",
     "author": "Michael Oberwasserlechner",
-    "homepage": "https://github.com/moberwasserlechner/capacitor-oauth2",
+    "homepage": "https://github.com/capacitor-community/oauth2",
     "license": "MIT",
     "main": "dist/esm/index.js",
     "types": "dist/esm/index.d.ts",
@@ -12,7 +12,7 @@
         "clean": "rm -rf ./dist",
         "watch": "tsc --watch",
         "test": "jest",
-        "removePacked": "rm -f byteowls-capacitor-oauth2-*.tgz",
+        "removePacked": "rm -f capacitor-oauth2-*.tgz",
         "publishLocally": "npm run removePacked && npm run build && npm pack",
         "prepublishOnly": "npm run build"
     },
@@ -39,22 +39,22 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/moberwasserlechner/capacitor-oauth2"
+        "url": "https://github.com/capacitor-community/oauth2"
     },
     "bugs": {
-        "url": "https://github.com/moberwasserlechner/capacitor-oauth2/issues"
+        "url": "https://github.com/capacitor-community/oauth2/issues"
     },
     "publishConfig": {
         "access": "public"
     },
     "peerDependencies": {
-        "@capacitor/core": "^2.0.0"
+        "@capacitor/core": "3.0.0-beta.3"
     },
     "dependencies": {},
     "devDependencies": {
-        "@capacitor/android": "2.4.6",
-        "@capacitor/core": "2.4.6",
-        "@capacitor/ios": "2.4.6",
+        "@capacitor/android": "3.0.0-beta.3",
+        "@capacitor/core": "3.0.0-beta.3",
+        "@capacitor/ios": "3.0.0-beta.3",
         "@types/jest": "26.0.20",
         "jest": "26.6.3",
         "ts-jest": "26.5.1",
