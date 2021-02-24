@@ -171,7 +171,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
-                handlerInstance.getAccessToken(viewController: bridge.viewController, call: call, success: { (accessToken) in
+                handlerInstance.getAccessToken(viewController: (bridge?.viewController)!, call: call, success: { (accessToken) in
                     
                     if resourceUrl != nil {
                         let client = OAuthSwiftClient(
@@ -252,7 +252,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     )
                 }
                 
-                let urlHandler = SafariURLHandler(viewController: bridge.viewController, oauthSwift: oauthSwift)
+                let urlHandler = SafariURLHandler(viewController: (bridge?.viewController)!, oauthSwift: oauthSwift)
                 // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
                 urlHandler.delegate = self.oauth2SafariDelegate
                 oauthSwift.authorizeURLHandler = urlHandler
@@ -308,7 +308,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     @objc func logout(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
-                let success: Bool! = handlerInstance.logout(viewController: bridge.viewController, call: call)
+                let success: Bool! = handlerInstance.logout(viewController: (bridge?.viewController)!, call: call)
                 if success {
                     call.resolve();
                 } else {
