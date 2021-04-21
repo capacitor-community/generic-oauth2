@@ -2,6 +2,9 @@ declare global {
     interface PluginRegistry {
         OAuth2Client?: OAuth2ClientPlugin;
     }
+    interface Window {
+        chrome: any;
+    }
 }
 
 export interface OAuth2ClientPlugin {

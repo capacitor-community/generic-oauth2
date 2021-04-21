@@ -48,7 +48,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     WebUtils.getAuthorizationUrl(this.webOptions),
                     this.webOptions.windowTarget,
                     this.webOptions.windowOptions,
-                    true);
+                    !!window.chrome ? undefined : true);
+
                 // wait for redirect and resolve the
                 this.intervalId = window.setInterval(() => {
                     if (loopCount-- < 0) {
