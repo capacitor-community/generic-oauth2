@@ -126,6 +126,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                         if(tokenObj.code) {
                             resp['code'] = tokenObj.code;
                         }
+                        if (tokenObj.id_token) {
+                            resp["id_token"] = tokenObj.id_token;
+                        }
                         resolve(resp);
                     } else {
                         reject(new Error(this.statusText));
