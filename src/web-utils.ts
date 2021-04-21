@@ -217,7 +217,7 @@ export class WebOptions {
     scope: string;
     state: string;
     redirectUrl: string;
-    windowOptions: string;
+    windowOptions: string = "toolbar=no,location=yes,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,copyhistory=no,width=600,height=600,top=" + (screen.height - 600) / 2 + ",left=" + (screen.width - 600) / 2;
     windowTarget: string = "_blank";
 
     pkceEnabled: boolean;
