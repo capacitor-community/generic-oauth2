@@ -51,6 +51,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     true);
                 // wait for redirect and resolve the
                 this.intervalId = window.setInterval(() => {
+                    const urlCreds = window.localStorage.getItem(this.webOptions.additionalParameters.localStorageKey);
+
                     if (loopCount-- < 0) {
                         this.closeWindow();
                     } else if (this.windowHandle.closed && !this.windowClosedByPlugin) {
@@ -64,46 +66,71 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             // ignore DOMException: Blocked a frame with origin "http://localhost:4200" from accessing a cross-origin frame.
                         }
 
+                        let urlParamObj;
+
                         if (href != null && href.indexOf(this.webOptions.redirectUrl) >= 0) {
-                            let urlParamObj = WebUtils.getUrlParams(href);
-                            if (urlParamObj) {
-                                window.clearInterval(this.intervalId);
-                                // check state
-                                if (urlParamObj.state === this.webOptions.state) {
-                                    if (this.webOptions.accessTokenEndpoint) {
-                                        const self = this;
-                                        let authorizationCode = urlParamObj.code;
-                                        if (authorizationCode) {
-                                            const tokenRequest = new XMLHttpRequest();
-                                            tokenRequest.onload = function () {
-                                                if (this.status === 200) {
-                                                    let accessTokenResponse = JSON.parse(this.response);
-                                                    self.requestResource(accessTokenResponse, resolve, reject);
-                                                }
-                                            };
-                                            tokenRequest.onerror = function () {
-                                                console.log("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
-                                                reject(new Error("ERR_GENERAL"));
-                                            };
-                                            tokenRequest.open("POST", this.webOptions.accessTokenEndpoint, true);
-                                            tokenRequest.setRequestHeader('accept', 'application/json');
-                                            tokenRequest.setRequestHeader('cache-control', 'no-cache');
-                                            tokenRequest.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-                                            tokenRequest.send(WebUtils.getTokenEndpointData(this.webOptions, authorizationCode));
-                                        } else {
-                                            reject(new Error("ERR_NO_AUTHORIZATION_CODE"));
-                                        }
-                                        this.closeWindow();
-                                    } else {
-                                        // if no accessTokenEndpoint exists request the resource
-                                        this.requestResource(urlParamObj, resolve, reject);
-                                    }
-                                } else {
-                                    reject(new Error("ERR_STATES_NOT_MATCH"));
-                                    this.closeWindow();
-                                }
+                            urlParamObj = WebUtils.getUrlParams(href);
+                        }
+
+                        if (!urlParamObj && urlCreds) {
+                            let url: URL;
+
+                            if (href) {
+                                url = new URL(href);
                             }
-                            // this is no error no else clause required
+
+                            url = new URL(window.location.toString());
+                            const creds = JSON.parse(urlCreds);
+
+                            if (!creds.error) {
+                                Object.keys(creds).forEach((key) => {
+                                    url.searchParams.set(key, creds[key]);
+                                });
+
+                                urlParamObj = WebUtils.getUrlParams(url.toString());
+                            }
+
+                            window.localStorage.removeItem(this.webOptions.additionalParameters.localStorageKey);
+                        }
+
+                        if (urlParamObj) {
+                            window.clearInterval(this.intervalId);
+                            // check state
+                            if (urlParamObj.state === this.webOptions.state) {
+                                if (this.webOptions.accessTokenEndpoint) {
+                                    const self = this;
+                                    let authorizationCode = urlParamObj.code;
+                                    if (authorizationCode) {
+                                        const tokenRequest = new XMLHttpRequest();
+                                        tokenRequest.onload = function () {
+                                            if (this.status === 200) {
+                                                let accessTokenResponse = JSON.parse(this.response);
+                                                self.requestResource(accessTokenResponse, resolve, reject);
+                                            }
+                                        };
+                                        tokenRequest.onerror = function () {
+                                            console.log("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
+                                            reject(new Error("ERR_GENERAL"));
+                                        };
+                                        tokenRequest.open("POST", this.webOptions.accessTokenEndpoint, true);
+                                        tokenRequest.setRequestHeader('accept', 'application/json');
+                                        tokenRequest.setRequestHeader('cache-control', 'no-cache');
+                                        tokenRequest.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
+                                        tokenRequest.send(WebUtils.getTokenEndpointData(this.webOptions, authorizationCode));
+                                    } else {
+                                        reject(new Error("ERR_NO_AUTHORIZATION_CODE"));
+                                    }
+                                    this.closeWindow();
+                                } else {
+                                    // if no accessTokenEndpoint exists request the resource
+                                    this.requestResource(urlParamObj, resolve, reject);
+                                }
+                            } else {
+                                reject(new Error("ERR_STATES_NOT_MATCH"));
+                                this.closeWindow();
+                            }
+                        }
+                        // this is no error no else clause required
                         }
                     }
                 }, this.intervalLength);
