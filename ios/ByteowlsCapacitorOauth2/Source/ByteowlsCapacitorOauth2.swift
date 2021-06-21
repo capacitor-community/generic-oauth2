@@ -355,14 +355,19 @@ public class OAuth2ClientPlugin: CAPPlugin {
                             call.reject(self.ERR_GENERAL)
                         }
                 }
-            } else {
+            } else if let responseData = response?.data {
                 do {
-                    let jsonObj = try JSONSerialization.jsonObject(with: response!.data, options: []) as! JSObject
+                    let jsonObj = try JSONSerialization.jsonObject(with: responseData, options: []) as! JSObject
                     call.resolve(jsonObj)
                 } catch {
                     self.log("Invalid json in response \(error.localizedDescription)")
                     call.reject(self.ERR_GENERAL)
                 }
+            } else {
+                // `parameters` will be response parameters
+                var result = parameters
+                result.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+                call.resolve(parameters)
             }
         case .failure(let error):
             switch error {
