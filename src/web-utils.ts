@@ -87,12 +87,12 @@ export class WebUtils {
     static randomString(length: number = 10) {
         const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-        let text = "";
-        for (let i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
+        let array = new Uint8Array(length);
 
-        return text;
+        window.crypto.getRandomValues(array);
+        array = array.map(x => possible.charCodeAt(x % possible.length));
+
+        return String.fromCharCode.apply(null, array);
     }
 
     static async buildWebOptions(configOptions: OAuth2AuthenticateOptions): Promise<WebOptions> {
