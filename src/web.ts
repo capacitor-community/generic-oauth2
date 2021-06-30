@@ -1,12 +1,12 @@
-import { registerWebPlugin, WebPlugin } from '@capacitor/core';
+import { WebPlugin } from '@capacitor/core';
 import { OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions } from "./definitions";
 import { WebOptions, WebUtils } from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
 
     private webOptions: WebOptions;
-    private windowHandle: Window = null;
-    private intervalId: number = null;
+    private windowHandle: Window | null;
+    private intervalId: number;
     private loopCount = 2000;
     private intervalLength = 100;
     private windowClosedByPlugin: boolean;
@@ -21,8 +21,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     /**
      * Get a new access token using an existing refresh token.
      */
-    async refreshToken(options: OAuth2RefreshTokenOptions): Promise<any> {
-        return new Promise<any>((resolve, reject) => {
+    async refreshToken(_options: OAuth2RefreshTokenOptions): Promise<any> {
+        return new Promise<any>((_resolve, reject) => {
             reject(new Error("Functionality not implemented for PWAs yet"));
         });
     }
@@ -53,13 +53,13 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 this.intervalId = window.setInterval(() => {
                     if (loopCount-- < 0) {
                         this.closeWindow();
-                    } else if (this.windowHandle.closed && !this.windowClosedByPlugin) {
+                    } else if (this.windowHandle?.closed && !this.windowClosedByPlugin) {
                         window.clearInterval(this.intervalId);
                         reject(new Error("USER_CANCELLED"));
                     } else {
-                        let href: string;
+                        let href: string = undefined!;
                         try {
-                            href = this.windowHandle.location.href;
+                            href = this.windowHandle?.location.href!;
                         } catch (ignore) {
                             // ignore DOMException: Blocked a frame with origin "http://localhost:4200" from accessing a cross-origin frame.
                         }
@@ -147,22 +147,16 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         }
     }
 
-    async logout(options: OAuth2AuthenticateOptions): Promise<void> {
-        return new Promise<any>((resolve, reject) => {
+    async logout(options: OAuth2AuthenticateOptions): Promise<boolean> {
+        return new Promise<any>((resolve, _reject) => {
             localStorage.removeItem(WebUtils.getAppId(options));
-            resolve();
+            resolve(true);
         });
     }
 
     private closeWindow() {
         window.clearInterval(this.intervalId);
-        this.windowHandle.close();
+        this.windowHandle?.close();
         this.windowClosedByPlugin = true;
     }
 }
-
-const OAuth2Client = new OAuth2ClientPluginWeb();
-
-export { OAuth2Client };
-
-registerWebPlugin(OAuth2Client);

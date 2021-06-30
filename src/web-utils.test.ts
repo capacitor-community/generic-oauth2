@@ -1,9 +1,9 @@
 import {OAuth2AuthenticateOptions} from "./definitions";
-import { CryptoUtils, WebUtils } from "./web-utils";
+import {CryptoUtils, WebUtils} from "./web-utils";
 
 const mGetRandomValues = jest.fn().mockReturnValueOnce(new Uint32Array(10));
 Object.defineProperty(window, 'crypto', {
-    value: { getRandomValues: mGetRandomValues },
+    value: {getRandomValues: mGetRandomValues},
 });
 
 const googleOptions: OAuth2AuthenticateOptions = {
@@ -34,14 +34,14 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
     scope: "files.readwrite offline_access",
     responseType: "code",
     additionalParameters: {
-      "willbeoverwritten": "foobar"
+        "willbeoverwritten": "foobar"
     },
     web: {
         redirectUrl: "https://oauth2.byteowls.com/authorize",
         pkceEnabled: false,
         additionalParameters: {
             "resource": "resource_id",
-            "emptyParam": null,
+            "emptyParam": null!,
             " ": "test",
             "nonce": WebUtils.randomString(10)
         }
@@ -63,8 +63,7 @@ const redirectUrlOptions: OAuth2AuthenticateOptions = {
     additionalParameters: {
         "willbeoverwritten": "foobar"
     },
-    web: {
-    },
+    web: {},
     android: {
         redirectUrl: "com.byteowls.oauth2://authorize"
     },
@@ -91,13 +90,13 @@ describe('base options processing', () => {
     });
 
     it('should build a overwritable additional parameters map', () => {
-        const additionalParameters = WebUtils.getOverwritableValue<{[key: string]: string}>(oneDriveOptions, "additionalParameters");
+        const additionalParameters = WebUtils.getOverwritableValue<{ [key: string]: string }>(oneDriveOptions, "additionalParameters");
         expect(additionalParameters).not.toBeUndefined();
         expect(additionalParameters["resource"]).toEqual("resource_id");
     });
 
     it('must not contain overwritten additional parameters', () => {
-        const additionalParameters = WebUtils.getOverwritableValue<{[key: string]: string}>(oneDriveOptions, "additionalParameters");
+        const additionalParameters = WebUtils.getOverwritableValue<{ [key: string]: string }>(oneDriveOptions, "additionalParameters");
         expect(additionalParameters["willbeoverwritten"]).toBeUndefined();
     });
 
@@ -118,26 +117,31 @@ describe('base options processing', () => {
 });
 
 describe('web options', () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
-        it('should build web options', () => {
+    it('should build web options', async () => {
+        WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
             expect(webOptions).not.toBeNull();
         });
+    });
 
-        it('should not have a code verifier', () => {
+    it('should not have a code verifier', async () => {
+        WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
             expect(webOptions.pkceCodeVerifier).toBeUndefined();
         });
+    });
 
-        it('must not contain empty additional parameter', () => {
+    it('must not contain empty additional parameter', async () => {
+        WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
             expect(webOptions.additionalParameters[" "]).toBeUndefined();
             expect(webOptions.additionalParameters["emptyParam"]).toBeUndefined();
         });
     });
+
 });
 
 describe("Url param extraction", () => {
 
     it('should return null on null url', () => {
-        const paramObj = WebUtils.getUrlParams(null);
+        const paramObj = WebUtils.getUrlParams(null!);
         expect(paramObj).toBeUndefined();
     });
 
@@ -173,29 +177,29 @@ describe("Url param extraction", () => {
 
     it('should extract work with a single param', () => {
         const paramObj = WebUtils.getUrlParams("https://app.example.com?access_token=testtoken");
-        expect(paramObj["access_token"]).toStrictEqual("testtoken");
+        expect(paramObj!["access_token"]).toStrictEqual("testtoken");
     });
 
     it('should extract a uuid state param', () => {
         const state = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams("https://app.example.com?state=" + state + "&access_token=testtoken");
-        expect(paramObj["state"]).toStrictEqual(state);
+        expect(paramObj!["state"]).toStrictEqual(state);
     });
 
     it('should use query flag and ignore hash flag', () => {
         const random = WebUtils.randomString();
         const foo = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
-        expect(paramObj["random"]).toStrictEqual(random);
-        expect(paramObj["foo"]).toStrictEqual(`${foo}#ignored`);
+        expect(paramObj!["random"]).toStrictEqual(random);
+        expect(paramObj!["foo"]).toStrictEqual(`${foo}#ignored`);
     });
 
     it('should use hash flag and ignore query flag', () => {
         const random = WebUtils.randomString();
         const foo = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}?ignored`);
-        expect(paramObj["random"]).toStrictEqual(random);
-        expect(paramObj["foo"]).toStrictEqual(`${foo}?ignored`);
+        expect(paramObj!["random"]).toStrictEqual(random);
+        expect(paramObj!["foo"]).toStrictEqual(`${foo}?ignored`);
     });
 
 });
@@ -215,14 +219,9 @@ describe("Random string gen", () => {
 });
 
 describe("Authorization url building", () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
-        const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
-
-        it('should contain a nonce param', () => {
-            expect(authorizationUrl).toContain("nonce");
-        });
-
-        it('should contain a resource param', () => {
+    it('should contain a nonce param', async () => {
+        WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
+            const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
             expect(authorizationUrl).toContain("nonce");
         });
     });

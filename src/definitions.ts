@@ -1,9 +1,3 @@
-declare global {
-    interface PluginRegistry {
-        OAuth2Client?: OAuth2ClientPlugin;
-    }
-}
-
 export interface OAuth2ClientPlugin {
     /**
      * Authenicate against a OAuth 2 provider.
@@ -22,7 +16,7 @@ export interface OAuth2ClientPlugin {
      * @param {OAuth2AuthenticateOptions} options Although not all options are needed. We simply reuse the options from authenticate
      * @returns {Promise<boolean>} true if the logout was successful else false.
      */
-    logout(options: OAuth2AuthenticateOptions): Promise<void>;
+    logout(options: OAuth2AuthenticateOptions): Promise<boolean>;
 }
 
 export interface OAuth2RefreshTokenOptions {

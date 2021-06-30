@@ -59,7 +59,7 @@ export class WebUtils {
     /**
      * Public only for testing
      */
-    static getUrlParams(url: string): any | undefined {
+    static getUrlParams(url: string): { [x: string]: string; } | undefined {
         const urlString = `${url}`.trim();
 
         if (urlString.length === 0) {
@@ -81,11 +81,12 @@ export class WebUtils {
 
         const urlParamStr = urlString.slice(paramsIndex + 1);
         const keyValuePairs: string[] = urlParamStr.split(`&`);
-        return keyValuePairs.reduce((acc, hash) => {
-            const [key, val] = hash.split(`=`);
+        // @ts-ignore
+        return keyValuePairs.reduce((accumulator, currentValue) => {
+            const [key, val] = currentValue.split(`=`);
             if (key && key.length > 0) {
                 return {
-                    ...acc,
+                    ...accumulator,
                     [key]: decodeURIComponent(val)
                 }
             }
@@ -93,14 +94,25 @@ export class WebUtils {
     }
 
     static randomString(length: number = 10) {
-        const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const haystack = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let randomStr;
+        if (window.crypto) {
+            let numberArray: Uint32Array = new Uint32Array(length);
+            window.crypto.getRandomValues(numberArray);
+            numberArray = numberArray.map(x => haystack.charCodeAt(x % haystack.length));
 
-        let array = new Uint8Array(length);
-
-        window.crypto.getRandomValues(array);
-        array = array.map(x => possible.charCodeAt(x % possible.length));
-
-        return String.fromCharCode.apply(null, array);
+            let stringArray: string[] = [];
+            numberArray.forEach(x => {
+                stringArray.push(haystack.charAt(x % haystack.length));
+            })
+            randomStr = stringArray.join("");
+        } else {
+            randomStr = "";
+            for (let i = 0; i < length; i++) {
+                randomStr += haystack.charAt(Math.floor(Math.random() * haystack.length));
+            }
+        }
+        return randomStr;
     }
 
     static async buildWebOptions(configOptions: OAuth2AuthenticateOptions): Promise<WebOptions> {
