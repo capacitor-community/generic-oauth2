@@ -263,7 +263,7 @@ public class OAuth2ClientPlugin extends Plugin {
             this.authService = new AuthorizationService(getContext());
             try {
                 Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
-                saveCall(call);
+                this.bridge.saveCall(call);
                 startActivityForResult(call, authIntent, "handleIntentResult");
             } catch (ActivityNotFoundException e) {
                 call.reject(ERR_ANDROID_NO_BROWSER, e);
@@ -304,7 +304,7 @@ public class OAuth2ClientPlugin extends Plugin {
         // this is a experimental hook and only usable if the android system kills the app between
         if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnNewIntent()) {
             // with this I have no way to check if this intent is for this plugin
-            PluginCall savedCall = getSavedCall();
+            PluginCall savedCall = this.bridge.getSavedCall();
             if (savedCall == null) {
                 return;
             }
@@ -313,22 +313,11 @@ public class OAuth2ClientPlugin extends Plugin {
     }
 
     @ActivityCallback
-    protected void handleIntentResult(PluginCall call, ActivityResult result) {
+    private void handleIntentResult(PluginCall call, ActivityResult result) {
         if (result.getResultCode() == Activity.RESULT_CANCELED) {
             call.reject(USER_CANCELLED);
         } else {
             handleAuthorizationRequestActivity(result.getData(), call);
-        }
-
-        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
-            result.getResultCode()
-            if (REQ_OAUTH_AUTHORIZATION == requestCode) {
-                PluginCall savedCall = getSavedCall();
-                if (savedCall == null) {
-                    return;
-                }
-
-            }
         }
     }
 

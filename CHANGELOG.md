@@ -2,10 +2,10 @@
 
 ## [Unreleased]
 
-## [3.0.0] - 2021-03-21
+## [3.0.0] - 2021-07-06
 
 ### Breaking
-* Capacitor 3
+* Support Capacitor 3
 
 
 ## [2.1.1] - 2021-02-21
