@@ -59,40 +59,48 @@ export class WebUtils {
     /**
      * Public only for testing
      */
-    static getUrlParams(urlString: string): any | undefined {
-        if (urlString && urlString.trim().length > 0) {
-            urlString = urlString.trim();
-            let idx = urlString.indexOf("#");
-            if (idx === -1) {
-                idx = urlString.indexOf("?");
-            }
-            if (idx !== -1 && urlString.length > (idx + 1)) {
-                const urlParamStr = urlString.slice(idx + 1);
-                const keyValuePairs: string[] = urlParamStr.split(`&`);
-                return keyValuePairs.reduce((acc, hash) => {
-                    const [key, val] = hash.split(`=`);
-                    if (key && key.length > 0) {
-                        return {
-                            ...acc,
-                            [key]: decodeURIComponent(val)
-                        }
-                    }
-                }, {});
-            }
+    static getUrlParams(url: string): any | undefined {
+        const urlString = `${url}`.trim();
 
+        if (urlString.length === 0) {
+            return;
         }
-        return undefined;
+
+        let hashIndex = urlString.indexOf("#");
+        let queryIndex = urlString.indexOf("?");
+
+        if (hashIndex === -1 && queryIndex === -1) {
+            return;
+        }
+
+        const paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+
+        if (urlString.length <= paramsIndex + 1) {
+            return;
+        }
+
+        const urlParamStr = urlString.slice(paramsIndex + 1);
+        const keyValuePairs: string[] = urlParamStr.split(`&`);
+        return keyValuePairs.reduce((acc, hash) => {
+            const [key, val] = hash.split(`=`);
+            if (key && key.length > 0) {
+                return {
+                    ...acc,
+                    [key]: decodeURIComponent(val)
+                }
+            }
+        }, {});
     }
 
     static randomString(length: number = 10) {
         const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-        let text = "";
-        for (let i = 0; i < length; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
+        let array = new Uint8Array(length);
 
-        return text;
+        window.crypto.getRandomValues(array);
+        array = array.map(x => possible.charCodeAt(x % possible.length));
+
+        return String.fromCharCode.apply(null, array);
     }
 
     static async buildWebOptions(configOptions: OAuth2AuthenticateOptions): Promise<WebOptions> {
@@ -126,7 +134,7 @@ export class WebUtils {
         if (!webOptions.state || webOptions.state.length === 0) {
             webOptions.state = this.randomString(20);
         }
-        let mapHelper = this.getOverwritableValue<{[key: string]: string}>(configOptions, "additionalParameters");
+        let mapHelper = this.getOverwritableValue<{ [key: string]: string }>(configOptions, "additionalParameters");
         if (mapHelper) {
             webOptions.additionalParameters = {};
             for (const key in mapHelper) {
@@ -173,7 +181,7 @@ export class CryptoUtils {
     static toBase64(bytes: Uint8Array): string {
         let len = bytes.length;
         let base64 = "";
-        for (let i = 0; i < len; i+=3) {
+        for (let i = 0; i < len; i += 3) {
             base64 += this.BASE64_CHARS[bytes[i] >> 2];
             base64 += this.BASE64_CHARS[((bytes[i] & 3) << 4) | (bytes[i + 1] >> 4)];
             base64 += this.BASE64_CHARS[((bytes[i + 1] & 15) << 2) | (bytes[i + 2] >> 6)];
@@ -225,6 +233,6 @@ export class WebOptions {
     pkceCodeChallenge: string;
     pkceCodeChallengeMethod: string;
 
-    additionalParameters: {[key: string]: string};
+    additionalParameters: { [key: string]: string };
 }
 

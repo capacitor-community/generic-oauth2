@@ -1,5 +1,10 @@
 import {OAuth2AuthenticateOptions} from "./definitions";
-import {CryptoUtils, WebUtils} from "./web-utils";
+import { CryptoUtils, WebUtils } from "./web-utils";
+
+const mGetRandomValues = jest.fn().mockReturnValueOnce(new Uint32Array(10));
+Object.defineProperty(window, 'crypto', {
+    value: { getRandomValues: mGetRandomValues },
+});
 
 const googleOptions: OAuth2AuthenticateOptions = {
     appId: "appId",
@@ -175,6 +180,22 @@ describe("Url param extraction", () => {
         const state = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams("https://app.example.com?state=" + state + "&access_token=testtoken");
         expect(paramObj["state"]).toStrictEqual(state);
+    });
+
+    it('should use query flag and ignore hash flag', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
+        expect(paramObj["random"]).toStrictEqual(random);
+        expect(paramObj["foo"]).toStrictEqual(`${foo}#ignored`);
+    });
+
+    it('should use hash flag and ignore query flag', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}?ignored`);
+        expect(paramObj["random"]).toStrictEqual(random);
+        expect(paramObj["foo"]).toStrictEqual(`${foo}?ignored`);
     });
 
 });
