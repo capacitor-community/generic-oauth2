@@ -182,6 +182,22 @@ describe("Url param extraction", () => {
         expect(paramObj["state"]).toStrictEqual(state);
     });
 
+    it('should use query flag and ignore hash flag', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
+        expect(paramObj["random"]).toStrictEqual(random);
+        expect(paramObj["foo"]).toStrictEqual(`${foo}#ignored`);
+    });
+
+    it('should use hash flag and ignore query flag', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}?ignored`);
+        expect(paramObj["random"]).toStrictEqual(random);
+        expect(paramObj["foo"]).toStrictEqual(`${foo}?ignored`);
+    });
+
 });
 
 describe("Random string gen", () => {
