@@ -409,7 +409,7 @@ On iOS the plugin is registered **automatically** by Capacitor.
 
 Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler-1)
 
-Open `ios/App/App/Info.plist` in XCode and add the value of `redirectUrl` from your config without `:/` like that
+Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and add the value of `redirectUrl` from your config without `:/` like that
 
 ```xml
 	<key>CFBundleURLTypes</key>
@@ -551,6 +551,8 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 
 See these 2 configs that should work.
 
+It's important to use the urls you see in the Azure config for the specific platform.
+
 ```typescript
 azureLogin() {
   Plugins.OAuth2Client.authenticate({
@@ -565,7 +567,7 @@ azureLogin() {
     android: {
         pkceEnabled: true,
         responseType: "code",
-        redirectUrl: "com.tenant.app://oauth/auth",
+        redirectUrl: "com.tenant.app://oauth/auth", // Use the value from Azure config. Platform "Android"
         accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
         handleResultOnNewIntent: true,
         handleResultOnActivityResult: true
@@ -573,7 +575,7 @@ azureLogin() {
     ios: {
         pkceEnabled: true,
         responseType: "code",
-        redirectUrl: "msauth.com.tenant://oauth",
+        redirectUrl: "msauth.BUNDLE_ID://oauth", // Use the value from Azure config. Platform "iOS/Mac"
         accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
     }
   });
@@ -615,7 +617,21 @@ See [Android Default Config](#android-default-config)
 
 #### iOS
 
-See [iOS Default Config](#ios-default-config)
+Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
+
+```xml
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>msauth.BUNDLE_ID</string>
+			</array>
+		</dict>
+	</array>
+```
+
+Do not enter `://` and part of your redirect url after those chars.
 
 ### Google
 
