@@ -174,6 +174,7 @@ export class WebUtils {
             if (configOptions.web.windowTarget) {
                 webOptions.windowTarget = configOptions.web.windowTarget;
             }
+            webOptions.windowReplace = configOptions.web.windowReplace;
         }
         return webOptions;
     }
@@ -248,6 +249,7 @@ export class WebOptions {
     logsEnabled: boolean;
     windowOptions: string;
     windowTarget: string = "_blank";
+    windowReplace: boolean | undefined;
 
     pkceEnabled: boolean;
     pkceCodeVerifier: string;

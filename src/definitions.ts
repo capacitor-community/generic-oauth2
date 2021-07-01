@@ -122,6 +122,12 @@ export interface WebOption extends OAuth2AuthenticateBaseOptions {
      * Options for the window target. Defaults to _blank
      */
     windowTarget?: string;
+    /**
+     * Specifies whether the window URL creates a new entry or replaces the current entry in the history list. Defaults to undefined.
+     * @see https://www.w3schools.com/jsref/met_win_open.asp
+     * @since 3.0.0
+     */
+    windowReplace?: boolean;
 }
 
 export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
