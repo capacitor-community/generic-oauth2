@@ -66,14 +66,21 @@ export class WebUtils {
             return;
         }
 
+        // #132
         let hashIndex = urlString.indexOf("#");
         let queryIndex = urlString.indexOf("?");
 
         if (hashIndex === -1 && queryIndex === -1) {
             return;
         }
-
-        const paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+        let paramsIndex: number;
+        if (hashIndex > -1 && queryIndex === -1) {
+            paramsIndex = hashIndex;
+        } else if (queryIndex > -1 && hashIndex === -1) {
+            paramsIndex = queryIndex;
+        } else {
+            paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+        }
 
         if (urlString.length <= paramsIndex + 1) {
             return;
@@ -158,6 +165,7 @@ export class WebUtils {
                 }
             }
         }
+        webOptions.logsEnabled = this.getOverwritableValue(configOptions, "logsEnabled");
 
         if (configOptions.web) {
             if (configOptions.web.windowOptions) {
@@ -237,6 +245,7 @@ export class WebOptions {
     scope: string;
     state: string;
     redirectUrl: string;
+    logsEnabled: boolean;
     windowOptions: string;
     windowTarget: string = "_blank";
 

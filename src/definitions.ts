@@ -1,6 +1,6 @@
 export interface OAuth2ClientPlugin {
     /**
-     * Authenicate against a OAuth 2 provider.
+     * Authenticate against a OAuth 2 provider.
      * @param {OAuth2AuthenticateOptions} options
      * @returns {Promise<any>} the resource url response
      */
@@ -91,6 +91,10 @@ export interface OAuth2AuthenticateBaseOptions {
      * Additional parameters for the created authorization url
      */
     additionalParameters?: { [key: string]: string }
+    /**
+     * @since 3.0.0
+     */
+    logsEnabled?: boolean;
 }
 
 export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
@@ -115,7 +119,7 @@ export interface WebOption extends OAuth2AuthenticateBaseOptions {
      */
     windowOptions?: string;
     /**
-     * Options for the window target. defaults to _blank
+     * Options for the window target. Defaults to _blank
      */
     windowTarget?: string;
 }

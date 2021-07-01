@@ -1,6 +1,6 @@
-import { WebPlugin } from '@capacitor/core';
-import { OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions } from "./definitions";
-import { WebOptions, WebUtils } from "./web-utils";
+import {WebPlugin} from '@capacitor/core';
+import type {OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions} from "./definitions";
+import {WebOptions, WebUtils} from "./web-utils";
 
 export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
 
@@ -10,13 +10,6 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     private loopCount = 2000;
     private intervalLength = 100;
     private windowClosedByPlugin: boolean;
-
-    constructor() {
-        super({
-            name: 'OAuth2Client',
-            platforms: ['web']
-        });
-    }
 
     /**
      * Get a new access token using an existing refresh token.
@@ -44,8 +37,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 let loopCount = this.loopCount;
                 this.windowClosedByPlugin = false;
                 // open window
+                const authorizationUrl = WebUtils.getAuthorizationUrl(this.webOptions);
+                if (this.webOptions.logsEnabled) {
+                    console.log("AuthorizationUrl: " + authorizationUrl);
+                }
                 this.windowHandle = window.open(
-                    WebUtils.getAuthorizationUrl(this.webOptions),
+                    authorizationUrl,
                     this.webOptions.windowTarget,
                     this.webOptions.windowOptions,
                     true);
@@ -65,20 +62,26 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                         }
 
                         if (href != null && href.indexOf(this.webOptions.redirectUrl) >= 0) {
-                            let urlParamObj = WebUtils.getUrlParams(href);
-                            if (urlParamObj) {
+                            if (this.webOptions.logsEnabled) {
+                                console.log("Url from Provider: " + href);
+                            }
+                            let authorizationRedirectUrlParamObj = WebUtils.getUrlParams(href);
+                            if (authorizationRedirectUrlParamObj) {
+                                if (this.webOptions.logsEnabled) {
+                                    console.log("Url Params: ", authorizationRedirectUrlParamObj);
+                                }
                                 window.clearInterval(this.intervalId);
                                 // check state
-                                if (urlParamObj.state === this.webOptions.state) {
+                                if (authorizationRedirectUrlParamObj.state === this.webOptions.state) {
                                     if (this.webOptions.accessTokenEndpoint) {
                                         const self = this;
-                                        let authorizationCode = urlParamObj.code;
+                                        let authorizationCode = authorizationRedirectUrlParamObj.code;
                                         if (authorizationCode) {
                                             const tokenRequest = new XMLHttpRequest();
                                             tokenRequest.onload = function () {
                                                 if (this.status === 200) {
                                                     let accessTokenResponse = JSON.parse(this.response);
-                                                    self.requestResource(accessTokenResponse, resolve, reject);
+                                                    self.requestResource(accessTokenResponse.access_token, resolve, reject, authorizationRedirectUrlParamObj, accessTokenResponse);
                                                 }
                                             };
                                             tokenRequest.onerror = function () {
@@ -96,9 +99,13 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                         this.closeWindow();
                                     } else {
                                         // if no accessTokenEndpoint exists request the resource
-                                        this.requestResource(urlParamObj, resolve, reject);
+                                        this.requestResource(authorizationRedirectUrlParamObj.access_token, resolve, reject, authorizationRedirectUrlParamObj);
                                     }
                                 } else {
+                                    if (this.webOptions.logsEnabled) {
+                                        console.log("State from web options: " + this.webOptions.state);
+                                        console.log("State returned from provider: " + authorizationRedirectUrlParamObj.state);
+                                    }
                                     reject(new Error("ERR_STATES_NOT_MATCH"));
                                     this.closeWindow();
                                 }
@@ -111,16 +118,30 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
-    private requestResource(tokenObj: any, resolve: any, reject: (reason?: any) => void) {
+    private requestResource(accessToken: string, resolve: any, reject: (reason?: any) => void, authorizationResponse: any, accessTokenResponse: any = null) {
         if (this.webOptions.resourceUrl) {
-            if (tokenObj.access_token) {
+            if (accessToken) {
+                const logsEnabled = this.webOptions.logsEnabled;
+                if (logsEnabled) {
+                    console.log("Access token: " + accessToken);
+                }
                 const self = this;
                 const request = new XMLHttpRequest();
                 request.onload = function () {
                     if (this.status === 200) {
                         let resp = JSON.parse(this.response);
                         if (resp) {
-                            resp["access_token"] = tokenObj.access_token;
+                            // #154
+                            if (authorizationResponse) {
+                                resp["authorization_response"] = authorizationResponse;
+                            }
+                            if (accessTokenResponse) {
+                                resp["access_token_response"] = authorizationResponse;
+                            }
+                            resp["access_token"] = accessToken;
+                        }
+                        if (logsEnabled) {
+                            console.log("Resource response: ", resp);
                         }
                         resolve(resp);
                     } else {
@@ -129,12 +150,17 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                     self.closeWindow();
                 };
                 request.onerror = function () {
-                    console.log("ERR_GENERAL: " + this.statusText);
+                    if (logsEnabled) {
+                        console.log("ERR_GENERAL: " + this.statusText);
+                    }
                     reject(new Error("ERR_GENERAL"));
                     self.closeWindow();
                 };
+                if (logsEnabled) {
+                    console.log("Resource url: GET " + this.webOptions.resourceUrl);
+                }
                 request.open("GET", this.webOptions.resourceUrl, true);
-                request.setRequestHeader('Authorization', `Bearer ${tokenObj.access_token}`);
+                request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
                 request.send();
             } else {
                 reject(new Error("ERR_NO_ACCESS_TOKEN"));
@@ -142,7 +168,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             }
         } else {
             // if no resource url exists just return the accessToken response
-            resolve(tokenObj);
+            resolve(accessToken);
             this.closeWindow();
         }
     }

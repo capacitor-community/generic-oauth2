@@ -202,6 +202,17 @@ describe("Url param extraction", () => {
         expect(paramObj!["foo"]).toStrictEqual(`${foo}?ignored`);
     });
 
+    it('should extract hash params correctly', () => {
+        const random = WebUtils.randomString(20);
+        const url = `http://localhost:4200/#state=${random}&access_token=ya29.a0ARrdaM-sdfsfsdfsdfsdfs-YGFHwg_lM6dePPaT_TunbpsdfsdfsdfsEG6vTVLsLJDDW
+        tv5m1Q8_g3hXraaoELYGsjl53&token_type=Bearer&expires_in=3599&scope=email%20profile%20openid%20
+        https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile&authuser=0&prompt=none`;
+        const paramObj = WebUtils.getUrlParams(url);
+        expect(paramObj!["access_token"]).toBeDefined();
+        expect(paramObj!["token_type"]).toStrictEqual("Bearer");
+        expect(paramObj!["prompt"]).toBeDefined();
+        expect(paramObj!["state"]).toStrictEqual(random);
+    });
 });
 
 describe("Random string gen", () => {
