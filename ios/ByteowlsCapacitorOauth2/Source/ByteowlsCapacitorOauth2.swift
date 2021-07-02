@@ -80,7 +80,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
     
     public override func load() {
-        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: Notification.Name(CAPNotifications.URLOpen.name()), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenURL, object: nil)
         registerHandlers()
     }
     
@@ -308,7 +308,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     @objc func logout(_ call: CAPPluginCall) {
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
-                let success: Bool! = handlerInstance.logout(viewController: (bridge?.viewController)!, call: call)
+                let success: Bool! = handlerInstance.logout(viewController: (bridge?.viewController!)!, call: call)
                 if success {
                     call.resolve();
                 } else {
@@ -480,10 +480,9 @@ extension String {
         let data = self.data(using: .utf8)!
         var buffer = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
         data.withUnsafeBytes {
-            _ = CC_SHA256($0, CC_LONG(data.count), &buffer)
+            _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &buffer)
         }
-        let hash = Data(buffer)
-        return hash;
+        return Data(buffer)
     }
 }
 
@@ -556,7 +555,7 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
                 "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8) as Any,
                 "code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8) as Any
             ] as [String : Any]
-            self.savedPluginCall?.resolve(result as PluginResultData)
+            self.savedPluginCall?.resolve(result as PluginCallResultData)
         default:
             self.log("SIWA: Authorization failed!")
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)

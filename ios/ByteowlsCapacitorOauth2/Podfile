@@ -7,6 +7,7 @@ target 'ByteowlsCapacitorOauth2' do
 
   # Pods for ByteowlsCapacitorOauth2
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'OAuthSwift', :git => 'https://github.com/OAuthSwift/OAuthSwift.git'
 
 end
