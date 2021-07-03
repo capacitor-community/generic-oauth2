@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResult;
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -84,6 +83,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private OAuth2Options oauth2Options;
     private AuthorizationService authService;
     private AuthState authState;
+    private String callbackId;
 
     public OAuth2ClientPlugin() {
     }
@@ -149,6 +149,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @PluginMethod()
     public void authenticate(final PluginCall call) {
+        this.callbackId = call.getCallbackId();
         disposeAuthService();
         oauth2Options = buildAuthenticateOptions(call.getData());
         if (oauth2Options.getCustomHandlerClass() != null) {
@@ -304,7 +305,7 @@ public class OAuth2ClientPlugin extends Plugin {
         // this is a experimental hook and only usable if the android system kills the app between
         if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnNewIntent()) {
             // with this I have no way to check if this intent is for this plugin
-            PluginCall savedCall = this.bridge.getSavedCall();
+            PluginCall savedCall = this.bridge.getSavedCall(this.callbackId);
             if (savedCall == null) {
                 return;
             }
@@ -410,7 +411,7 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
         o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
         Boolean pkceEnabledObj = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_ENABLED);
-        o.setPkceEnabled(pkceEnabledObj == null ? false : pkceEnabledObj);
+        o.setPkceEnabled(pkceEnabledObj != null && pkceEnabledObj);
         if (o.isPkceEnabled()) {
             o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
         }
