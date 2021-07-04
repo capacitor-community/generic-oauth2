@@ -1,5 +1,4 @@
 ext {
-    appAuthRedirectScheme = project.hasProperty('appAuthRedirectScheme') ? rootProject.ext.appAuthRedirectScheme : 'com.byteowls.capacitorapp'
     appAuthVersion = project.hasProperty('appAuthVersion') ? rootProject.ext.appAuthVersion : '0.9.1'
     androidxBrowserVersion = project.hasProperty('androidxBrowserVersion') ? rootProject.ext.androidxBrowserVersion : '1.3.0'
     junitVersion = project.hasProperty('junitVersion') ? rootProject.ext.junitVersion : '4.13.1'
@@ -70,5 +69,5 @@ dependencies {
 // ###############
 
 android.defaultConfig.manifestPlaceholders = [
-    'appAuthRedirectScheme': "$appAuthRedirectScheme"
+    'appAuthRedirectScheme': 'com.byteowls.capacitorapp'
 ]

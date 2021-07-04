@@ -30,7 +30,7 @@ import org.json.JSONException;
 
 import java.util.Map;
 
-@CapacitorPlugin(name = "CapacitorOAuth2")
+@CapacitorPlugin(name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
 
     private static final String PARAM_APP_ID = "appId";
@@ -57,6 +57,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_LOGIN_HINT = "login_hint";
     private static final String PARAM_PROMPT = "prompt";
     private static final String PARAM_RESPONSE_MODE = "response_mode";
+    private static final String PARAM_LOGS_ENABLED = "logsEnabled";
 
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
@@ -408,6 +409,8 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
 
         // optional
+        Boolean logsEnabled = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_LOGS_ENABLED);
+        o.setLogsEnabled(logsEnabled != null && logsEnabled);
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
         o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
         Boolean pkceEnabledObj = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_ENABLED);
