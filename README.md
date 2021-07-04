@@ -793,19 +793,9 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
+    // Initialize Facebook SDK
     FacebookSdk.sdkInitialize(this.getApplicationContext());
-
     callbackManager = CallbackManager.Factory.create();
-
-    // add my plugins here
-    List<Class<? extends Plugin>> additionalPlugins = new ArrayList<>();
-    // Additional plugins you've installed go here
-    additionalPlugins.add(OAuth2ClientPlugin.class);
-    // Ex: additionalPlugins.add(TotallyAwesomePlugin.class);
-
-    // Initializes the Bridge
-    this.init(savedInstanceState, additionalPlugins);
   }
 
   @Override
@@ -827,26 +817,35 @@ public class MainActivity extends BridgeActivity {
 
 See https://developers.facebook.com/docs/swift/getting-started and https://developers.facebook.com/docs/swift/login
 
-1) Add Facebook pods to your app's Podfile `ios/App/App`
+1) Add Facebook pods to `ios/App/Podfile` and run `pod install` afterwards
 
 ```
-platform :ios, '11.0'
+platform :ios, '12.0'
 use_frameworks!
 
-target 'App' do
-  # Add your Pods here
-  pod 'FacebookCore'
-  pod 'FacebookLogin'
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
 
-  # Automatic Capacitor Pod dependencies, do not delete
+def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
-  pod 'CordovaPlugins', :path => '../../node_modules/@capacitor/cli/assets/capacitor-cordova-ios-plugins'
-
-  # Do not delete
+  # core plugins
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorDevice', :path => '../../node_modules/@capacitor/device'
+  pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
+  pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
 end
 
+target 'App' do
+  capacitor_pods
+  # Add your Pods here
+  pod 'FacebookCore'
+  pod 'FacebookLogin'
+end
 ```
 
 2) Add some Facebook configs to your `Info.plist`
@@ -967,4 +966,10 @@ MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/m
 
 ## BYTEOWLS Software & Consulting
 
-This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com) and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
+This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com).
+
+If you need extended support for this project like critical changes or releases ahead of schedule. Feel free to contact us for a consulting offer.
+
+## Disclaimer
+
+We have no business relation to Ionic.
