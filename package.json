@@ -1,25 +1,27 @@
 {
     "name": "@byteowls/capacitor-oauth2",
-    "version": "2.1.0",
-    "description": "Simple Capacitor OAuth 2 client plugin",
+    "version": "3.0.0",
+    "description": "Capacitor OAuth 2 client plugin",
     "author": "Michael Oberwasserlechner",
     "homepage": "https://github.com/moberwasserlechner/capacitor-oauth2",
     "license": "MIT",
     "main": "dist/esm/index.js",
+    "module": "dist/esm/index.js",
     "types": "dist/esm/index.d.ts",
     "scripts": {
         "build": "npm run clean && tsc",
         "clean": "rm -rf ./dist",
         "watch": "tsc --watch",
         "test": "jest",
-        "removePacked": "rm -f byteowls-capacitor-oauth2-*.tgz",
+        "removePacked": "rm -f capacitor-oauth2-*.tgz",
         "publishLocally": "npm run removePacked && npm run build && npm pack",
         "prepublishOnly": "npm run build"
     },
     "files": [
+        "android/src/main/",
+        "android/build.gradle",
         "dist/",
-        "ios/",
-        "android/",
+        "ios/ByteowlsCapacitorOauth2/Source",
         "ByteowlsCapacitorOauth2.podspec"
     ],
     "keywords": [
@@ -48,16 +50,18 @@
         "access": "public"
     },
     "peerDependencies": {
-        "@capacitor/core": "^2.0.0"
+        "@capacitor/core": "^3.0.0"
     },
     "dependencies": {},
     "devDependencies": {
-        "@capacitor/android": "2.4.0",
-        "@capacitor/core": "2.4.0",
-        "@capacitor/ios": "2.4.0",
-        "@types/jest": "26.0.10",
-        "jest": "26.4.2",
-        "ts-jest": "26.3.0",
-        "typescript": "3.8.3"
+        "@capacitor/android": "3.0.2",
+        "@capacitor/core": "3.0.2",
+        "@capacitor/ios": "3.0.2",
+        "@types/jest": "26.0.23",
+        "jest": "27.0.6",
+        "ts-jest": "27.0.3",
+        "eslint": "^7.11.0",
+        "rimraf": "^3.0.0",
+        "typescript": "~4.1.5"
     }
 }

@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## [3.0.0] - 2021-07-04
+
+### Breaking
+* Minimum Capacitor version is **3.0.0**  [#138](https://github.com/moberwasserlechner/capacitor-oauth2/issues/138) [#140](https://github.com/moberwasserlechner/capacitor-oauth2/pull/140)
+
+### Added
+* Web: Add a new option `windowReplace` that defaults to undefined. Used in `window.open()` 4th param.
+  This will fix https://bugs.chromium.org/p/chromium/issues/detail?id=1164959 [#153](https://github.com/moberwasserlechner/capacitor-oauth2/issues/153)
+* Add "authorization_response" and "access_token_response" to "resource response"  [#154](https://github.com/moberwasserlechner/capacitor-oauth2/issues/154)
+  * Web ... done
+  * Android
+  * iOS
+
+### Changed
+* Use `window.crypto` if available to generate random strings [#138](https://github.com/moberwasserlechner/capacitor-oauth2/issues/138) [#140](https://github.com/moberwasserlechner/capacitor-oauth2/pull/140)
+
+### Fixed
+* Web: # in URL causes parser to ignore ?  [#132](https://github.com/moberwasserlechner/capacitor-oauth2/issues/132) [#133](https://github.com/moberwasserlechner/capacitor-oauth2/pull/133)
+
+## [2.1.1] - 2021-02-21
+
+### Fixed
+
 
 ## [2.1.0] - 2020-08-27
 

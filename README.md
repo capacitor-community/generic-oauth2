@@ -1,8 +1,8 @@
 # Capacitor OAuth 2 client plugin
 
-[![npm](https://img.shields.io/npm/v/@byteowls/capacitor-oauth2.svg)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
+[![npm](https://img.shields.io/npm/v/@capacitor-community/oauth2.svg)](https://www.npmjs.com/package/@capacitor-community/oauth2)
 [![Travis](https://img.shields.io/travis/moberwasserlechner/capacitor-oauth2/master.svg?maxAge=2592000)](https://travis-ci.org/moberwasserlechner/capacitor-oauth2)
-[![npm](https://img.shields.io/npm/dt/@byteowls/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@byteowls/capacitor-oauth2)
+[![npm](https://img.shields.io/npm/dt/@capacitor-community/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@capacitor-community/capacitor-oauth2)
 [![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
 
 This a generic OAuth 2 client plugin.
@@ -18,20 +18,24 @@ See [providers](#list-of-providers) the community has already used this plugin w
 
 Actively maintained: YES
 
+## Install
+
+```bash
+npm install @capacitor-community/oauth2
+npx cap sync
+```
+
 ## Versions
 
 | Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version  |
+| 3.x    | 3.0.0             | [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
 ## Supported flows
-
-Starting with version **2.0.0** the plugin will no longer restrict the `responseType` to `token` or `code`.
-
-Developers can configure anything. It is their responsibility to use the options the chosen OAuth Provider supports.
 
 See the excellent article about OAuth2 response type combinations.
 
@@ -81,43 +85,14 @@ For security reasons this plugin does/will not support Code Flow without PKCE.
 That would include storing your **client secret** in client code which is highly insecure and not recommended.
 That flow should only be used on the backend (server).
 
-## Installation
-
-`npm i -E @byteowls/capacitor-oauth2`
-
-Minimum Capacitor version is **2.0.0**
-
 ## Configuration
 
-This example shows the common process of configuring this plugin.
-
-Although it was taken from a Angular application, it should work in other frameworks as well.
-
-### Register plugin
-
-Find the init component of your app, which is in Angular `app.component.ts` and register this plugin by
-
-```
-import {registerWebPlugin} from "@capacitor/core";
-import {OAuth2Client} from '@byteowls/capacitor-oauth2';
-
-@Component()
-export class AppComponent implements OnInit {
-
-    ngOnInit() {
-        console.log("Register custom capacitor plugins");
-        registerWebPlugin(OAuth2Client);
-        // other stuff
-    }
-}
-```
+Starting with version 3.0.0, the plugin is registered automatically on all platforms.
 
 ### Use it
 
 ```typescript
-import {
-  Plugins
-} from '@capacitor/core';
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
 
 @Component({
   template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
@@ -128,7 +103,7 @@ export class SignupComponent {
     refreshToken: string;
 
     onOAuthBtnClick() {
-        Plugins.OAuth2Client.authenticate(
+        OAuth2Client.authenticate(
             oauth2Options
         ).then(response => {
             let accessToken = response["access_token"];
@@ -150,7 +125,7 @@ export class SignupComponent {
         console.error("No refresh token found. Log in with OAuth first.");
       }
 
-      Plugins.OAuth2Client.refreshToken(
+      OAuth2Client.refreshToken(
         oauth2RefreshOptions
       ).then(response => {
         let accessToken = response["access_token"];
@@ -163,8 +138,8 @@ export class SignupComponent {
     }
 
     onLogoutClick() {
-            Plugins.OAuth2Client.logout(
-                oauth2Options
+            OAuth2Client.logout(
+                oauth2LogoutOptions
             ).then(() => {
                 // do something
             }).catch(reason => {
@@ -208,9 +183,9 @@ Example:
 
 #### authenticate() and logout()
 
-**Overwritable Base Parameter**
+**Overrideable Base Parameter**
 
-These parameters are overwritable in every platform
+These parameters are overrideable in every platform
 
 | parameter            	| default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
 |----------------------	|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
@@ -231,6 +206,7 @@ These parameters are overwritable in every platform
 |---------------	|---------	|----------	|----------------------------------------	|-------	|
 | windowOptions 	|         	|          	| e.g. width=500,height=600,left=0,top=0 	|       	|
 | windowTarget  	| `_blank`  |       	|                                        	|       	|
+| windowReplace  	|           |       	|                                        	| 3.0.0   	|
 
 **Platform Android**
 
@@ -291,34 +267,15 @@ This implementation just opens a browser window to let users enter their credent
 As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance
 impact using this plugin in a web application.
 
+### Register plugin
+On Web/PWA the plugin is registered **automatically** by Capacitor.
+
 ## Platform: Android
 
 Prerequisite: [Capacitor Android Docs](https://capacitor.ionicframework.com/docs/android/configuration)
 
-### Register the plugin
-
-The plugin must be manually added to your `com.companyname.appname.MainActivity`.
-See the [Capacitor Docs](https://capacitor.ionicframework.com/docs/plugins/android#export-to-capacitor) or below:
-
-```java
-// Other imports...
-import com.byteowls.capacitor.oauth2.OAuth2ClientPlugin;
-
-public class MainActivity extends BridgeActivity {
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Initializes the Bridge
-        this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
-            // Additional plugins you've installed go here. Use a import or the full qualified class name of the plugin (FQCN).
-            add(com.byteowls.capacitor.oauth2.OAuth2ClientPlugin.class);
-            // NOTE: The FQCN is redundant but it is clearer especially if someone is not familiar with Android/Java programming.
-        }});
-    }
-}
-```
+### Register plugin
+On Android the plugin is registered **automatically** by Capacitor.
 
 ### Android Default Config
 
@@ -459,7 +416,7 @@ Minimum config
 
 ```typescript
 appleLogin() {
-  Plugins.OAuth2Client.authenticate({
+  OAuth2Client.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
   });
@@ -475,7 +432,7 @@ and then you can use `scope: "fullName"`, `scope: "email"` or both but the latte
 
 ```typescript
 appleLogin() {
-  Plugins.OAuth2Client.authenticate({
+  OAuth2Client.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
     ios: {
@@ -488,10 +445,11 @@ appleLogin() {
 
 As "Signin with Apple" is only supported since iOS 13 you should show the according button only in that case.
 
-In Angular I do sth like
+In Angular do sth like
 ```typescript
 import {Component, OnInit} from '@angular/core';
-import {DeviceInfo, Plugins} from '@capacitor/core';
+import {Device, DeviceInfo} from "@capacitor/device";
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
 
 @Component({
   templateUrl: './siwa.component.html'
@@ -503,9 +461,12 @@ export class SiwaComponent implements OnInit {
   deviceInfo: DeviceInfo;
 
   async ngOnInit() {
-    this.deviceInfo = await Plugins.Device.getInfo();
-    this.ios = this.deviceInfo.platform === "ios";
-    this.siwaSupported = (this.ios && this.deviceInfo.osVersion.startsWith("13"));
+      this.deviceInfo = await Device.getInfo();
+      this.ios = this.deviceInfo.platform === "ios";
+      if (this.ios) {
+          const majorVersion: number = +this.deviceInfo.osVersion.split(".")[0];
+          this.siwaSupported = majorVersion >= 13;
+      }
   }
 }
 
@@ -552,8 +513,10 @@ See these 2 configs that should work.
 It's important to use the urls you see in the Azure config for the specific platform.
 
 ```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
 azureLogin() {
-  Plugins.OAuth2Client.authenticate({
+  OAuth2Client.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
     accessTokenEndpoint: "",
@@ -581,8 +544,10 @@ azureLogin() {
 ```
 
 ```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
 azureLogin() {
-  Plugins.OAuth2Client.authenticate({
+  OAuth2Client.authenticate({
     appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
     authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
     accessTokenEndpoint: '',
@@ -635,8 +600,10 @@ Do not enter `://` and part of your redirect url after those chars.
 
 #### PWA
 ```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
 googleLogin() {
-    Plugins.OAuth2Client.authenticate({
+    OAuth2Client.authenticate({
       authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
       accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
       scope: "email profile",
@@ -679,9 +646,11 @@ See [iOS Default Config](#ios-default-config)
 #### PWA
 
 ```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
 facebookLogin() {
     let fbApiVersion = "2.11";
-    Plugins.OAuth2Client.authenticate({
+    OAuth2Client.authenticate({
       appId: "YOUR_FACEBOOK_APP_ID",
       authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
       resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
@@ -824,19 +793,9 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
+    // Initialize Facebook SDK
     FacebookSdk.sdkInitialize(this.getApplicationContext());
-
     callbackManager = CallbackManager.Factory.create();
-
-    // add my plugins here
-    List<Class<? extends Plugin>> additionalPlugins = new ArrayList<>();
-    // Additional plugins you've installed go here
-    additionalPlugins.add(OAuth2ClientPlugin.class);
-    // Ex: additionalPlugins.add(TotallyAwesomePlugin.class);
-
-    // Initializes the Bridge
-    this.init(savedInstanceState, additionalPlugins);
   }
 
   @Override
@@ -858,26 +817,35 @@ public class MainActivity extends BridgeActivity {
 
 See https://developers.facebook.com/docs/swift/getting-started and https://developers.facebook.com/docs/swift/login
 
-1) Add Facebook pods to your app's Podfile `ios/App/App`
+1) Add Facebook pods to `ios/App/Podfile` and run `pod install` afterwards
 
 ```
-platform :ios, '11.0'
+platform :ios, '12.0'
 use_frameworks!
 
-target 'App' do
-  # Add your Pods here
-  pod 'FacebookCore'
-  pod 'FacebookLogin'
+# workaround to avoid Xcode caching of Pods that requires
+# Product -> Clean Build Folder after new Cordova plugins installed
+# Requires CocoaPods 1.6 or newer
+install! 'cocoapods', :disable_input_output_paths => true
 
-  # Automatic Capacitor Pod dependencies, do not delete
+def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
-  pod 'CordovaPlugins', :path => '../../node_modules/@capacitor/cli/assets/capacitor-cordova-ios-plugins'
-
-  # Do not delete
+  # core plugins
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorDevice', :path => '../../node_modules/@capacitor/device'
+  pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
+  pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
 end
 
+target 'App' do
+  capacitor_pods
+  # Add your Pods here
+  pod 'FacebookCore'
+  pod 'FacebookLogin'
+end
 ```
 
 2) Add some Facebook configs to your `Info.plist`
@@ -998,4 +966,10 @@ MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/m
 
 ## BYTEOWLS Software & Consulting
 
-This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com) and was build for [Team Conductor](https://team-conductor.com/en/) - Next generation club management platform.
+This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com).
+
+If you need extended support for this project like critical changes or releases ahead of schedule. Feel free to contact us for a consulting offer.
+
+## Disclaimer
+
+We have no business relation to Ionic.

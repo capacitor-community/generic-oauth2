@@ -1,12 +1,6 @@
-declare global {
-    interface PluginRegistry {
-        OAuth2Client?: OAuth2ClientPlugin;
-    }
-}
-
 export interface OAuth2ClientPlugin {
     /**
-     * Authenicate against a OAuth 2 provider.
+     * Authenticate against a OAuth 2 provider.
      * @param {OAuth2AuthenticateOptions} options
      * @returns {Promise<any>} the resource url response
      */
@@ -22,7 +16,7 @@ export interface OAuth2ClientPlugin {
      * @param {OAuth2AuthenticateOptions} options Although not all options are needed. We simply reuse the options from authenticate
      * @returns {Promise<boolean>} true if the logout was successful else false.
      */
-    logout(options: OAuth2AuthenticateOptions): Promise<void>;
+    logout(options: OAuth2AuthenticateOptions): Promise<boolean>;
 }
 
 export interface OAuth2RefreshTokenOptions {
@@ -97,6 +91,10 @@ export interface OAuth2AuthenticateBaseOptions {
      * Additional parameters for the created authorization url
      */
     additionalParameters?: { [key: string]: string }
+    /**
+     * @since 3.0.0
+     */
+    logsEnabled?: boolean;
 }
 
 export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
@@ -121,9 +119,15 @@ export interface WebOption extends OAuth2AuthenticateBaseOptions {
      */
     windowOptions?: string;
     /**
-     * Options for the window target. defaults to _blank
+     * Options for the window target. Defaults to _blank
      */
     windowTarget?: string;
+    /**
+     * Specifies whether the window URL creates a new entry or replaces the current entry in the history list. Defaults to undefined.
+     * @see https://www.w3schools.com/jsref/met_win_open.asp
+     * @since 3.0.0
+     */
+    windowReplace?: boolean;
 }
 
 export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {

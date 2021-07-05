@@ -1,17 +1,21 @@
 package com.byteowls.capacitor.oauth2;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.activity.result.ActivityResult;
+
 import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
 import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
 import com.getcapacitor.JSObject;
-import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.ActivityCallback;
+import com.getcapacitor.annotation.CapacitorPlugin;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -26,10 +30,8 @@ import org.json.JSONException;
 
 import java.util.Map;
 
-@NativePlugin(requestCodes = {OAuth2ClientPlugin.REQ_OAUTH_AUTHORIZATION}, name = "OAuth2Client")
+@CapacitorPlugin(name = "OAuth2Client")
 public class OAuth2ClientPlugin extends Plugin {
-
-    static final int REQ_OAUTH_AUTHORIZATION = 56854;
 
     private static final String PARAM_APP_ID = "appId";
     private static final String PARAM_AUTHORIZATION_BASE_URL = "authorizationBaseUrl";
@@ -55,6 +57,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_LOGIN_HINT = "login_hint";
     private static final String PARAM_PROMPT = "prompt";
     private static final String PARAM_RESPONSE_MODE = "response_mode";
+    private static final String PARAM_LOGS_ENABLED = "logsEnabled";
 
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
@@ -81,6 +84,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private OAuth2Options oauth2Options;
     private AuthorizationService authService;
     private AuthState authState;
+    private String callbackId;
 
     public OAuth2ClientPlugin() {
     }
@@ -146,6 +150,7 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @PluginMethod()
     public void authenticate(final PluginCall call) {
+        this.callbackId = call.getCallbackId();
         disposeAuthService();
         oauth2Options = buildAuthenticateOptions(call.getData());
         if (oauth2Options.getCustomHandlerClass() != null) {
@@ -260,8 +265,8 @@ public class OAuth2ClientPlugin extends Plugin {
             this.authService = new AuthorizationService(getContext());
             try {
                 Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
-                saveCall(call);
-                startActivityForResult(call, authIntent, REQ_OAUTH_AUTHORIZATION);
+                this.bridge.saveCall(call);
+                startActivityForResult(call, authIntent, "handleIntentResult");
             } catch (ActivityNotFoundException e) {
                 call.reject(ERR_ANDROID_NO_BROWSER, e);
             } catch (Exception e) {
@@ -301,7 +306,7 @@ public class OAuth2ClientPlugin extends Plugin {
         // this is a experimental hook and only usable if the android system kills the app between
         if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnNewIntent()) {
             // with this I have no way to check if this intent is for this plugin
-            PluginCall savedCall = getSavedCall();
+            PluginCall savedCall = this.bridge.getSavedCall(this.callbackId);
             if (savedCall == null) {
                 return;
             }
@@ -309,17 +314,12 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    @Override
-    protected void handleOnActivityResult(int requestCode, int resultCode, Intent intent) {
-        super.handleOnActivityResult(requestCode, resultCode, intent);
-        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
-            if (REQ_OAUTH_AUTHORIZATION == requestCode) {
-                PluginCall savedCall = getSavedCall();
-                if (savedCall == null) {
-                    return;
-                }
-                handleAuthorizationRequestActivity(intent, savedCall);
-            }
+    @ActivityCallback
+    private void handleIntentResult(PluginCall call, ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_CANCELED) {
+            call.reject(USER_CANCELLED);
+        } else {
+            handleAuthorizationRequestActivity(result.getData(), call);
         }
     }
 
@@ -409,10 +409,12 @@ public class OAuth2ClientPlugin extends Plugin {
         o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
 
         // optional
+        Boolean logsEnabled = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_LOGS_ENABLED);
+        o.setLogsEnabled(logsEnabled != null && logsEnabled);
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
         o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
         Boolean pkceEnabledObj = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_ENABLED);
-        o.setPkceEnabled(pkceEnabledObj == null ? false : pkceEnabledObj);
+        o.setPkceEnabled(pkceEnabledObj != null && pkceEnabledObj);
         if (o.isPkceEnabled()) {
             o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
         }

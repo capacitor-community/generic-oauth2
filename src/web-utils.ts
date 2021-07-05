@@ -59,21 +59,28 @@ export class WebUtils {
     /**
      * Public only for testing
      */
-    static getUrlParams(url: string): any | undefined {
+    static getUrlParams(url: string): { [x: string]: string; } | undefined {
         const urlString = `${url}`.trim();
 
         if (urlString.length === 0) {
             return;
         }
 
+        // #132
         let hashIndex = urlString.indexOf("#");
         let queryIndex = urlString.indexOf("?");
 
         if (hashIndex === -1 && queryIndex === -1) {
             return;
         }
-
-        const paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+        let paramsIndex: number;
+        if (hashIndex > -1 && queryIndex === -1) {
+            paramsIndex = hashIndex;
+        } else if (queryIndex > -1 && hashIndex === -1) {
+            paramsIndex = queryIndex;
+        } else {
+            paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+        }
 
         if (urlString.length <= paramsIndex + 1) {
             return;
@@ -81,11 +88,12 @@ export class WebUtils {
 
         const urlParamStr = urlString.slice(paramsIndex + 1);
         const keyValuePairs: string[] = urlParamStr.split(`&`);
-        return keyValuePairs.reduce((acc, hash) => {
-            const [key, val] = hash.split(`=`);
+        // @ts-ignore
+        return keyValuePairs.reduce((accumulator, currentValue) => {
+            const [key, val] = currentValue.split(`=`);
             if (key && key.length > 0) {
                 return {
-                    ...acc,
+                    ...accumulator,
                     [key]: decodeURIComponent(val)
                 }
             }
@@ -93,14 +101,25 @@ export class WebUtils {
     }
 
     static randomString(length: number = 10) {
-        const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const haystack = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        let randomStr;
+        if (window.crypto) {
+            let numberArray: Uint32Array = new Uint32Array(length);
+            window.crypto.getRandomValues(numberArray);
+            numberArray = numberArray.map(x => haystack.charCodeAt(x % haystack.length));
 
-        let array = new Uint8Array(length);
-
-        window.crypto.getRandomValues(array);
-        array = array.map(x => possible.charCodeAt(x % possible.length));
-
-        return String.fromCharCode.apply(null, array);
+            let stringArray: string[] = [];
+            numberArray.forEach(x => {
+                stringArray.push(haystack.charAt(x % haystack.length));
+            })
+            randomStr = stringArray.join("");
+        } else {
+            randomStr = "";
+            for (let i = 0; i < length; i++) {
+                randomStr += haystack.charAt(Math.floor(Math.random() * haystack.length));
+            }
+        }
+        return randomStr;
     }
 
     static async buildWebOptions(configOptions: OAuth2AuthenticateOptions): Promise<WebOptions> {
@@ -146,6 +165,7 @@ export class WebUtils {
                 }
             }
         }
+        webOptions.logsEnabled = this.getOverwritableValue(configOptions, "logsEnabled");
 
         if (configOptions.web) {
             if (configOptions.web.windowOptions) {
@@ -154,6 +174,7 @@ export class WebUtils {
             if (configOptions.web.windowTarget) {
                 webOptions.windowTarget = configOptions.web.windowTarget;
             }
+            webOptions.windowReplace = configOptions.web.windowReplace;
         }
         return webOptions;
     }
@@ -225,8 +246,10 @@ export class WebOptions {
     scope: string;
     state: string;
     redirectUrl: string;
+    logsEnabled: boolean;
     windowOptions: string;
     windowTarget: string = "_blank";
+    windowReplace: boolean | undefined;
 
     pkceEnabled: boolean;
     pkceCodeVerifier: string;
