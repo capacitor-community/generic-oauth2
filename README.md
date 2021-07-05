@@ -29,7 +29,7 @@ npx cap sync
 
 | Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.0.0             | [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 3.x    | 3.0.0             | **(NOT RELEASED YET)** [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
 | 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
