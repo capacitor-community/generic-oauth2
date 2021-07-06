@@ -21,6 +21,7 @@ public class OAuth2Options {
     private String resourceUrl;
 
     private boolean pkceEnabled;
+    private boolean logsEnabled;
     private String pkceCodeVerifier;
     private Map<String, String> additionalParameters;
 
