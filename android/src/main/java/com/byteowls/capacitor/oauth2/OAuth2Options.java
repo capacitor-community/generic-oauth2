@@ -67,6 +67,14 @@ public class OAuth2Options {
         this.resourceUrl = resourceUrl;
     }
 
+    public void getLogsEnabled() {
+        return logsEnabled;
+    }
+
+    public void setLogsEnabled(boolean logsEnabled) {
+        this.logsEnabled = logsEnabled;
+    }
+
     public String getResponseType() {
         return responseType;
     }
