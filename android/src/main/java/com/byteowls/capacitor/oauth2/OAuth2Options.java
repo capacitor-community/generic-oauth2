@@ -21,6 +21,7 @@ public class OAuth2Options {
     private String resourceUrl;
 
     private boolean pkceEnabled;
+    private boolean logsEnabled;
     private String pkceCodeVerifier;
     private Map<String, String> additionalParameters;
 
@@ -65,6 +66,14 @@ public class OAuth2Options {
 
     public void setResourceUrl(String resourceUrl) {
         this.resourceUrl = resourceUrl;
+    }
+
+    public boolean getLogsEnabled() {
+        return logsEnabled;
+    }
+
+    public void setLogsEnabled(boolean logsEnabled) {
+        this.logsEnabled = logsEnabled;
     }
 
     public String getResponseType() {
