@@ -152,7 +152,9 @@ public class ConfigUtilsTest {
             Arguments.of("{ \"pkceEnabled\": true, \"android\":{\"pkceEnabled\": false}}", "pkceEnabled", false),
             Arguments.of("{ \"pkceEnabled\": true}", "pkceEnabled", true),
             Arguments.of("{ \"pkceEnabled\": true}", "android.pkceEnabled", null),
-            Arguments.of("{ \"pkceEnabled\": true, \"ios\":{\"pkceEnabled\": false}}", "pkceEnabled", true)
+            Arguments.of("{ \"pkceEnabled\": true, \"ios\":{\"pkceEnabled\": false}}", "pkceEnabled", true),
+            // try failing the test to test if GH actions are working
+            Arguments.of("{ \"pkceEnabled\": true, \"ios\":{\"pkceEnabled\": false}}", "pkceEnabled", false)
         );
     }
 
