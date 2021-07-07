@@ -1,6 +1,0 @@
-{
-    "appId": "CLIENT_ID",
-    "accessTokenEndpoint": "https://www.googleapis.com/oauth2/v4/token",
-    "refreshToken": "ss4f6sd5f4",
-    "scope": "email profile"
-}
