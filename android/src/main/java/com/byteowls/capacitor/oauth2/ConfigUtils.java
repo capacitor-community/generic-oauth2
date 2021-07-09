@@ -2,6 +2,7 @@ package com.byteowls.capacitor.oauth2;
 
 import com.getcapacitor.JSObject;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -24,31 +25,36 @@ public abstract class ConfigUtils {
 
     public static <T> T getParam(Class<T> clazz, JSObject data, String key, T defaultValue) {
         String k = getDeepestKey(key);
-        try {
-            JSONObject o = getDeepestObject(data, key);
+        if (k != null) {
+            try {
+                Object value = null;
+                JSONObject o = getDeepestObject(data, key);
 
-            Object value = null;
-            if (clazz.isAssignableFrom(String.class)) {
-                value = o.getString(k);
-            } else if (clazz.isAssignableFrom(Boolean.class)) {
-                value = o.optBoolean(k);
-            } else if (clazz.isAssignableFrom(Double.class)) {
-                value = o.getDouble(k);
-            } else if (clazz.isAssignableFrom(Integer.class)) {
-                value = o.getInt(k);
-            } else if (clazz.isAssignableFrom(Long.class)) {
-                value = o.getLong(k);
-            } else if (clazz.isAssignableFrom(Float.class)) {
-                Double doubleValue = o.getDouble(k);
-                value = doubleValue.floatValue();
-            } else if (clazz.isAssignableFrom(Integer.class)) {
-                value = o.getInt(k);
+                // #109
+                if (o.has(k)) {
+                    if (clazz.isAssignableFrom(String.class)) {
+                        value = o.getString(k);
+                    } else if (clazz.isAssignableFrom(Boolean.class)) {
+                        value = o.optBoolean(k);
+                    } else if (clazz.isAssignableFrom(Double.class)) {
+                        value = o.getDouble(k);
+                    } else if (clazz.isAssignableFrom(Integer.class)) {
+                        value = o.getInt(k);
+                    } else if (clazz.isAssignableFrom(Long.class)) {
+                        value = o.getLong(k);
+                    } else if (clazz.isAssignableFrom(Float.class)) {
+                        Double doubleValue = o.getDouble(k);
+                        value = doubleValue.floatValue();
+                    } else if (clazz.isAssignableFrom(Integer.class)) {
+                        value = o.getInt(k);
+                    }
+                }
+                if (value == null) {
+                    return defaultValue;
+                }
+                return (T) value;
+            } catch (Exception ignore) {
             }
-            if (value == null) {
-                return defaultValue;
-            }
-            return (T) value;
-        } catch (Exception ignore) {
         }
         return defaultValue;
     }
@@ -56,22 +62,22 @@ public abstract class ConfigUtils {
     public static Map<String, String> getParamMap(JSObject data, String key) {
         Map<String, String> map = new HashMap<>();
         String k = getDeepestKey(key);
-        try {
-            JSONObject o = getDeepestObject(data, key);
-            JSONObject jsonObject = o.getJSONObject(k);
-            Iterator<String> keys = jsonObject.keys();
-            if (keys != null) {
+        if (k != null) {
+            try {
+                JSONObject o = getDeepestObject(data, key);
+                JSONObject jsonObject = o.getJSONObject(k);
+                Iterator<String> keys = jsonObject.keys();
                 while (keys.hasNext()) {
                     String mapKey = keys.next();
                     if (mapKey != null && mapKey.trim().length() > 0) {
-                        String mapValue = jsonObject.getString(mapKey);
-                        if (mapValue != null) {
+                        try {
+                            String mapValue = jsonObject.getString(mapKey);
                             map.put(mapKey, mapValue);
-                        }
+                        } catch (JSONException ignore) {}
                     }
                 }
+            } catch (Exception ignore) {
             }
-        } catch (Exception ignore) {
         }
         return map;
     }

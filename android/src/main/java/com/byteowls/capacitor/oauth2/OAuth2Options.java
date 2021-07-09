@@ -68,7 +68,7 @@ public class OAuth2Options {
         this.resourceUrl = resourceUrl;
     }
 
-    public boolean getLogsEnabled() {
+    public boolean isLogsEnabled() {
         return logsEnabled;
     }
 

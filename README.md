@@ -1,9 +1,9 @@
 # Capacitor OAuth 2 client plugin
 
-[![npm](https://img.shields.io/npm/v/@capacitor-community/oauth2.svg)](https://www.npmjs.com/package/@capacitor-community/oauth2)
-[![Travis](https://img.shields.io/travis/moberwasserlechner/capacitor-oauth2/master.svg?maxAge=2592000)](https://travis-ci.org/moberwasserlechner/capacitor-oauth2)
-[![npm](https://img.shields.io/npm/dt/@capacitor-community/capacitor-oauth2.svg?label=npm%20downloads)](https://www.npmjs.com/package/@capacitor-community/capacitor-oauth2)
-[![Twitter Follow](https://img.shields.io/twitter/follow/michaelowl_web.svg?style=social&label=Follow&style=flat-square)](https://twitter.com/michaelowl_web)
+<a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions?query=workflow%3ACI"><img src="https://img.shields.io/github/workflow/status/moberwasserlechner/capacitor-oauth2/CI?style=flat-square" /></a>
+<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/dw/@byteowls/capacitor-oauth2?style=flat-square" /></a>
+<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
+<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 
 This a generic OAuth 2 client plugin.
 
