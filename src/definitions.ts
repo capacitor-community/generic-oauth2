@@ -70,7 +70,7 @@ export interface OAuth2AuthenticateBaseOptions {
      */
     accessTokenEndpoint?: string;
     /**
-     * Protected resource url. For authentification you only need the basic user details.
+     * Protected resource url. For authentication you only need the basic user details.
      */
     resourceUrl?: string;
     /**
@@ -95,6 +95,16 @@ export interface OAuth2AuthenticateBaseOptions {
      * @since 3.0.0
      */
     logsEnabled?: boolean;
+    /**
+     * @since 3.0.0
+     */
+    logoutUrl?: string;
+
+    /**
+     * Additional headers for resource url request
+     * @since 3.0.0
+     */
+    additionalResourceHeaders?: { [key: string]: string }
 }
 
 export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
@@ -110,7 +120,7 @@ export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions
     /**
      * Custom options for the platform "ios"
      */
-    ios?: IosOptions,
+    ios?: IosOptions
 }
 
 export interface WebOption extends OAuth2AuthenticateBaseOptions {

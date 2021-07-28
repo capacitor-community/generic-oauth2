@@ -21,7 +21,7 @@ Actively maintained: YES
 ## Install
 
 ```bash
-npm install @capacitor-community/oauth2
+npm i @byteowls/capacitor-oauth2
 npx cap sync
 ```
 
@@ -403,7 +403,7 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |-----------|------------------------|-------|
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
-| Azure B2C | [see below](#azure-b2c)|       |
+| Azure AD B2C | [see below](#azure-b2c)|       |
 | Apple     | [see below](#apple)    | ios only |
 
 
@@ -572,6 +572,37 @@ azureLogin() {
     }
   });
 }
+```
+
+I created a new Azure B2C config while implementing #97. I tested it with the below config works for me on web.
+
+```typescript
+  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+    return {
+      appId: environment.oauthAppId.azureBc2.appId,
+      authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+      scope: "https://graph.microsoft.com/User.Read", // See API permission section in Azure Portal
+      accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+      resourceUrl: "https://graph.microsoft.com/v1.0/me/",
+      responseType: "code",
+      pkceEnabled: true,
+      logsEnabled: true,
+      logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`, // url was found in OpenID Connect metadata document -> end_session_endpoint
+      web: {
+        redirectUrl: "http://localhost:4200",
+        windowOptions: "height=600,left=0,top=0",
+      },
+      android: {
+        appId: environment.oauthAppId.google.android,
+        redirectUrl: "com.byteowls.sue:/"
+      },
+      ios: {
+        appId: environment.oauthAppId.google.ios,
+        pkceEnabled: true, // workaround for bug #111
+        redirectUrl: "msauth.com.byteowls.sue://auth"
+      }
+    };
+  }
 ```
 
 #### Android

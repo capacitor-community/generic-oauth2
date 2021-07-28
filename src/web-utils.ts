@@ -153,14 +153,26 @@ export class WebUtils {
         if (!webOptions.state || webOptions.state.length === 0) {
             webOptions.state = this.randomString(20);
         }
-        let mapHelper = this.getOverwritableValue<{ [key: string]: string }>(configOptions, "additionalParameters");
-        if (mapHelper) {
+        let parametersMapHelper = this.getOverwritableValue<{ [key: string]: string }>(configOptions, "additionalParameters");
+        if (parametersMapHelper) {
             webOptions.additionalParameters = {};
-            for (const key in mapHelper) {
+            for (const key in parametersMapHelper) {
                 if (key && key.trim().length > 0) {
-                    let value = mapHelper[key];
+                    let value = parametersMapHelper[key];
                     if (value && value.trim().length > 0) {
                         webOptions.additionalParameters[key] = value;
+                    }
+                }
+            }
+        }
+        let headersMapHelper = this.getOverwritableValue<{ [key: string]: string }>(configOptions, "additionalResourceHeaders");
+        if (headersMapHelper) {
+            webOptions.additionalResourceHeaders = {};
+            for (const key in headersMapHelper) {
+                if (key && key.trim().length > 0) {
+                    let value = headersMapHelper[key];
+                    if (value && value.trim().length > 0) {
+                        webOptions.additionalResourceHeaders[key] = value;
                     }
                 }
             }
@@ -257,5 +269,6 @@ export class WebOptions {
     pkceCodeChallengeMethod: string;
 
     additionalParameters: { [key: string]: string };
+    additionalResourceHeaders: { [key: string]: string };
 }
 

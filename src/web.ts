@@ -85,6 +85,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                                 }
                                             };
                                             tokenRequest.onerror = function () {
+                                                // always log error because of CORS hint
                                                 console.log("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
                                                 reject(new Error("ERR_GENERAL"));
                                             };
@@ -161,6 +162,11 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 }
                 request.open("GET", this.webOptions.resourceUrl, true);
                 request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+                if (this.webOptions.additionalResourceHeaders) {
+                    for (const key in this.webOptions.additionalResourceHeaders) {
+                        request.setRequestHeader(key, this.webOptions.additionalResourceHeaders[key]);
+                    }
+                }
                 request.send();
             } else {
                 reject(new Error("ERR_NO_ACCESS_TOKEN"));
