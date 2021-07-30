@@ -43,6 +43,7 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
     private static final String PARAM_PKCE_ENABLED = "pkceEnabled";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
+    private static final String PARAM_ADDITIONAL_RESOURCE_HEADERS = "additionalResourceHeaders";
     private static final String PARAM_ADDITIONAL_PARAMETERS = "additionalParameters";
     private static final String PARAM_ANDROID_CUSTOM_HANDLER_CLASS = "android.customHandlerClass";
     // Activity result handling
@@ -160,7 +161,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 handler.getAccessToken(getActivity(), call, new AccessTokenCallback() {
                     @Override
                     public void onSuccess(String accessToken) {
-                        new ResourceUrlAsyncTask(call, oauth2Options, getLogTag()).execute(accessToken);
+                        new ResourceUrlAsyncTask(call, oauth2Options, getLogTag(), null, null).execute(accessToken);
                     }
 
                     @Override
@@ -316,10 +317,12 @@ public class OAuth2ClientPlugin extends Plugin {
 
     @ActivityCallback
     private void handleIntentResult(PluginCall call, ActivityResult result) {
-        if (result.getResultCode() == Activity.RESULT_CANCELED) {
-            call.reject(USER_CANCELLED);
-        } else {
-            handleAuthorizationRequestActivity(result.getData(), call);
+        if (this.oauth2Options != null && this.oauth2Options.isHandleResultOnActivityResult()) {
+            if (result.getResultCode() == Activity.RESULT_CANCELED) {
+                call.reject(USER_CANCELLED);
+            } else {
+                handleAuthorizationRequestActivity(result.getData(), call);
+            }
         }
     }
 
@@ -341,6 +344,12 @@ public class OAuth2ClientPlugin extends Plugin {
                 if (error.code == AuthorizationException.GeneralErrors.USER_CANCELED_AUTH_FLOW.code) {
                     savedCall.reject(USER_CANCELLED);
                 } else if (error.code == AuthorizationException.AuthorizationRequestErrors.STATE_MISMATCH.code) {
+                    if (oauth2Options.isLogsEnabled()) {
+                        Log.i(getLogTag(), "State from web options: " + oauth2Options.getState());
+                        if (authorizationResponse != null) {
+                            Log.i(getLogTag(), "State returned from provider: " + authorizationResponse.state);
+                        }
+                    }
                     savedCall.reject(ERR_STATES_NOT_MATCH);
                 } else {
                     savedCall.reject(ERR_GENERAL, error);
@@ -350,6 +359,9 @@ public class OAuth2ClientPlugin extends Plugin {
 
             // this response may contain the authorizationCode but also idToken and accessToken depending on the flow chosen by responseType
             if (authorizationResponse != null) {
+                if (oauth2Options.isLogsEnabled()) {
+                    Log.i(getLogTag(), "Authorization response:\n" + authorizationResponse.jsonSerializeString());
+                }
                 // if there is a tokenEndpoint configured try to get the accessToken from it.
                 // it might be already in the authorizationResponse but tokenEndpoint might deliver other tokens.
                 if (oauth2Options.getAccessTokenEndpoint() != null) {
@@ -363,9 +375,15 @@ public class OAuth2ClientPlugin extends Plugin {
                                 savedCall.reject(ERR_AUTHORIZATION_FAILED, exception);
                             } else {
                                 if (accessTokenResponse != null) {
+                                    if (oauth2Options.isLogsEnabled()) {
+                                        Log.i(getLogTag(), "Access token response:\n" + accessTokenResponse.jsonSerializeString());
+                                    }
                                     if (oauth2Options.getResourceUrl() != null) {
+                                        if (oauth2Options.isLogsEnabled()) {
+                                            Log.i(getLogTag(), "Access token:\n" + accessTokenResponse.accessToken);
+                                        }
                                         authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
-                                            -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag()).execute(accessToken));
+                                            -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag(), authorizationResponse, accessTokenResponse).execute(accessToken));
                                     } else {
                                         createJsObjAndResolve(savedCall, accessTokenResponse.jsonSerializeString());
                                     }
@@ -442,6 +460,7 @@ public class OAuth2ClientPlugin extends Plugin {
                 }
             }
         }
+        o.setAdditionalResourceHeaders(ConfigUtils.getOverwrittenAndroidParamMap(callData, PARAM_ADDITIONAL_RESOURCE_HEADERS));
         // android only
         o.setCustomHandlerClass(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_HANDLER_CLASS)));
         o.setHandleResultOnNewIntent(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT, false));

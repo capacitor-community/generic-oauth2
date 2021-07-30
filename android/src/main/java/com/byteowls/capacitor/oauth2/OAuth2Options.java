@@ -19,6 +19,7 @@ public class OAuth2Options {
 
     private String accessTokenEndpoint;
     private String resourceUrl;
+    private Map<String, String> additionalResourceHeaders;
 
     private boolean pkceEnabled;
     private boolean logsEnabled;
@@ -196,5 +197,22 @@ public class OAuth2Options {
 
     public void setHandleResultOnActivityResult(boolean handleResultOnActivityResult) {
         this.handleResultOnActivityResult = handleResultOnActivityResult;
+    }
+
+    public Map<String, String> getAdditionalResourceHeaders() {
+        return additionalResourceHeaders;
+    }
+
+    public void setAdditionalResourceHeaders(Map<String, String> additionalResourceHeaders) {
+        this.additionalResourceHeaders = additionalResourceHeaders;
+    }
+
+    public void addAdditionalResourceHeader(String key, String value) {
+        if (key != null && value != null) {
+            if (this.additionalResourceHeaders == null) {
+                this.additionalResourceHeaders = new HashMap<>();
+            }
+            this.additionalResourceHeaders.put(key, value);
+        }
     }
 }

@@ -4,6 +4,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.TokenResponse;
+
 import org.json.JSONException;
 
 import java.io.BufferedReader;
@@ -13,6 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * @author m.oberwasserlechner@byteowls.com
@@ -20,14 +25,18 @@ import java.net.URL;
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
     private static final String ERR_GENERAL = "ERR_GENERAL";
-    private PluginCall pluginCall;
-    private OAuth2Options options;
-    private String logTag;
+    private final PluginCall pluginCall;
+    private final OAuth2Options options;
+    private final String logTag;
+    private final AuthorizationResponse authorizationResponse;
+    private final TokenResponse accessTokenResponse;
 
-    ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag) {
+    ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag, AuthorizationResponse authorizationResponse, TokenResponse accessTokenResponse) {
         this.pluginCall = pluginCall;
         this.options = options;
         this.logTag = logTag;
+        this.authorizationResponse = authorizationResponse;
+        this.accessTokenResponse = accessTokenResponse;
     }
 
     @Override
@@ -44,9 +53,19 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         }
 
         try {
+            if (options.isLogsEnabled()) {
+                Log.i(logTag, "Resource url: GET " + resourceUrl);
+            }
+
             URL url = new URL(resourceUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.addRequestProperty("Authorization", String.format("Bearer %s", accessToken));
+            // additional headers
+            if (options.getAdditionalResourceHeaders() != null) {
+                for (Map.Entry<String, String> entry : options.getAdditionalResourceHeaders().entrySet()) {
+                    conn.addRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
             try {
                 InputStream is;
 
@@ -61,7 +80,17 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 String jsonBody = readInputStream(is);
                 if (!result.isError()) {
                     JSObject json = new JSObject(jsonBody);
+                    // #154
+                    if (authorizationResponse != null) {
+                        json.put("authorization_response", authorizationResponse.jsonSerializeString());
+                    }
+                    if (accessTokenResponse != null) {
+                        json.put("access_token_response", accessTokenResponse.jsonSerializeString());
+                    }
                     json.put("access_token", accessToken);
+                    if (options.isLogsEnabled()) {
+                        Log.i(logTag, "Resource response:\n" + jsonBody);
+                    }
                     result.setResponse(json);
                 } else {
                     result.setErrorMsg(jsonBody);
