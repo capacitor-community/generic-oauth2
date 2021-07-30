@@ -68,7 +68,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                             let authorizationRedirectUrlParamObj = WebUtils.getUrlParams(href);
                             if (authorizationRedirectUrlParamObj) {
                                 if (this.webOptions.logsEnabled) {
-                                    console.log("Url Params: ", authorizationRedirectUrlParamObj);
+                                    console.log("Authorization response: ", authorizationRedirectUrlParamObj);
                                 }
                                 window.clearInterval(this.intervalId);
                                 // check state
@@ -81,6 +81,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                             tokenRequest.onload = function () {
                                                 if (this.status === 200) {
                                                     let accessTokenResponse = JSON.parse(this.response);
+                                                    if (self.webOptions.logsEnabled) {
+                                                        console.log("Access token response: ", accessTokenResponse);
+                                                    }
                                                     self.requestResource(accessTokenResponse.access_token, resolve, reject, authorizationRedirectUrlParamObj, accessTokenResponse);
                                                 }
                                             };
@@ -137,7 +140,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                 resp["authorization_response"] = authorizationResponse;
                             }
                             if (accessTokenResponse) {
-                                resp["access_token_response"] = authorizationResponse;
+                                resp["access_token_response"] = accessTokenResponse;
                             }
                             resp["access_token"] = accessToken;
                         }

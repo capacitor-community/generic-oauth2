@@ -187,18 +187,21 @@ Example:
 
 These parameters are overrideable in every platform
 
-| parameter            	| default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
-|----------------------	|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
-| appId                	|         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
-| authorizationBaseUrl 	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
-| responseType         	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
-| redirectUrl          	|         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
-| accessTokenEndpoint  	|         	|          	| If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                    	|       	|
-| resourceUrl          	|         	|          	| If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                  |       	|
-| pkceEnabled          	| `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|       	|
-| scope                	|         	|          	|                                                                                                                                                                                                                                        	|       	|
-| state                	|         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
-| additionalParameters 	|         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	|       	|
+| parameter            	    | default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
+|----------------------	    |---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
+| appId                	    |         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
+| authorizationBaseUrl 	    |         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| responseType         	    |         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| redirectUrl          	    |         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
+| accessTokenEndpoint  	    |         	|          	| If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                    	|       	|
+| resourceUrl          	    |         	|          	| If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                               |       	|
+| additionalResourceHeaders	|         	|          	| Additional headers for the resource request                                                                                                                                                                                               | 3.0.0     |
+| pkceEnabled          	    | `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|        	|
+| logsEnabled          	    | `false` 	|          	|                                                                                                                                                                                                                                           | 3.0.0     |
+| scope                	    |         	|          	|                                                                                                                                                                                                                                        	|       	|
+| state                	    |         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
+| additionalParameters 	    |         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	                                            |       	|
+| logoutUrl          	    |         	|          	|                                                                                                                                                                                                                                      	| 3.0.0    	|
 
 **Platform Web**
 
@@ -574,36 +577,62 @@ azureLogin() {
 }
 ```
 
-I created a new Azure B2C config while implementing #97. I tested it with the below config works for me on web.
+I created a new Azure B2C config while implementing #97. I tested it with the below config works for me on web and android.
 
 ```typescript
   getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
     return {
-      appId: environment.oauthAppId.azureBc2.appId,
-      authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
-      scope: "https://graph.microsoft.com/User.Read", // See API permission section in Azure Portal
-      accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
-      resourceUrl: "https://graph.microsoft.com/v1.0/me/",
-      responseType: "code",
-      pkceEnabled: true,
-      logsEnabled: true,
-      logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`, // url was found in OpenID Connect metadata document -> end_session_endpoint
-      web: {
-        redirectUrl: "http://localhost:4200",
-        windowOptions: "height=600,left=0,top=0",
-      },
-      android: {
-        appId: environment.oauthAppId.google.android,
-        redirectUrl: "com.byteowls.sue:/"
-      },
-      ios: {
-        appId: environment.oauthAppId.google.ios,
-        pkceEnabled: true, // workaround for bug #111
-        redirectUrl: "msauth.com.byteowls.sue://auth"
-      }
+        appId: environment.oauthAppId.azureBc2.appId,
+        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+        scope: "https://graph.microsoft.com/User.Read", // See Azure Portal -> API permission
+        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+        resourceUrl: "https://graph.microsoft.com/v1.0/me/",
+        responseType: "code",
+        pkceEnabled: true,
+        logsEnabled: true,
+        logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`,
+        web: {
+            redirectUrl: environment.redirectUrl,
+            windowOptions: "height=600,left=0,top=0",
+        },
+        android: {
+            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+        },
+        ios: {
+            pkceEnabled: true, // workaround for bug #111
+            redirectUrl: "msauth.{package-name}://auth"
+        }
     };
-  }
+}
 ```
+
+If you have multiple identity providers you have to create a new Activity in `AndroidManifest.xml`. In my case I had Google and Azure AD B2C.
+
+Without this extra activity the result was always `RESULT_CANCELED`.
+
+```xml
+    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
+      </intent-filter>
+
+      <!-- azure ad b2c -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
+      </intent-filter>
+    </activity>
+```
+
+Example values
+* @string/azure_b2c_scheme ... `msauth`
+* @string/package_name ... `com.company.project`
+* azure_b2c_signature_hash ... `/your-signature-hash` ... leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
 
 #### Android
 
