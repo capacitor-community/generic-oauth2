@@ -504,16 +504,46 @@ not supported
 
 ### Azure B2C
 
-In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
-and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
-
-See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
+It's important to use the urls you see in the Azure config for the specific platform.
 
 #### PWA
 
-See these 2 configs that should work.
+Setting up Azure B2C in July 2021 presents me with `microsoftonline.com` urls, so the config looks like:
 
-It's important to use the urls you see in the Azure config for the specific platform.
+```typescript
+import {OAuth2AuthenticateOptions, OAuth2Client} from "@byteowls/capacitor-oauth2";
+
+export class AuthService {
+
+  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+    return {
+        appId: environment.oauthAppId.azureBc2.appId,
+        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+        scope: "https://graph.microsoft.com/User.Read", // See Azure Portal -> API permission
+        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+        resourceUrl: "https://graph.microsoft.com/v1.0/me/",
+        responseType: "code",
+        pkceEnabled: true,
+        logsEnabled: true,
+        logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`,
+        web: {
+            redirectUrl: environment.redirectUrl,
+            windowOptions: "height=600,left=0,top=0",
+        },
+        android: {
+            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+        },
+        ios: {
+            pkceEnabled: true, // workaround for bug #111
+            redirectUrl: "msauth.{package-name}://auth"
+        }
+    };
+  }
+}
+```
+
+<details>
+<summary>Other configs that works in prior versions</summary>
 
 ```typescript
 import {OAuth2Client} from "@byteowls/capacitor-oauth2";
@@ -577,36 +607,13 @@ azureLogin() {
 }
 ```
 
-I created a new Azure B2C config while implementing #97. I tested it with the below config works for me on web and android.
+</details>
 
-```typescript
-  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
-    return {
-        appId: environment.oauthAppId.azureBc2.appId,
-        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
-        scope: "https://graph.microsoft.com/User.Read", // See Azure Portal -> API permission
-        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
-        resourceUrl: "https://graph.microsoft.com/v1.0/me/",
-        responseType: "code",
-        pkceEnabled: true,
-        logsEnabled: true,
-        logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`,
-        web: {
-            redirectUrl: environment.redirectUrl,
-            windowOptions: "height=600,left=0,top=0",
-        },
-        android: {
-            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
-        },
-        ios: {
-            pkceEnabled: true, // workaround for bug #111
-            redirectUrl: "msauth.{package-name}://auth"
-        }
-    };
-}
-```
+#### Android
 
-If you have multiple identity providers you have to create a new Activity in `AndroidManifest.xml`. In my case I had Google and Azure AD B2C.
+If you have **multiple** identity providers you have to create a new Activity in `AndroidManifest.xml`.
+
+In my case I had Google and Azure AD B2C.
 
 Without this extra activity the result was always `RESULT_CANCELED`.
 
@@ -632,9 +639,7 @@ Without this extra activity the result was always `RESULT_CANCELED`.
 Example values
 * @string/azure_b2c_scheme ... `msauth`
 * @string/package_name ... `com.company.project`
-* azure_b2c_signature_hash ... `/your-signature-hash` ... leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
-
-#### Android
+* azure_b2c_signature_hash ... `/your-signature-hash` ... The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
 
 See [Android Default Config](#android-default-config)
 
@@ -648,13 +653,20 @@ Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>msauth.BUNDLE_ID</string>
+                <!-- msauth.BUNDLE_ID -->
+				<string>msauth.com.yourcompany.yourproject</string>
 			</array>
 		</dict>
 	</array>
 ```
 
-Do not enter `://` and part of your redirect url after those chars.
+Do not enter `://` and part of your redirect url.
+
+#### Troubleshooting
+In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
+
+See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
 
 ### Google
 
