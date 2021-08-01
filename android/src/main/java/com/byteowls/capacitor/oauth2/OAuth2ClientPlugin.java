@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.activity.result.ActivityResult;
@@ -25,6 +26,7 @@ import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.GrantTypeValues;
 import net.openid.appauth.TokenRequest;
+import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
@@ -155,6 +157,9 @@ public class OAuth2ClientPlugin extends Plugin {
         disposeAuthService();
         oauth2Options = buildAuthenticateOptions(call.getData());
         if (oauth2Options.getCustomHandlerClass() != null) {
+            if (oauth2Options.isLogsEnabled()) {
+                Log.i(getLogTag(), "Entering custom handler: " + oauth2Options.getCustomHandlerClass().getClass().getName());
+            }
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(oauth2Options.getCustomHandlerClass());
                 OAuth2CustomHandler handler = handlerClass.newInstance();
@@ -378,17 +383,19 @@ public class OAuth2ClientPlugin extends Plugin {
                                     if (oauth2Options.isLogsEnabled()) {
                                         Log.i(getLogTag(), "Access token response:\n" + accessTokenResponse.jsonSerializeString());
                                     }
-                                    if (oauth2Options.getResourceUrl() != null) {
-                                        if (oauth2Options.isLogsEnabled()) {
-                                            Log.i(getLogTag(), "Access token:\n" + accessTokenResponse.accessToken);
-                                        }
-                                        authState.performActionWithFreshTokens(authService, (accessToken, idToken, ex1)
-                                            -> new ResourceUrlAsyncTask(savedCall, oauth2Options, getLogTag(), authorizationResponse, accessTokenResponse).execute(accessToken));
-                                    } else {
-                                        createJsObjAndResolve(savedCall, accessTokenResponse.jsonSerializeString());
-                                    }
+                                    authState.performActionWithFreshTokens(authService,
+                                        (accessToken, idToken, ex1) -> {
+                                            AsyncTask<String, Void, ResourceCallResult> asyncTask =
+                                                new ResourceUrlAsyncTask(
+                                                    savedCall,
+                                                    oauth2Options,
+                                                    getLogTag(),
+                                                    authorizationResponse,
+                                                    accessTokenResponse);
+                                            asyncTask.execute(accessToken);
+                                        });
                                 } else {
-                                    savedCall.reject(ERR_NO_ACCESS_TOKEN);
+                                    resolveAuthorizationResponse(savedCall, authorizationResponse);
                                 }
                             }
                         });
@@ -396,7 +403,7 @@ public class OAuth2ClientPlugin extends Plugin {
                         savedCall.reject(ERR_NO_AUTHORIZATION_CODE, e);
                     }
                 } else {
-                    createJsObjAndResolve(savedCall, authorizationResponse.jsonSerializeString());
+                    resolveAuthorizationResponse(savedCall, authorizationResponse);
                 }
             } else {
                 savedCall.reject(ERR_NO_AUTHORIZATION_CODE);
@@ -409,13 +416,10 @@ public class OAuth2ClientPlugin extends Plugin {
         }
     }
 
-    void createJsObjAndResolve(PluginCall call, String jsonStr) {
-        try {
-            JSObject json = new JSObject(jsonStr);
-            call.resolve(json);
-        } catch (JSONException e) {
-            call.reject(ERR_GENERAL, e);
-        }
+    private void resolveAuthorizationResponse(PluginCall savedCall, AuthorizationResponse authorizationResponse) {
+        JSObject json = new JSObject();
+        OAuth2Utils.assignResponses(json, null, authorizationResponse, null);
+        savedCall.resolve(json);
     }
 
     OAuth2Options buildAuthenticateOptions(JSObject callData) {
