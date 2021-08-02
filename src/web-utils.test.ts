@@ -264,3 +264,36 @@ describe("Crypto utils", () => {
     });
 });
 
+describe("additional resource headers", () => {
+    const headerKey = "Access-Control-Allow-Origin";
+
+    const options: OAuth2AuthenticateOptions = {
+        appId: "appId",
+        authorizationBaseUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+        accessTokenEndpoint: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
+        scope: "files.readwrite offline_access",
+        responseType: "code",
+        additionalResourceHeaders: {
+            "Access-Control-Allow-Origin": "will-be-overwritten",
+        },
+        web: {
+            redirectUrl: "https://oauth2.byteowls.com/authorize",
+            pkceEnabled: false,
+            additionalResourceHeaders: {
+                "Access-Control-Allow-Origin": "*",
+            }
+        }
+    };
+
+    it('should be defined', async () => {
+        const webOptions = await WebUtils.buildWebOptions(options);
+        expect(webOptions.additionalResourceHeaders[headerKey]).toBeDefined();
+    });
+
+    it('should equal *', async () => {
+        const webOptions = await WebUtils.buildWebOptions(options);
+        expect(webOptions.additionalResourceHeaders[headerKey]).toEqual("*");
+    });
+
+});
+

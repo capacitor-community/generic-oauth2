@@ -39,7 +39,7 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 // open window
                 const authorizationUrl = WebUtils.getAuthorizationUrl(this.webOptions);
                 if (this.webOptions.logsEnabled) {
-                    console.log("AuthorizationUrl: " + authorizationUrl);
+                    this.doLog("Authorization url: " + authorizationUrl);
                 }
                 this.windowHandle = window.open(
                     authorizationUrl,
@@ -63,12 +63,12 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
                         if (href != null && href.indexOf(this.webOptions.redirectUrl) >= 0) {
                             if (this.webOptions.logsEnabled) {
-                                console.log("Url from Provider: " + href);
+                                this.doLog("Url from Provider: " + href);
                             }
                             let authorizationRedirectUrlParamObj = WebUtils.getUrlParams(href);
                             if (authorizationRedirectUrlParamObj) {
                                 if (this.webOptions.logsEnabled) {
-                                    console.log("Url Params: ", authorizationRedirectUrlParamObj);
+                                    this.doLog("Authorization response:", authorizationRedirectUrlParamObj);
                                 }
                                 window.clearInterval(this.intervalId);
                                 // check state
@@ -81,11 +81,15 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                             tokenRequest.onload = function () {
                                                 if (this.status === 200) {
                                                     let accessTokenResponse = JSON.parse(this.response);
+                                                    if (self.webOptions.logsEnabled) {
+                                                        self.doLog("Access token response:", accessTokenResponse);
+                                                    }
                                                     self.requestResource(accessTokenResponse.access_token, resolve, reject, authorizationRedirectUrlParamObj, accessTokenResponse);
                                                 }
                                             };
                                             tokenRequest.onerror = function () {
-                                                console.log("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
+                                                // always log error because of CORS hint
+                                                self.doLog("ERR_GENERAL: See client logs. It might be CORS. Status text: " + this.statusText);
                                                 reject(new Error("ERR_GENERAL"));
                                             };
                                             tokenRequest.open("POST", this.webOptions.accessTokenEndpoint, true);
@@ -103,8 +107,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                                     }
                                 } else {
                                     if (this.webOptions.logsEnabled) {
-                                        console.log("State from web options: " + this.webOptions.state);
-                                        console.log("State returned from provider: " + authorizationRedirectUrlParamObj.state);
+                                        this.doLog("State from web options: " + this.webOptions.state);
+                                        this.doLog("State returned from provider: " + authorizationRedirectUrlParamObj.state);
                                     }
                                     reject(new Error("ERR_STATES_NOT_MATCH"));
                                     this.closeWindow();
@@ -118,30 +122,31 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
+    private readonly MSG_RETURNED_TO_JS = "Returned to JS:";
+
     private requestResource(accessToken: string, resolve: any, reject: (reason?: any) => void, authorizationResponse: any, accessTokenResponse: any = null) {
         if (this.webOptions.resourceUrl) {
+            const logsEnabled = this.webOptions.logsEnabled;
+            if (logsEnabled) {
+                this.doLog("Resource url: " + this.webOptions.resourceUrl);
+            }
             if (accessToken) {
-                const logsEnabled = this.webOptions.logsEnabled;
                 if (logsEnabled) {
-                    console.log("Access token: " + accessToken);
+                    this.doLog("Access token:", accessToken);
                 }
                 const self = this;
                 const request = new XMLHttpRequest();
                 request.onload = function () {
                     if (this.status === 200) {
                         let resp = JSON.parse(this.response);
+                        if (logsEnabled) {
+                            self.doLog("Resource response:", resp);
+                        }
                         if (resp) {
-                            // #154
-                            if (authorizationResponse) {
-                                resp["authorization_response"] = authorizationResponse;
-                            }
-                            if (accessTokenResponse) {
-                                resp["access_token_response"] = authorizationResponse;
-                            }
-                            resp["access_token"] = accessToken;
+                            self.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
                         }
                         if (logsEnabled) {
-                            console.log("Resource response: ", resp);
+                            self.doLog(self.MSG_RETURNED_TO_JS, resp);
                         }
                         resolve(resp);
                     } else {
@@ -151,26 +156,47 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 };
                 request.onerror = function () {
                     if (logsEnabled) {
-                        console.log("ERR_GENERAL: " + this.statusText);
+                        self.doLog("ERR_GENERAL: " + this.statusText);
                     }
                     reject(new Error("ERR_GENERAL"));
                     self.closeWindow();
                 };
-                if (logsEnabled) {
-                    console.log("Resource url: GET " + this.webOptions.resourceUrl);
-                }
                 request.open("GET", this.webOptions.resourceUrl, true);
                 request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
+                if (this.webOptions.additionalResourceHeaders) {
+                    for (const key in this.webOptions.additionalResourceHeaders) {
+                        request.setRequestHeader(key, this.webOptions.additionalResourceHeaders[key]);
+                    }
+                }
                 request.send();
             } else {
+                if (logsEnabled) {
+                    this.doLog("No accessToken was provided although you configured a resourceUrl. Remove the resourceUrl from the config.");
+                }
                 reject(new Error("ERR_NO_ACCESS_TOKEN"));
                 this.closeWindow();
             }
         } else {
             // if no resource url exists just return the accessToken response
-            resolve(accessToken);
+            const resp = {};
+            this.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
+            if (this.webOptions.logsEnabled) {
+                this.doLog(this.MSG_RETURNED_TO_JS, resp);
+            }
+            resolve(resp);
             this.closeWindow();
         }
+    }
+
+    assignResponses(resp: any, accessToken: string, authorizationResponse: any, accessTokenResponse: any = null): void {
+        // #154
+        if (authorizationResponse) {
+            resp["authorization_response"] = authorizationResponse;
+        }
+        if (accessTokenResponse) {
+            resp["access_token_response"] = accessTokenResponse;
+        }
+        resp["access_token"] = accessToken;
     }
 
     async logout(options: OAuth2AuthenticateOptions): Promise<boolean> {
@@ -182,7 +208,15 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
 
     private closeWindow() {
         window.clearInterval(this.intervalId);
+        // #164 if the provider's login page is opened in the same tab or window it must not be closed
+        // if (this.webOptions.windowTarget !== "_self") {
+        //     this.windowHandle?.close();
+        // }
         this.windowHandle?.close();
         this.windowClosedByPlugin = true;
+    }
+
+    private doLog(msg: string, obj: any = null) {
+        console.log("I/Capacitor/OAuth2ClientPlugin: " + msg, obj);
     }
 }

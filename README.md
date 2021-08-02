@@ -21,17 +21,17 @@ Actively maintained: YES
 ## Install
 
 ```bash
-npm install @capacitor-community/oauth2
+npm i @byteowls/capacitor-oauth2
 npx cap sync
 ```
 
 ## Versions
 
-| Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
+| Plugin | Capacitor         | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.0.0             | **(NOT RELEASED YET)** [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
-| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
-| 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
+| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
+| 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
@@ -187,18 +187,20 @@ Example:
 
 These parameters are overrideable in every platform
 
-| parameter            	| default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
-|----------------------	|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
-| appId                	|         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
-| authorizationBaseUrl 	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
-| responseType         	|         	| yes      	|                                                                                                                                                                                                                                        	|       	|
-| redirectUrl          	|         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
-| accessTokenEndpoint  	|         	|          	| If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                    	|       	|
-| resourceUrl          	|         	|          	| If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                  |       	|
-| pkceEnabled          	| `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|       	|
-| scope                	|         	|          	|                                                                                                                                                                                                                                        	|       	|
-| state                	|         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
-| additionalParameters 	|         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	|       	|
+| parameter            	    | default 	| required 	| description                                                                                                                                                                                                                            	| since 	|
+|----------------------	    |---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|-------	|
+| appId                	    |         	| yes      	| aka clientId, serviceId, ...                                                                                                                                                                                                           	|       	|
+| authorizationBaseUrl 	    |         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| responseType         	    |         	| yes      	|                                                                                                                                                                                                                                        	|       	|
+| redirectUrl          	    |         	| yes      	|                                                                                                                                                                                                                                        	| 2.0.0 	|
+| accessTokenEndpoint  	    |         	|          	| If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                    	|       	|
+| resourceUrl          	    |         	|          	| If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                               |       	|
+| additionalResourceHeaders	|         	|          	| Additional headers for the resource request                                                                                                                                                                                               | 3.0.0     |
+| pkceEnabled          	    | `false` 	|          	| Enable PKCE if you need it. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.                                                                                   |        	|
+| logsEnabled          	    | `false` 	|          	| Enable extensive logging. All plugin outputs are prefixed with `I/Capacitor/OAuth2ClientPlugin: ` across all platforms. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.   | 3.0.0     |
+| scope                	    |         	|          	|                                                                                                                                                                                                                                        	|       	|
+| state                	    |         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
+| additionalParameters 	    |         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	                                            |       	|
 
 **Platform Web**
 
@@ -403,7 +405,7 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |-----------|------------------------|-------|
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
-| Azure B2C | [see below](#azure-b2c)|       |
+| Azure AD B2C | [see below](#azure-b2c)|       |
 | Apple     | [see below](#apple)    | ios only |
 
 
@@ -501,16 +503,45 @@ not supported
 
 ### Azure B2C
 
-In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
-and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
-
-See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
+It's important to use the urls you see in the Azure config for the specific platform.
 
 #### PWA
 
-See these 2 configs that should work.
+Setting up Azure B2C in July 2021 presents me with `microsoftonline.com` urls, so the config looks like:
 
-It's important to use the urls you see in the Azure config for the specific platform.
+```typescript
+import {OAuth2AuthenticateOptions, OAuth2Client} from "@byteowls/capacitor-oauth2";
+
+export class AuthService {
+
+  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+    return {
+        appId: environment.oauthAppId.azureBc2.appId,
+        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+        scope: "https://graph.microsoft.com/User.Read", // See Azure Portal -> API permission
+        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+        resourceUrl: "https://graph.microsoft.com/v1.0/me/",
+        responseType: "code",
+        pkceEnabled: true,
+        logsEnabled: true,
+        web: {
+            redirectUrl: environment.redirectUrl,
+            windowOptions: "height=600,left=0,top=0",
+        },
+        android: {
+            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+        },
+        ios: {
+            pkceEnabled: true, // workaround for bug #111
+            redirectUrl: "msauth.{package-name}://auth"
+        }
+    };
+  }
+}
+```
+
+<details>
+<summary>Other configs that works in prior versions</summary>
 
 ```typescript
 import {OAuth2Client} from "@byteowls/capacitor-oauth2";
@@ -574,7 +605,52 @@ azureLogin() {
 }
 ```
 
+</details>
+
 #### Android
+
+If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in `AndroidManifest.xml`.
+
+```xml
+      <!-- azure ad b2c -->
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
+</intent-filter>
+```
+
+If you have **multiple** identity providers you have to create a new Activity in `AndroidManifest.xml`.
+
+In my case I had Google and Azure AD B2C.
+
+Without this extra activity the result was always `RESULT_CANCELED`.
+
+```xml
+    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+      <!-- google -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
+      </intent-filter>
+
+      <!-- azure ad b2c -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
+      </intent-filter>
+    </activity>
+```
+
+Example values
+* @string/azure_b2c_scheme ... `msauth`
+* @string/package_name ... `com.company.project`
+* azure_b2c_signature_hash ... `/your-signature-hash` ... The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
 
 See [Android Default Config](#android-default-config)
 
@@ -588,13 +664,20 @@ Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>msauth.BUNDLE_ID</string>
+				<!-- msauth.BUNDLE_ID -->
+				<string>msauth.com.yourcompany.yourproject</string>
 			</array>
 		</dict>
 	</array>
 ```
 
-Do not enter `://` and part of your redirect url after those chars.
+Do not enter `://` and part of your redirect url.
+
+#### Troubleshooting
+In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
+and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
+
+See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
 
 ### Google
 

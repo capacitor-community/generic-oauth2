@@ -4,6 +4,10 @@ import android.os.AsyncTask;
 import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.TokenResponse;
+
 import org.json.JSONException;
 
 import java.io.BufferedReader;
@@ -13,6 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * @author m.oberwasserlechner@byteowls.com
@@ -20,66 +25,98 @@ import java.net.URL;
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
     private static final String ERR_GENERAL = "ERR_GENERAL";
-    private PluginCall pluginCall;
-    private OAuth2Options options;
-    private String logTag;
+    private static final String ERR_NO_ACCESS_TOKEN = "ERR_NO_ACCESS_TOKEN";
+    private static final String MSG_RETURNED_TO_JS = "Returned to JS:\n";
 
-    ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag) {
+    private final PluginCall pluginCall;
+    private final OAuth2Options options;
+    private final String logTag;
+    private final AuthorizationResponse authorizationResponse;
+    private final TokenResponse accessTokenResponse;
+
+    public ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag, AuthorizationResponse authorizationResponse, TokenResponse accessTokenResponse) {
         this.pluginCall = pluginCall;
         this.options = options;
         this.logTag = logTag;
+        this.authorizationResponse = authorizationResponse;
+        this.accessTokenResponse = accessTokenResponse;
     }
 
     @Override
     protected ResourceCallResult doInBackground(String... tokens) {
-        String resourceUrl = options.getResourceUrl();
         ResourceCallResult result = new ResourceCallResult();
+
+        String resourceUrl = options.getResourceUrl();
         String accessToken = tokens[0];
+        if (resourceUrl != null) {
+            Log.i(logTag, "Resource url: GET " + resourceUrl);
+            if (accessToken != null) {
+                Log.i(logTag, "Access token:\n" + accessToken);
 
-        if (resourceUrl == null) {
-            JSObject json = new JSObject();
-            json.put("access_token", accessToken);
-            result.setResponse(json);
-            return result;
-        }
+                try {
+                    URL url = new URL(resourceUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.addRequestProperty("Authorization", String.format("Bearer %s", accessToken));
+                    // additional headers
+                    if (options.getAdditionalResourceHeaders() != null) {
+                        for (Map.Entry<String, String> entry : options.getAdditionalResourceHeaders().entrySet()) {
+                            conn.addRequestProperty(entry.getKey(), entry.getValue());
+                        }
+                    }
 
-        try {
-            URL url = new URL(resourceUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.addRequestProperty("Authorization", String.format("Bearer %s", accessToken));
-            try {
-                InputStream is;
-
-
-                if (conn.getResponseCode() >= HttpURLConnection.HTTP_OK
-                    && conn.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE) {
-                    is = conn.getInputStream();
-                } else {
-                    is = conn.getErrorStream();
-                    result.setError(true);
+                    InputStream is = null;
+                    try {
+                        if (conn.getResponseCode() >= HttpURLConnection.HTTP_OK
+                            && conn.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE) {
+                            is = conn.getInputStream();
+                        } else {
+                            is = conn.getErrorStream();
+                            result.setError(true);
+                        }
+                        String resourceResponseBody = readInputStream(is);
+                        if (!result.isError()) {
+                            JSObject resultJson = new JSObject(resourceResponseBody);
+                            if (options.isLogsEnabled()) {
+                                Log.i(logTag, "Resource response:\n" + resourceResponseBody);
+                            }
+                            OAuth2Utils.assignResponses(resultJson, accessToken, this.authorizationResponse, this.accessTokenResponse);
+                            if (options.isLogsEnabled()) {
+                                Log.i(logTag, MSG_RETURNED_TO_JS + resultJson);
+                            }
+                            result.setResponse(resultJson);
+                        } else {
+                            result.setErrorMsg(resourceResponseBody);
+                        }
+                    } catch (IOException e) {
+                        Log.e(logTag, "", e);
+                    } catch (JSONException e) {
+                        Log.e(logTag, "Resource response no valid json.", e);
+                    } finally {
+                        conn.disconnect();
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                } catch (MalformedURLException e) {
+                    Log.e(logTag, "Invalid resource url '" + resourceUrl + "'", e);
+                } catch (IOException e) {
+                    Log.e(logTag, "Unexpected error", e);
                 }
-                String jsonBody = readInputStream(is);
-                if (!result.isError()) {
-                    JSObject json = new JSObject(jsonBody);
-                    json.put("access_token", accessToken);
-                    result.setResponse(json);
-                } else {
-                    result.setErrorMsg(jsonBody);
+            } else {
+                if (options.isLogsEnabled()) {
+                    Log.i(logTag, "No accessToken was provided although you configured a resourceUrl. Remove the resourceUrl from the config.");
                 }
-                return result;
-            } catch (IOException e) {
-                Log.e(logTag, "", e);
-            } catch (JSONException e) {
-                Log.e(logTag, "Resource response no valid json.", e);
-            } finally {
-                conn.disconnect();
+                pluginCall.reject(ERR_NO_ACCESS_TOKEN);
             }
-        } catch (MalformedURLException e) {
-            Log.e(logTag, "Invalid resource url '" + resourceUrl + "'", e);
-        } catch (IOException e) {
-            Log.e(logTag, "Unexpected error", e);
+        } else {
+            JSObject json = new JSObject();
+            OAuth2Utils.assignResponses(json, accessToken, this.authorizationResponse, this.accessTokenResponse);
+            if (options.isLogsEnabled()) {
+                Log.i(logTag, MSG_RETURNED_TO_JS + json);
+            }
+            result.setResponse(json);
         }
-        return null;
+        return result;
     }
 
     @Override
@@ -89,7 +126,7 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 pluginCall.resolve(response.getResponse());
             } else {
                 Log.e(logTag, response.getErrorMsg());
-                pluginCall.reject(ERR_GENERAL);
+                pluginCall.reject(ERR_GENERAL, response.getErrorMsg());
             }
         } else {
             pluginCall.reject(ERR_GENERAL);

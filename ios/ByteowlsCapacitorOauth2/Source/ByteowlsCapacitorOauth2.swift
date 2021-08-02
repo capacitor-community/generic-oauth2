@@ -12,6 +12,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
     var savedPluginCall: CAPPluginCall?
     
     let JSON_KEY_ACCESS_TOKEN = "access_token"
+    let JSON_KEY_AUTHORIZATION_RESPONSE = "authorization_response"
+    let JSON_KEY_ACCESS_TOKEN_RESPONSE = "access_token_response"
     
     let PARAM_REFRESH_TOKEN = "refreshToken"
     
@@ -23,6 +25,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
     // controlling
     let PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint"
     let PARAM_RESOURCE_URL = "resourceUrl"
+    let PARAM_ADDITIONAL_RESOURCE_HEADERS = "additionalResourceHeaders"
     
     let PARAM_ADDITIONAL_PARAMETERS = "additionalParameters"
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
@@ -30,6 +33,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
     let PARAM_STATE = "state"
     let PARAM_PKCE_ENABLED = "pkceEnabled"
     let PARAM_IOS_USE_SCOPE = "ios.siwaUseScope"
+    let PARAM_LOGOUT_URL = "logoutUrl"
+    let PARAM_LOGS_ENABLED = "logsEnabled"
     
     let ERR_GENERAL = "ERR_GENERAL"
     
@@ -164,13 +169,15 @@ public class OAuth2ClientPlugin: CAPPlugin {
             return
         }
         let resourceUrl = getOverwritableString(call, self.PARAM_RESOURCE_URL)
-        // Github issue #71
+        let logsEnabled: Bool = getOverwritable(call, self.PARAM_LOGS_ENABLED) as? Bool ?? false
+        // #71
         self.oauth2SafariDelegate = OAuth2SafariDelegate(call)
         
         // ######### Custom Handler ########
         
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
+                log("Entering custom handler: " + handlerClassName)
                 handlerInstance.getAccessToken(viewController: (bridge?.viewController)!, call: call, success: { (accessToken) in
                     
                     if resourceUrl != nil {
@@ -206,7 +213,9 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 }, cancelled: {
                     call.reject(SharedConstants.ERR_USER_CANCELLED)
                 }, failure: { error in
-                    self.log("Login failed because '\(error)'")
+                    if logsEnabled {
+                        self.log("Login failed because '\(error)'")
+                    }
                     call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
                 })
             } else {
@@ -260,16 +269,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 
                 // additional parameters #18
                 let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
-                var additionalParameters: [String: String] = [:]
-                for (key, value) in callParameter {
-                    // only non empty string values are allowed
-                    if !key.isEmpty && value is String {
-                        let str = value as! String;
-                        if !str.isEmpty {
-                            additionalParameters[key] = str
-                        }
-                    }
-                }
+                let additionalParameters = buildStringDict(callParameter);
                 
                 let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
                 let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
@@ -285,7 +285,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         codeChallenge: pkceCodeChallenge,
                         codeVerifier: pkceCodeVerifier,
                         parameters: additionalParameters) { result in
-                            self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
+                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
                     }
                 } else {
                     oauthSwift.authorize(
@@ -293,7 +293,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
                         state: requestState,
                         parameters: additionalParameters) { result in
-                            self.handleAuthorizationResult(result, call, responseType, requestState, resourceUrl)
+                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
                     }
                 }
             }
@@ -331,33 +331,71 @@ public class OAuth2ClientPlugin: CAPPlugin {
     // ### Helper functions
     // #################################
     
-    private func handleAuthorizationResult(_ result: Result<OAuthSwift.TokenSuccess, OAuthSwiftError>, _ call: CAPPluginCall, _ responseType: String, _ requestState: String, _ resourceUrl: String?) {
+    private func handleAuthorizationResult(_ result: Result<OAuthSwift.TokenSuccess, OAuthSwiftError>,
+                                           _ call: CAPPluginCall,
+                                           _ responseType: String,
+                                           _ requestState: String,
+                                           _ logsEnabled: Bool,
+                                           _ resourceUrl: String?) {
         switch result {
         case .success(let (credential, response, parameters)):
+            if logsEnabled, let accessTokenResponse = response {
+                logDataObj("Authorization or Access token response:", accessTokenResponse.data)
+            }
+            
             // state is aready checked by the lib
             if resourceUrl != nil && !resourceUrl!.isEmpty {
-                self.oauthSwift!.client.get(
-                    resourceUrl!,
-                    parameters: parameters) { result in
+                if logsEnabled {
+                    log("Resource url: \(resourceUrl!)")
+                    log("Access token:\n\(credential.oauthToken)")
+                }
+                // resource url request headers
+                let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_RESOURCE_HEADERS) as? [String: Any] ?? [:]
+                let additionalHeadersDict = buildStringDict(callParameter);
+                
+                self.oauthSwift!.client.get(resourceUrl!,
+                                            headers: additionalHeadersDict) { result in
                         switch result {
-                        case .success(let response):
+                        case .success(let resourceResponse):
                             do {
-                                var jsonObj = try JSONSerialization.jsonObject(with: response.data, options: []) as! JSObject
+                                if logsEnabled {
+                                    self.logDataObj("Resource response:", resourceResponse.data)
+                                }
+                                
+                                var jsonObj = try JSONSerialization.jsonObject(with: resourceResponse.data, options: []) as! JSObject
                                 // send the access token to the caller so e.g. it can be stored on a backend
+                                // #154
+                                if let accessTokenResponse = response {
+                                    let accessTokenJsObject = try? JSONSerialization.jsonObject(with: accessTokenResponse.data, options: []) as? JSObject
+                                    jsonObj.updateValue(accessTokenJsObject!, forKey: self.JSON_KEY_ACCESS_TOKEN_RESPONSE)
+                                }
+                                
                                 jsonObj.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+                                
+                                if logsEnabled {
+                                    self.log("Returned to JS:\n\(jsonObj)")
+                                }
+                                
                                 call.resolve(jsonObj)
                             } catch {
-                                self.log("Invalid json in resource response \(error.localizedDescription)")
+                                self.log("Invalid json in resource response:\n \(error.localizedDescription)")
                                 call.reject(self.ERR_GENERAL)
                             }
                         case .failure(let error):
-                            self.log("Access resource request failed with \(error.localizedDescription)");
+                            self.log("Resource url request failed:\n\(error.description)");
                             call.reject(self.ERR_GENERAL)
                         }
                 }
+            // no resource url
             } else if let responseData = response?.data {
                 do {
-                    let jsonObj = try JSONSerialization.jsonObject(with: responseData, options: []) as! JSObject
+                    var jsonObj = JSObject()
+                    let accessTokenJsObject = try? JSONSerialization.jsonObject(with: responseData, options: []) as? JSObject
+                    jsonObj.updateValue(accessTokenJsObject!, forKey: self.JSON_KEY_ACCESS_TOKEN_RESPONSE)
+                    
+                    if logsEnabled {
+                        self.log("Returned to JS:\n\(jsonObj)")
+                    }
                     call.resolve(jsonObj)
                 } catch {
                     self.log("Invalid json in response \(error.localizedDescription)")
@@ -447,7 +485,26 @@ public class OAuth2ClientPlugin: CAPPlugin {
     }
     
     private func log(_ msg: String) {
-        print("@byteowls/capacitor-oauth2: \(msg).")
+        print("I/Capacitor/OAuth2ClientPlugin: \(msg)")
+    }
+    
+    private func logDataObj(_ msg: String, _ data: Data) {
+        let json = try? JSONSerialization.jsonObject(with: data, options: [])
+        log("\(msg)\n\(json ?? "")")
+    }
+    
+    private func buildStringDict(_ callParameter: [String: Any]) -> [String: String]  {
+        var dict: [String: String] = [:]
+        for (key, value) in callParameter {
+            // only non empty string values are allowed
+            if !key.isEmpty && value is String {
+                let str = value as! String;
+                if !str.isEmpty {
+                    dict[key] = str
+                }
+            }
+        }
+        return dict;
     }
     
     private func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
