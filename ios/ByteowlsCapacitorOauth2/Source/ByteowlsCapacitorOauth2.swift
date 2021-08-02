@@ -269,16 +269,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                 
                 // additional parameters #18
                 let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
-                var additionalParameters: [String: String] = [:]
-                for (key, value) in callParameter {
-                    // only non empty string values are allowed
-                    if !key.isEmpty && value is String {
-                        let str = value as! String;
-                        if !str.isEmpty {
-                            additionalParameters[key] = str
-                        }
-                    }
-                }
+                let additionalParameters = buildStringDict(callParameter);
                 
                 let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
                 let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
@@ -349,8 +340,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
         switch result {
         case .success(let (credential, response, parameters)):
             if logsEnabled, let accessTokenResponse = response {
-                let json = try? JSONSerialization.jsonObject(with: accessTokenResponse.data, options: [])
-                log("Authorization or Access token response:\(json ?? "")")
+                logDataObj("Authorization or Access token response:", accessTokenResponse.data)
             }
             
             // state is aready checked by the lib
@@ -359,18 +349,17 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     log("Resource url: \(resourceUrl!)")
                     log("Access token:\n\(credential.oauthToken)")
                 }
-                // todo resource url request headers
-                // getOverwritable(call, PARAM_ADDITIONAL_RESOURCE_HEADERS)
+                // resource url request headers
+                let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_RESOURCE_HEADERS) as? [String: Any] ?? [:]
+                let additionalHeadersDict = buildStringDict(callParameter);
                 
-                
-                
-                self.oauthSwift!.client.get(resourceUrl!) { result in
+                self.oauthSwift!.client.get(resourceUrl!,
+                                            headers: additionalHeadersDict) { result in
                         switch result {
                         case .success(let resourceResponse):
                             do {
                                 if logsEnabled {
-                                    let json = try? JSONSerialization.jsonObject(with: resourceResponse.data, options: [])
-                                    self.log("Resource response:\n\(json ?? "")")
+                                    self.logDataObj("Resource response:", resourceResponse.data)
                                 }
                                 
                                 var jsonObj = try JSONSerialization.jsonObject(with: resourceResponse.data, options: []) as! JSObject
@@ -382,6 +371,10 @@ public class OAuth2ClientPlugin: CAPPlugin {
                                 }
                                 
                                 jsonObj.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+                                
+                                if logsEnabled {
+                                    self.log("Returned to JS:\n\(jsonObj)")
+                                }
                                 
                                 call.resolve(jsonObj)
                             } catch {
@@ -396,7 +389,13 @@ public class OAuth2ClientPlugin: CAPPlugin {
             // no resource url
             } else if let responseData = response?.data {
                 do {
-                    let jsonObj = try JSONSerialization.jsonObject(with: responseData, options: []) as! JSObject
+                    var jsonObj = JSObject()
+                    let accessTokenJsObject = try? JSONSerialization.jsonObject(with: responseData, options: []) as? JSObject
+                    jsonObj.updateValue(accessTokenJsObject!, forKey: self.JSON_KEY_ACCESS_TOKEN_RESPONSE)
+                    
+                    if logsEnabled {
+                        self.log("Returned to JS:\n\(jsonObj)")
+                    }
                     call.resolve(jsonObj)
                 } catch {
                     self.log("Invalid json in response \(error.localizedDescription)")
@@ -487,6 +486,25 @@ public class OAuth2ClientPlugin: CAPPlugin {
     
     private func log(_ msg: String) {
         print("I/Capacitor/OAuth2ClientPlugin: \(msg)")
+    }
+    
+    private func logDataObj(_ msg: String, _ data: Data) {
+        let json = try? JSONSerialization.jsonObject(with: data, options: [])
+        log("\(msg)\n\(json ?? "")")
+    }
+    
+    private func buildStringDict(_ callParameter: [String: Any]) -> [String: String]  {
+        var dict: [String: String] = [:]
+        for (key, value) in callParameter {
+            // only non empty string values are allowed
+            if !key.isEmpty && value is String {
+                let str = value as! String;
+                if !str.isEmpty {
+                    dict[key] = str
+                }
+            }
+        }
+        return dict;
     }
     
     private func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
