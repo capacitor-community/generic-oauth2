@@ -96,7 +96,7 @@ export interface OAuth2AuthenticateBaseOptions {
      */
     logsEnabled?: boolean;
     /**
-     * @since 3.0.0
+     * @since 3.1.0
      */
     logoutUrl?: string;
 

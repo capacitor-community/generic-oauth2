@@ -122,6 +122,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         });
     }
 
+    private readonly MSG_RETURNED_TO_JS = "Returned to JS:";
+
     private requestResource(accessToken: string, resolve: any, reject: (reason?: any) => void, authorizationResponse: any, accessTokenResponse: any = null) {
         if (this.webOptions.resourceUrl) {
             const logsEnabled = this.webOptions.logsEnabled;
@@ -130,18 +132,21 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             }
             if (accessToken) {
                 if (logsEnabled) {
-                    this.doLog("Access token:\n" + accessToken);
+                    this.doLog("Access token:", accessToken);
                 }
                 const self = this;
                 const request = new XMLHttpRequest();
                 request.onload = function () {
                     if (this.status === 200) {
                         let resp = JSON.parse(this.response);
+                        if (logsEnabled) {
+                            self.doLog("Resource response:", resp);
+                        }
                         if (resp) {
                             self.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
                         }
                         if (logsEnabled) {
-                            self.doLog("Resource response:", resp);
+                            self.doLog(self.MSG_RETURNED_TO_JS, resp);
                         }
                         resolve(resp);
                     } else {
@@ -175,6 +180,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
             // if no resource url exists just return the accessToken response
             const resp = {};
             this.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
+            if (this.webOptions.logsEnabled) {
+                this.doLog(this.MSG_RETURNED_TO_JS, resp);
+            }
             resolve(resp);
             this.closeWindow();
         }
