@@ -25,7 +25,9 @@ import java.util.Map;
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
     private static final String ERR_GENERAL = "ERR_GENERAL";
-    public static final String ERR_NO_ACCESS_TOKEN = "ERR_NO_ACCESS_TOKEN";
+    private static final String ERR_NO_ACCESS_TOKEN = "ERR_NO_ACCESS_TOKEN";
+    private static final String MSG_RETURNED_TO_JS = "Returned to JS:\n";
+
     private final PluginCall pluginCall;
     private final OAuth2Options options;
     private final String logTag;
@@ -74,9 +76,12 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                         String jsonBody = readInputStream(is);
                         if (!result.isError()) {
                             JSObject json = new JSObject(jsonBody);
-                            OAuth2Utils.assignResponses(json, accessToken, this.authorizationResponse, this.accessTokenResponse);
                             if (options.isLogsEnabled()) {
                                 Log.i(logTag, "Resource response:\n" + jsonBody);
+                            }
+                            OAuth2Utils.assignResponses(json, accessToken, this.authorizationResponse, this.accessTokenResponse);
+                            if (options.isLogsEnabled()) {
+                                Log.i(logTag, MSG_RETURNED_TO_JS + jsonBody);
                             }
                             result.setResponse(json);
                         } else {
@@ -106,6 +111,9 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
         } else {
             JSObject json = new JSObject();
             OAuth2Utils.assignResponses(json, accessToken, this.authorizationResponse, this.accessTokenResponse);
+            if (options.isLogsEnabled()) {
+                Log.i(logTag, MSG_RETURNED_TO_JS + json);
+            }
             result.setResponse(json);
         }
         return result;
