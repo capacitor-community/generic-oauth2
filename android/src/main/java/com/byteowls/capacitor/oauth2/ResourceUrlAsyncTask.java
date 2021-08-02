@@ -73,19 +73,19 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                             is = conn.getErrorStream();
                             result.setError(true);
                         }
-                        String jsonBody = readInputStream(is);
+                        String resourceResponseBody = readInputStream(is);
                         if (!result.isError()) {
-                            JSObject json = new JSObject(jsonBody);
+                            JSObject resultJson = new JSObject(resourceResponseBody);
                             if (options.isLogsEnabled()) {
-                                Log.i(logTag, "Resource response:\n" + jsonBody);
+                                Log.i(logTag, "Resource response:\n" + resourceResponseBody);
                             }
-                            OAuth2Utils.assignResponses(json, accessToken, this.authorizationResponse, this.accessTokenResponse);
+                            OAuth2Utils.assignResponses(resultJson, accessToken, this.authorizationResponse, this.accessTokenResponse);
                             if (options.isLogsEnabled()) {
-                                Log.i(logTag, MSG_RETURNED_TO_JS + jsonBody);
+                                Log.i(logTag, MSG_RETURNED_TO_JS + resultJson);
                             }
-                            result.setResponse(json);
+                            result.setResponse(resultJson);
                         } else {
-                            result.setErrorMsg(jsonBody);
+                            result.setErrorMsg(resourceResponseBody);
                         }
                     } catch (IOException e) {
                         Log.e(logTag, "", e);
