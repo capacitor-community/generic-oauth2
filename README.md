@@ -27,11 +27,11 @@ npx cap sync
 
 ## Versions
 
-| Plugin | Minimum Capacitor | Docs                                                                                   | Notes                          |
+| Plugin | Capacitor         | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.0.0             | **(NOT RELEASED YET)** [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
-| 2.x    | 2.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
-| 1.x    | 1.0.0             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
+| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
+| 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
@@ -196,12 +196,11 @@ These parameters are overrideable in every platform
 | accessTokenEndpoint  	    |         	|          	| If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                    	|       	|
 | resourceUrl          	    |         	|          	| If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                               |       	|
 | additionalResourceHeaders	|         	|          	| Additional headers for the resource request                                                                                                                                                                                               | 3.0.0     |
-| pkceEnabled          	    | `false` 	|          	| Enable PKCE if you need it.                                                                                                                                                                                                            	|        	|
-| logsEnabled          	    | `false` 	|          	|                                                                                                                                                                                                                                           | 3.0.0     |
+| pkceEnabled          	    | `false` 	|          	| Enable PKCE if you need it. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.                                                                                   |        	|
+| logsEnabled          	    | `false` 	|          	| Enable extensive logging. All plugin outputs are prefixed with `I/Capacitor/OAuth2ClientPlugin: ` across all platforms. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.   | 3.0.0     |
 | scope                	    |         	|          	|                                                                                                                                                                                                                                        	|       	|
 | state                	    |         	|          	| The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                            	|       	|
 | additionalParameters 	    |         	|          	| Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>```{ "key1": "value", "key2": "value, "response_mode": "value"}``` 	                                            |       	|
-| logoutUrl          	    |         	|          	|                                                                                                                                                                                                                                      	| 3.0.0    	|
 
 **Platform Web**
 
@@ -525,7 +524,6 @@ export class AuthService {
         responseType: "code",
         pkceEnabled: true,
         logsEnabled: true,
-        logoutUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/logout`,
         web: {
             redirectUrl: environment.redirectUrl,
             windowOptions: "height=600,left=0,top=0",
@@ -611,6 +609,18 @@ azureLogin() {
 
 #### Android
 
+If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in `AndroidManifest.xml`.
+
+```xml
+      <!-- azure ad b2c -->
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
+</intent-filter>
+```
+
 If you have **multiple** identity providers you have to create a new Activity in `AndroidManifest.xml`.
 
 In my case I had Google and Azure AD B2C.
@@ -619,6 +629,7 @@ Without this extra activity the result was always `RESULT_CANCELED`.
 
 ```xml
     <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+      <!-- google -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -653,7 +664,7 @@ Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-                <!-- msauth.BUNDLE_ID -->
+				<!-- msauth.BUNDLE_ID -->
 				<string>msauth.com.yourcompany.yourproject</string>
 			</array>
 		</dict>

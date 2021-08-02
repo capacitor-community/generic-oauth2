@@ -57,11 +57,11 @@
         "@capacitor/android": "3.0.2",
         "@capacitor/core": "3.0.2",
         "@capacitor/ios": "3.0.2",
-        "@types/jest": "26.0.23",
+        "@types/jest": "26.0.24",
         "jest": "27.0.6",
-        "ts-jest": "27.0.3",
-        "eslint": "^7.11.0",
-        "rimraf": "^3.0.0",
-        "typescript": "~4.1.5"
+        "ts-jest": "27.0.4",
+        "eslint": "7.32.0",
+        "rimraf": "3.0.2",
+        "typescript": "4.1.5"
     }
 }
