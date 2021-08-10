@@ -5,10 +5,31 @@
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 
-This a generic OAuth 2 client plugin.
-
-It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
+This is a **generic OAuth 2 client** plugin. It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [providers](#list-of-providers) the community has already used this plugin with.
+
+## How to install
+
+For Capacitor v3
+```bash
+npm i @byteowls/capacitor-oauth2
+npx cap sync
+```
+For Capacitor v2 use `2.1.0`
+```bash
+npm i @byteowls/capacitor-oauth2@2.1.0
+npx cap sync
+```
+
+## Versions
+
+| Plugin | For Capacitor         | Docs                                                                                   | Notes                          |
+|--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
+| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
+| 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
+
+For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
 
 ## Maintainers
 
@@ -17,23 +38,6 @@ See [providers](#list-of-providers) the community has already used this plugin w
 | Michael Oberwasserlechner | [moberwasserlechner](https://github.com/moberwasserlechner) | [@michaelowl_web](https://twitter.com/michaelowl_web) |
 
 Actively maintained: YES
-
-## Install
-
-```bash
-npm i @byteowls/capacitor-oauth2
-npx cap sync
-```
-
-## Versions
-
-| Plugin | Capacitor         | Docs                                                                                   | Notes                          |
-|--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
-| 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
-| 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
-
-For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
 
 ## Supported flows
 
@@ -151,7 +155,7 @@ export class SignupComponent {
 
 ### Options
 
-See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/src/definitions.ts for details.
+See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/src/definitions.ts for details.
 
 Example:
 ```
@@ -160,6 +164,7 @@ Example:
       accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
       scope: "email profile",
       resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+      logsEnabled: true,
       web: {
         appId: environment.oauthAppId.google.web,
         responseType: "token", // implicit flow
@@ -382,12 +387,12 @@ Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and a
 
 ### Custom OAuth Handler
 
-Some OAuth provider (e.g. Facebook) force developers to use their SDK on iOS.
+Some OAuth provider (e.g., Facebook) force developers to use their SDK on iOS.
 
-This plugin should be as generic as possible so I don't want to include provider specific dependencies.
+This plugin should be as generic as possible, so I don't want to include provider specific dependencies.
 
-Therefore I created a mechanism which let developers integrate custom SDK features in this plugin.
-Simply configure a the class name in the option property `ios.customHandlerClass`.
+Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
+Simply configure the class name in the option property `ios.customHandlerClass`.
 This class has to implement `ByteowlsCapacitorOauth2.OAuth2CustomHandler`.
 
 See a full working example below!
@@ -396,6 +401,16 @@ See a full working example below!
 ## Platform: Electron
 
 - No timeline.
+
+
+## Where to store access tokens?
+
+You can use the [capacitor-secure-storage](https://www.npmjs.com/package/capacitor-secure-storage-plugin) plugin for this.
+
+This plugin stores data in secure locations for natives devices.
+- For Android, it will store data in a [`AndroidKeyStore`](https://developer.android.com/training/articles/keystore) and a [`SharedPreferences`](https://developer.android.com/reference/android/content/SharedPreferences).
+- For iOS, it will store data in a [`SwiftKeychainWrapper`](https://github.com/jrendel/SwiftKeychainWrapper).
+
 
 ## List of Providers
 
@@ -429,8 +444,8 @@ The plugin requires `authorizationBaseUrl` as it triggers the native support and
 
 `appId` is required as well for internal, generic reasons and any not blank value is fine.
 
-It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add `siwaUseScope: true` to the ios block
-and then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false.
+It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add `siwaUseScope: true` to the ios section.
+Then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false.
 
 ```typescript
 appleLogin() {
@@ -1038,14 +1053,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ## Contribute
 
-See [Contribution Guidelines](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/.github/CONTRIBUTING.md).
+See [Contribution Guidelines](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/.github/CONTRIBUTING.md).
 
 ## Changelog
-See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/CHANGELOG.md).
+See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
 
 ## License
 
-MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/master/LICENSE).
+MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/LICENSE).
 
 ## BYTEOWLS Software & Consulting
 

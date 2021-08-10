@@ -6,7 +6,18 @@
 * Added `logoutUrl` to base options [#97](https://github.com/moberwasserlechner/capacitor-oauth2/issues/97)
 
 ### Fixed
-* iOS: Fix boolean param inheritance (#111) [#111](https://github.com/moberwasserlechner/capacitor-oauth2/issues/111)
+* iOS: Fix boolean param inheritance [#111](https://github.com/moberwasserlechner/capacitor-oauth2/issues/111)
+
+## [3.0.1] - 2021-08-10
+
+### Docs
+* Add securely save tokens to docs [#139](https://github.com/moberwasserlechner/capacitor-oauth2/issues/139) Thank you [@RaphaelWoude](https://github.com/RaphaelWoude)
+
+### Changed
+* Chore: Use main instead of master branch [#168](https://github.com/moberwasserlechner/capacitor-oauth2/issues/168)
+
+### Fixed
+* Android: Use json for responses instead of string [#171](https://github.com/moberwasserlechner/capacitor-oauth2/issues/171) Thank you [@webflo](https://github.com/webflo)
 
 ## [3.0.0] - 2021-08-02
 
@@ -110,8 +121,9 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 - Android: Fix Java compiler error #36 (thx @Anthbs)
 - Fix github security error by updating Jest lib
 
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.0...master
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.1...main
 [3.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.0...3.1.0
+[3.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.1.0...3.0.0
 [2.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/1.1.0...2.0.0

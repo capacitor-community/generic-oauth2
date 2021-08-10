@@ -1,12 +1,12 @@
 
 # Contributing
 
-I'm happy to accept external contributions to the project in the form of feedback, 
+I'm happy to accept external contributions to the project in the form of feedback,
 bug reports and even better - pull requests
 
 ## Issues
 
-Issues are mostly used to track **bugs** and **feature requests** but you can also 
+Issues are mostly used to track **bugs** and **feature requests** but you can also
 ask questions as it's the only place I'm looking at.
 
 Before reporting a bug or requesting a feature, run a few searches to
@@ -28,7 +28,7 @@ a duplicate.
 ## Pull Request Guidelines
 * Please check to make sure that there aren't existing pull requests attempting to address the issue mentioned.
 * Open a single PR for each subject.
-* Develop in a topic branch, not master (feature-name).
+* Develop in a topic branch, not main (feature-name).
 * Write a convincing description of your PR and why I should land it.
 * Update documentation comments where applicable.
 
