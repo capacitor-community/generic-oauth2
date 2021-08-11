@@ -8,16 +8,16 @@
 ### Fixed
 * iOS: Fix boolean param inheritance [#111](https://github.com/moberwasserlechner/capacitor-oauth2/issues/111)
 
-## [3.0.1] - 2021-08-10
+## [3.0.1] - 2021-08-11
 
 ### Docs
-* Add securely save tokens to docs [#139](https://github.com/moberwasserlechner/capacitor-oauth2/issues/139) Thank you [@RaphaelWoude](https://github.com/RaphaelWoude)
+* Where to securely save tokens [README](https://github.com/moberwasserlechner/capacitor-oauth2/#where-to-store-access-tokens) entry. [#139](https://github.com/moberwasserlechner/capacitor-oauth2/issues/139) Thank you [@RaphaelWoude](https://github.com/RaphaelWoude)
 
 ### Changed
-* Chore: Use main instead of master branch [#168](https://github.com/moberwasserlechner/capacitor-oauth2/issues/168)
+* Chore: Use main instead of master branch. [#168](https://github.com/moberwasserlechner/capacitor-oauth2/issues/168)
 
 ### Fixed
-* Android: Use json for responses instead of string [#171](https://github.com/moberwasserlechner/capacitor-oauth2/issues/171) Thank you [@webflo](https://github.com/webflo)
+* Android: Use json for responses instead of string. [#171](https://github.com/moberwasserlechner/capacitor-oauth2/issues/171) Thank you [@webflo](https://github.com/webflo)
 
 ## [3.0.0] - 2021-08-02
 
