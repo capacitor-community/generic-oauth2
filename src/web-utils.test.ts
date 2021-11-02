@@ -191,7 +191,7 @@ describe("Url param extraction", () => {
         const foo = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
         expect(paramObj!["random"]).toStrictEqual(random);
-        expect(paramObj!["foo"]).toStrictEqual(`${foo}#ignored`);
+        expect(paramObj!["foo"]).toStrictEqual(`${foo}`);
     });
 
     it('should use hash flag and ignore query flag', () => {
