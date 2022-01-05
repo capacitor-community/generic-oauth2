@@ -636,15 +636,22 @@ If you have **only** Azure B2C as identity provider you have to add a new `inten
 </intent-filter>
 ```
 
-If you have **multiple** identity providers you have to create a new Activity in `AndroidManifest.xml`.
+If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error ([#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178)) you have to create a new Activity in `AndroidManifest.xml`.
 
-In my case I had Google and Azure AD B2C.
-
-Without this extra activity the result was always `RESULT_CANCELED`.
-
+These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
 ```xml
-    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
-      <!-- google -->
+<activity
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+      android:name="com.company.project.MainActivity"
+      android:label="@string/title_activity_main"
+      android:launchMode="singleTask"
+      android:theme="@style/AppTheme.NoActionBarLaunch">
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -652,7 +659,16 @@ Without this extra activity the result was always `RESULT_CANCELED`.
         <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
       </intent-filter>
 
-      <!-- azure ad b2c -->
+    </activity>
+
+    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
+      </intent-filter>
+
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -662,16 +678,20 @@ Without this extra activity the result was always `RESULT_CANCELED`.
     </activity>
 ```
 
-Example values
-* @string/azure_b2c_scheme ... `msauth`
-* @string/package_name ... `com.company.project`
-* azure_b2c_signature_hash ... `/your-signature-hash` ... The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
+Values for `android/app/src/main/res/values/string.xml`. Replace the example values.
+```
+  <string name="custom_url_scheme">com.company.project</string>
+  <string name="custom_host">foo</string><!-- any value is fine -->
+  <string name="package_name">com.company.project</string>
+  <string name="azure_b2c_scheme">msauth</string>
+  <string name="azure_b2c_signature_hash">/your-signature-hash</string><!-- The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field -->
+```
 
 See [Android Default Config](#android-default-config)
 
 #### iOS
 
-Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
+Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
 
 ```xml
 	<key>CFBundleURLTypes</key>
@@ -686,7 +706,7 @@ Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code
 	</array>
 ```
 
-Do not enter `://` and part of your redirect url.
+Do not enter `://` and part of your redirect url and add make sure the `msauth.` prefix is there.
 
 #### Troubleshooting
 In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
