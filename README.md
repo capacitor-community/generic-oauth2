@@ -420,7 +420,7 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |-----------|------------------------|-------|
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
-| Azure     | [see below](#azure-b2c)|       |
+| Azure     | [see below](#azure-active-directory--azure-ad-b2c)|       |
 | Apple     | [see below](#apple)    | ios only |
 
 
@@ -524,8 +524,6 @@ Note: Don't be confused by the fact that the Azure portal shows "Azure Active Di
 They share the same core features and therefore the plugin should work either way.
 
 #### PWA
-
-Setting up Azure B2C in July 2021 presents me with `microsoftonline.com` urls, so the config looks like:
 
 ```typescript
 import {OAuth2AuthenticateOptions, OAuth2Client} from "@byteowls/capacitor-oauth2";
@@ -640,7 +638,7 @@ If you have **only** Azure B2C as identity provider you have to add a new `inten
 ```
 
 If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178))
-you have to create a new Activity in `AndroidManifest.xml`.
+you have to create an additional Activity in `AndroidManifest.xml`.
 
 These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
 ```xml
@@ -682,7 +680,7 @@ These are both activities! Make sure to replace `com.company.project.MainActivit
     </activity>
 ```
 
-Values for `android/app/src/main/res/values/string.xml`. Replace the example values.
+Values for `android/app/src/main/res/values/string.xml`. Replace the example values!
 ```
   <string name="title_activity_main">Your Project's Name/string>
   <string name="custom_url_scheme">com.company.project</string>
