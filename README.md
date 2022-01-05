@@ -637,7 +637,7 @@ If you have **only** Azure B2C as identity provider you have to add a new `inten
 </intent-filter>
 ```
 
-If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178))
+If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178)
 you have to create an additional Activity in `AndroidManifest.xml`.
 
 These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
