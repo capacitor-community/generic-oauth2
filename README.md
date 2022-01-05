@@ -636,7 +636,8 @@ If you have **only** Azure B2C as identity provider you have to add a new `inten
 </intent-filter>
 ```
 
-If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error ([#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178)) you have to create a new Activity in `AndroidManifest.xml`.
+If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178))
+you have to create a new Activity in `AndroidManifest.xml`.
 
 These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
 ```xml
@@ -680,6 +681,7 @@ These are both activities! Make sure to replace `com.company.project.MainActivit
 
 Values for `android/app/src/main/res/values/string.xml`. Replace the example values.
 ```
+  <string name="title_activity_main">Your Project's Name/string>
   <string name="custom_url_scheme">com.company.project</string>
   <string name="custom_host">foo</string><!-- any value is fine -->
   <string name="package_name">com.company.project</string>
@@ -706,7 +708,10 @@ Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source C
 	</array>
 ```
 
-Do not enter `://` and part of your redirect url and add make sure the `msauth.` prefix is there.
+**Important:**
+
+* Do not enter `://` as part of your redirect url
+* Make sure the `msauth.` prefix is present
 
 #### Troubleshooting
 In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
