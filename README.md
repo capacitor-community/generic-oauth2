@@ -420,7 +420,7 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |-----------|------------------------|-------|
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
-| Azure AD B2C | [see below](#azure-b2c)|       |
+| Azure     | [see below](#azure-b2c)|       |
 | Apple     | [see below](#apple)    | ios only |
 
 
@@ -516,9 +516,12 @@ not supported
 
 not supported
 
-### Azure B2C
+### Azure Active Directory / Azure AD B2C
 
-It's important to use the urls you see in the Azure config for the specific platform.
+It's important to use the urls you see in the Azure portal for the specific platform.
+
+Note: Don't be confused by the fact that the Azure portal shows "Azure Active Directory" and "Azure AD B2C" services.
+They share the same core features and therefore the plugin should work either way.
 
 #### PWA
 
@@ -627,7 +630,7 @@ azureLogin() {
 If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in `AndroidManifest.xml`.
 
 ```xml
-      <!-- azure ad b2c -->
+<!-- azure ad b2c -->
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
