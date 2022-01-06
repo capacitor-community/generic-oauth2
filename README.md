@@ -1,10 +1,10 @@
 # Capacitor OAuth 2 client plugin
 
-<a href="#sponsors"><img src="https://img.shields.io/badge/Plugin-Sponsors-yellow?style=flat-square" /></a>
+<a href="#sponsors"><img src="https://img.shields.io/badge/plugin-Sponsors-blue?style=flat-square" /></a>
 <a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions?query=workflow%3ACI"><img src="https://img.shields.io/github/workflow/status/moberwasserlechner/capacitor-oauth2/CI?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/dw/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
-<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
+<a href="LICENSE"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 
 This is a **generic OAuth 2 client** plugin. It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [identity providers](#list-of-providers) the community has already used this plugin with.
