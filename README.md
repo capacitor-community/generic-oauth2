@@ -558,8 +558,9 @@ export class AuthService {
 
 ##### Custom Scopes
 
-If you try to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you need
-to remove the `resourceUrl` parameter and read the user details from that response.
+If you try to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you might need
+to remove the `resourceUrl` parameter if your scopes are not included in the response. I can not give a clear advise on that topic.
+You need to experiment with the config so Azure includes the needed values in the response.
 
 <details>
 <summary>A configuration with custom scopes might look like this:</summary>
