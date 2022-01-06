@@ -556,6 +556,43 @@ export class AuthService {
 }
 ```
 
+Note: If you try to use Azure **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you need
+to remove the `resourceUrl` parameter and read the user details from that response.
+
+<details>
+<summary>A configuration with custom scopes might look like this:</summary>
+
+```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
+  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+    return {
+        appId: environment.oauthAppId.azureBc2.appId,
+        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+        scope: "api://uuid-created-by-azure/scope.name1 api://uuid-created-by-azure/scope.name2", // See Azure Portal -> API permission / Expose an API
+        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+        // no resourceURl!
+        responseType: "code",
+        pkceEnabled: true,
+        logsEnabled: true,
+        web: {
+            redirectUrl: environment.redirectUrl,
+            windowOptions: "height=600,left=0,top=0",
+        },
+        android: {
+            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+        },
+        ios: {
+            pkceEnabled: true, // workaround for bug #111
+            redirectUrl: "msauth.{package-name}://auth"
+        }
+    };
+  }
+}
+```
+</details>
+
+
 <details>
 <summary>Other configs that works in prior versions</summary>
 
