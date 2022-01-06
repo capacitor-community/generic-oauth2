@@ -1,12 +1,13 @@
 # Capacitor OAuth 2 client plugin
 
+<a href="#sponsors"><img src="https://img.shields.io/badge/Plugin-Sponsors-yellow?style=flat-square" /></a>
 <a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions?query=workflow%3ACI"><img src="https://img.shields.io/github/workflow/status/moberwasserlechner/capacitor-oauth2/CI?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/dw/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 
 This is a **generic OAuth 2 client** plugin. It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
-See [providers](#list-of-providers) the community has already used this plugin with.
+See [identity providers](#list-of-providers) the community has already used this plugin with.
 
 ## How to install
 
@@ -25,11 +26,17 @@ npx cap sync
 
 | Plugin | For Capacitor         | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/README.md)           | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/README.md)   | Breaking changes see Changelog. XCode 12.0 needs this version  |
 | 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
+
+## Sponsors
+
+I would like to especially thank some people and companies for supporting my work on this plugin and therefore improving it for everybody.
+
+* [Mark Laurence](https://github.com/UnclearMaker) and the [Royal Veterinary College](https://www.rvc.ac.uk/) - Thanks for supporting open source.
 
 ## Maintainers
 
