@@ -55,7 +55,7 @@ Replace this with the commands output
 * Android
     * Version/API Level:
     * Device Model:
-    * Content of project's `AndroidManifest.xml`
+    * Content of your `AndroidManifest.xml`
   ```xml
   <!-- copy here -->
   ```

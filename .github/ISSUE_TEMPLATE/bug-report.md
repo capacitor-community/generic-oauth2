@@ -53,14 +53,14 @@ Replace this with the commands output
 * Android
   * Version/API Level:
   * Device Model:
-  * Content of project's `AndroidManifest.xml`
+  * Content of your `AndroidManifest.xml`
   ```xml
   <!-- copy here -->
   ```
 * iOS
   * Version/API Level:
   * Device Model:
-  * Content fo your `Info.plist`
+  * Content of your `Info.plist`
   ```xml
   <!-- copy here -->
   ```
