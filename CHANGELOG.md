@@ -1,13 +1,5 @@
 # Changelog
 
-## [Unreleased]
-
-### Added
-* Added `logoutUrl` to base options [#97](https://github.com/moberwasserlechner/capacitor-oauth2/issues/97)
-
-### Fixed
-* iOS: Fix boolean param inheritance [#111](https://github.com/moberwasserlechner/capacitor-oauth2/issues/111)
-
 ## [3.0.1] - 2021-08-11
 
 ### Docs

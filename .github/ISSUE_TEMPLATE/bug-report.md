@@ -24,10 +24,9 @@ Replace this with the commands output
 ### Library version:
 <!-- Please remove all items that are not relevant. -->
 
+- 3.0.1
+- 2.1.0
 - 2.0.0
-- 1.1.0
-- 1.0.1
-- 1.0.0
 - other: (Please fill in the version you are using.)
 
 ### OAuth Provider:
@@ -35,8 +34,7 @@ Replace this with the commands output
 
 - Google
 - Facebook
-- Azure AD
-- Azure App Registration
+- Azure AD (B2C)
 - Github
 - Other: (Please fill in the provider you are using.)
 
@@ -52,11 +50,22 @@ Replace this with the commands output
 ### Affected Platform(s):
 <!-- Please remove all items that are not relevant. -->
 
-- Android
- - Replace with Android version and device model
-- iOS
- - Replace with iOS version
-- Web
+* Android
+  * Version/API Level:
+  * Device Model:
+  * Content of project's `AndroidManifest.xml`
+  ```xml
+  <!-- copy here -->
+  ```
+* iOS
+  * Version/API Level:
+  * Device Model:
+  * Content fo your `Info.plist`
+  ```xml
+  <!-- copy here -->
+  ```
+* Web
+  * Browser:
 
 ### Current Behavior
 <!-- Describe the bug. Be specific. I need to understand you problem. -->

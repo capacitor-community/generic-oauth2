@@ -420,7 +420,7 @@ These are some of the providers that can be configured with this plugin. I'm hap
 |-----------|------------------------|-------|
 | Google    | [see below](#google)   |       |
 | Facebook  | [see below](#facebook) |       |
-| Azure AD B2C | [see below](#azure-b2c)|       |
+| Azure     | [see below](#azure-active-directory--azure-ad-b2c)|       |
 | Apple     | [see below](#apple)    | ios only |
 
 
@@ -516,13 +516,14 @@ not supported
 
 not supported
 
-### Azure B2C
+### Azure Active Directory / Azure AD B2C
 
-It's important to use the urls you see in the Azure config for the specific platform.
+It's important to use the urls you see in the Azure portal for the specific platform.
+
+Note: Don't be confused by the fact that the Azure portal shows "Azure Active Directory" and "Azure AD B2C" services.
+They share the same core features and therefore the plugin should work either way.
 
 #### PWA
-
-Setting up Azure B2C in July 2021 presents me with `microsoftonline.com` urls, so the config looks like:
 
 ```typescript
 import {OAuth2AuthenticateOptions, OAuth2Client} from "@byteowls/capacitor-oauth2";
@@ -555,6 +556,46 @@ export class AuthService {
 }
 ```
 
+##### Custom Scopes
+
+If you need to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you might need
+to remove the `resourceUrl` parameter if your scopes are not included in the response. I can not give a clear advise on those Azure specifics.
+Try to experiment with the config until Azure includes everything you need in the response.
+
+<details>
+<summary>A configuration with custom scopes might look like this:</summary>
+
+```typescript
+import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+
+  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+    return {
+        appId: environment.oauthAppId.azureBc2.appId,
+        authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+        scope: "api://uuid-created-by-azure/scope.name1 api://uuid-created-by-azure/scope.name2", // See Azure Portal -> API permission / Expose an API
+        accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+        // no resourceURl!
+        responseType: "code",
+        pkceEnabled: true,
+        logsEnabled: true,
+        web: {
+            redirectUrl: environment.redirectUrl,
+            windowOptions: "height=600,left=0,top=0",
+        },
+        android: {
+            redirectUrl: "msauth://{package-name}/{url-encoded-signature-hash}" // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+        },
+        ios: {
+            pkceEnabled: true, // workaround for bug #111
+            redirectUrl: "msauth.{package-name}://auth"
+        }
+    };
+  }
+}
+```
+</details>
+
+##### Prior configs
 <details>
 <summary>Other configs that works in prior versions</summary>
 
@@ -627,7 +668,7 @@ azureLogin() {
 If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in `AndroidManifest.xml`.
 
 ```xml
-      <!-- azure ad b2c -->
+<!-- azure ad b2c -->
 <intent-filter>
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
@@ -636,15 +677,23 @@ If you have **only** Azure B2C as identity provider you have to add a new `inten
 </intent-filter>
 ```
 
-If you have **multiple** identity providers you have to create a new Activity in `AndroidManifest.xml`.
+If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178)
+you have to create an additional Activity in `AndroidManifest.xml`.
 
-In my case I had Google and Azure AD B2C.
-
-Without this extra activity the result was always `RESULT_CANCELED`.
-
+These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
 ```xml
-    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
-      <!-- google -->
+<activity
+      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+      android:name="com.company.project.MainActivity"
+      android:label="@string/title_activity_main"
+      android:launchMode="singleTask"
+      android:theme="@style/AppTheme.NoActionBarLaunch">
+
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -652,7 +701,16 @@ Without this extra activity the result was always `RESULT_CANCELED`.
         <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
       </intent-filter>
 
-      <!-- azure ad b2c -->
+    </activity>
+
+    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
+      </intent-filter>
+
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -662,16 +720,21 @@ Without this extra activity the result was always `RESULT_CANCELED`.
     </activity>
 ```
 
-Example values
-* @string/azure_b2c_scheme ... `msauth`
-* @string/package_name ... `com.company.project`
-* azure_b2c_signature_hash ... `/your-signature-hash` ... The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field
+Values for `android/app/src/main/res/values/string.xml`. Replace the example values!
+```
+  <string name="title_activity_main">Your Project's Name/string>
+  <string name="custom_url_scheme">com.company.project</string>
+  <string name="custom_host">foo</string><!-- any value is fine -->
+  <string name="package_name">com.company.project</string>
+  <string name="azure_b2c_scheme">msauth</string>
+  <string name="azure_b2c_signature_hash">/your-signature-hash</string><!-- The leading slash is required. Copied from Azure Portal Android Config "Signature hash" field -->
+```
 
 See [Android Default Config](#android-default-config)
 
 #### iOS
 
-Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
+Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
 
 ```xml
 	<key>CFBundleURLTypes</key>
@@ -686,7 +749,10 @@ Open `Info.plist` in XCode by Right Click on that file -> Open as -> Source Code
 	</array>
 ```
 
-Do not enter `://` and part of your redirect url.
+**Important:**
+
+* Do not enter `://` as part of your redirect url
+* Make sure the `msauth.` prefix is present
 
 #### Troubleshooting
 In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
