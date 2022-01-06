@@ -556,7 +556,9 @@ export class AuthService {
 }
 ```
 
-Note: If you try to use Azure **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you need
+##### Custom Scopes
+
+If you try to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you need
 to remove the `resourceUrl` parameter and read the user details from that response.
 
 <details>
@@ -592,7 +594,7 @@ import {OAuth2Client} from "@byteowls/capacitor-oauth2";
 ```
 </details>
 
-
+##### Prior configs
 <details>
 <summary>Other configs that works in prior versions</summary>
 
