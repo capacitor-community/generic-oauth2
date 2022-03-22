@@ -168,6 +168,8 @@ public class OAuth2ClientPlugin: CAPPlugin {
             call.reject(self.ERR_PARAM_NO_APP_ID)
             return
         }
+        let justAuthCode: Bool = getValue(call, PARAM_IOS_JUST_AUTH_CODE) as? Bool ?? false
+
         let resourceUrl = getOverwritableString(call, self.PARAM_RESOURCE_URL)
         let logsEnabled: Bool = getOverwritable(call, self.PARAM_LOGS_ENABLED) as? Bool ?? false
         // #71
@@ -292,6 +294,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
                         withCallbackURL: redirectUrl,
                         scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
                         state: requestState,
+                        justAuthorizationCode: justAuthCode,
                         parameters: additionalParameters) { result in
                             self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
                     }
@@ -342,7 +345,12 @@ public class OAuth2ClientPlugin: CAPPlugin {
             if logsEnabled, let accessTokenResponse = response {
                 logDataObj("Authorization or Access token response:", accessTokenResponse.data)
             }
-            
+
+            if let _ = credential.oauthAuthorizationCode {
+                call.resolve(parameters)
+                return
+            }
+
             // state is aready checked by the lib
             if resourceUrl != nil && !resourceUrl!.isEmpty {
                 if logsEnabled {

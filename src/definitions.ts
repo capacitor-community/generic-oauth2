@@ -170,4 +170,15 @@ export interface IosOptions extends OAuth2AuthenticateBaseOptions {
      * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
      */
     customHandlerClass?: string;
+
+    /**
+     * Indicates if you want just authorization code, or an access token.
+     *
+     * In case of iOS, OauthSwift always proceeded with Access Token retrieval,
+     * what sometimes is not a desired case. This flag interrupts the process after
+     * authorization token was retrieved, but before fecthing access token.
+     *
+     * Tested only with Google Sign In.
+     */
+    justAuthorizationCode?: boolean;
 }
