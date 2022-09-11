@@ -21,6 +21,16 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
     }
 
     async authenticate(options: OAuth2AuthenticateOptions): Promise<any> {
+        const windowOptions = WebUtils.buildWindowOptions(options);
+
+        // we open the window first to avoid popups being blocked because of
+        // the asynchronous buildWebOptions call
+        this.windowHandle = window.open(
+            '',
+            windowOptions.windowTarget,
+            windowOptions.windowOptions,
+            windowOptions.windowReplace);
+
         this.webOptions = await WebUtils.buildWebOptions(options);
         return new Promise<any>((resolve, reject) => {
             // validate
@@ -41,11 +51,9 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
                 if (this.webOptions.logsEnabled) {
                     this.doLog("Authorization url: " + authorizationUrl);
                 }
-                this.windowHandle = window.open(
-                    authorizationUrl,
-                    this.webOptions.windowTarget,
-                    this.webOptions.windowOptions,
-                    this.webOptions.windowReplace);
+                if (this.windowHandle) {
+                    this.windowHandle.location.href = authorizationUrl;
+                }
                 // wait for redirect and resolve the
                 this.intervalId = window.setInterval(() => {
                     if (loopCount-- < 0) {

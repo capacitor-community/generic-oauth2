@@ -179,18 +179,22 @@ export class WebUtils {
         }
         webOptions.logsEnabled = this.getOverwritableValue(configOptions, "logsEnabled");
 
-        if (configOptions.web) {
-            if (configOptions.web.windowOptions) {
-                webOptions.windowOptions = configOptions.web.windowOptions;
-            }
-            if (configOptions.web.windowTarget) {
-                webOptions.windowTarget = configOptions.web.windowTarget;
-            }
-            webOptions.windowReplace = configOptions.web.windowReplace;
-        }
         return webOptions;
     }
 
+    static buildWindowOptions(configOptions: OAuth2AuthenticateOptions) {
+        const windowOptions = new WebOptions();
+        if (configOptions.web) {
+            if (configOptions.web.windowOptions) {
+                windowOptions.windowOptions = configOptions.web.windowOptions;
+            }
+            if (configOptions.web.windowTarget) {
+                windowOptions.windowTarget = configOptions.web.windowTarget;
+            }
+            windowOptions.windowReplace = configOptions.web.windowReplace;
+        }
+        return windowOptions;
+    }
 }
 
 export class CryptoUtils {
