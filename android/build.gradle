@@ -5,7 +5,7 @@ ext {
     commonsIoVersion = project.hasProperty('commonsIoVersion') ? rootProject.ext.commonsIoVersion : '2.10.0'
     androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.2.0'
     junit5Version = project.hasProperty('junit5Version') ? rootProject.ext.junit5Version : '5.7.2'
-    androidJunit5Version = project.hasProperty('androidJunit5Version') ? rootProject.ext.androidJunit5Version : '1.2.2';
+    androidJunit5Version = project.hasProperty('androidJunit5Version') ? rootProject.ext.androidJunit5Version : '1.2.2'
     androidxEspressoCoreVersion = project.hasProperty('androidxEspressoCoreVersion') ? rootProject.ext.androidxEspressoCoreVersion : '3.4.0'
 }
 

@@ -1,9 +1,14 @@
 # Changelog
 
-## [4.0.0] - 2022-08-24
+## [4.0.0] - 2022-09-18
+
+### Fixed
+
+* Detection of Network Errors when refreshing Tokens [#192](https://github.com/moberwasserlechner/capacitor-oauth2/issues/192)
+* Popup blocked in Safari for pkce flow [#216](https://github.com/moberwasserlechner/capacitor-oauth2/issues/216)
 
 ### Breaking
-* Minimum Capacitor version is **4.0.0**. Only this plugin version supports Capacitor `4.x`!
+* Minimum Capacitor version is **4.0.0**.! [#211](https://github.com/moberwasserlechner/capacitor-oauth2/issues/211)
 
 ## [3.0.1] - 2021-08-11
 
@@ -118,8 +123,8 @@ This is controlled by Android specific parameters `handleResultOnNewIntent` for 
 - Android: Fix Java compiler error #36 (thx @Anthbs)
 - Fix github security error by updating Jest lib
 
-[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.1...main
-[3.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.0...3.1.0
+[Unreleased]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/4.0.0...main
+[4.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.1...4.0.0
 [3.0.1]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.1.0...3.0.0
 [2.1.0]: https://github.com/moberwasserlechner/capacitor-oauth2/compare/2.0.0...2.1.0
