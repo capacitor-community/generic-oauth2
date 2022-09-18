@@ -11,9 +11,14 @@ See [identity providers](#list-of-providers) the community has already used this
 
 ## How to install
 
-For Capacitor v3
+For Capacitor v4
 ```bash
 npm i @byteowls/capacitor-oauth2
+npx cap sync
+```
+For Capacitor v3
+```bash
+npm i @byteowls/capacitor-oauth2@3.0.1
 npx cap sync
 ```
 For Capacitor v2 use `2.1.0`
@@ -26,7 +31,8 @@ npx cap sync
 
 | Plugin | For Capacitor         | Docs                                                                                   | Notes                          |
 |--------|-------------------|----------------------------------------------------------------------------------------|--------------------------------|
-| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/README.md)   | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 4.x    | 4.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/README.md)   | Breaking changes see Changelog. XCode 12.0 needs this version  |
+| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/tree/release/3.x/README.md)   | Breaking changes see Changelog. XCode 12.0 needs this version  |
 | 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/tree/release/2.x/README.md)  | Breaking changes see Changelog. XCode 11.4 needs this version  |
 | 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)  |                                |
 

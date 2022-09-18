@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.0] - 2022-08-24
+
+### Breaking
+* Minimum Capacitor version is **4.0.0**. Only this plugin version supports Capacitor `4.x`!
+
 ## [3.0.1] - 2021-08-11
 
 ### Docs
