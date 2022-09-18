@@ -101,7 +101,7 @@ export class WebUtils {
     }
 
     static randomString(length: number = 10) {
-        const haystack = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const haystack = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
         let randomStr;
         if (window.crypto) {
             let numberArray: Uint32Array = new Uint32Array(length);
