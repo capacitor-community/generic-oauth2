@@ -423,10 +423,10 @@ public class OAuth2ClientPlugin: CAPPlugin, ASWebAuthenticationPresentationConte
                         self.log("Returned to JS:\n\(jsonObj)")
                     }
                     call.resolve(jsonObj)
-                } /* catch {
+                } catch {
                     self.log("Invalid json in response \(error.localizedDescription)")
                     call.reject(self.ERR_GENERAL)
-                } */
+                }
             } else {
                 // `parameters` will be response parameters
                 var result = parameters
@@ -670,9 +670,6 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
         case .failed:
             self.log("SIWA: Error.failed")
-            self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
-        case .notInteractive:
-            self.log("SIWA: Error.notInteractive")
             self.savedPluginCall?.reject(self.ERR_AUTHORIZATION_FAILED)
         @unknown default:
             self.log("SIWA: Error.default")
