@@ -1,7 +1,7 @@
 # Capacitor OAuth 2 client plugin
 
 <a href="#sponsors"><img src="https://img.shields.io/badge/plugin-Sponsors-blue?style=flat-square" /></a>
-<a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions?query=workflow%3ACI"><img src="https://img.shields.io/github/workflow/status/moberwasserlechner/capacitor-oauth2/CI?style=flat-square" /></a>
+<a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml"><img src="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/dw/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
 <a href="LICENSE"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
@@ -301,7 +301,7 @@ On Android the plugin is registered **automatically** by Capacitor.
 
 ### Android Default Config
 
-Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler)
+Skip this, if you use a `OAuth2CustomHandler`. See below.
 
 #### android/app/src/main/res/AndroidManifest.xml
 
@@ -363,9 +363,13 @@ android.buildTypes.release.manifestPlaceholders = [
 ```
 
 2) "ERR_ANDROID_RESULT_NULL": See [Issue #52](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515) for details.
-I cannot reproduce this behaviour. Moreover there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
+I cannot reproduce this behaviour. Moreover, there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
 
-3) To prevent some logout issues on certain OAuth2 providers (like Salesforce for example), you should provide the `id_token` parameter on the `logout(...)` function. This ensures that not only the cookies are deleted, but also the logout link is called from the Oauth2 provider. Also, it uses the system browser that the plugin uses (and not the user's default browser) to call the logout URL. This additionally ensures that the cookies are deleted in the correct browser.
+3) To prevent some logout issues on certain OAuth2 providers (like Salesforce for example), you should provide the `id_token` parameter on the `logout(...)` function.
+This ensures that not only the cookies are deleted, but also the logout link is called from the OAuth2 provider.
+Also, it uses the system browser that the plugin uses (and not the user's default browser) to call the logout URL.
+This additionally ensures that the cookies are deleted in the correct browser.
+
 
 ### Custom OAuth Handler
 
@@ -373,7 +377,7 @@ Some OAuth provider (Facebook) force developers to use their SDK on Android.
 
 This plugin should be as generic as possible so I don't want to include provider specific dependencies.
 
-Therefore I created a mechanism which let developers integrate custom SDK features in this plugin.
+Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
 Simply configure a full qualified classname in the option property `android.customHandlerClass`.
 This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
 
@@ -386,7 +390,7 @@ On iOS the plugin is registered **automatically** by Capacitor.
 
 ### iOS Default Config
 
-Skip this, if you use a [OAuth2CustomHandler](#custom-oauth-handler-1)
+Skip this, if you use a `OAuth2CustomHandler`. See below.
 
 Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and add the value of `redirectUrl` from your config without `:/` like that
 
