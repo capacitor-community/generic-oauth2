@@ -60,33 +60,24 @@ export class WebUtils {
      * Public only for testing
      */
     static getUrlParams(url: string): { [x: string]: string; } | undefined {
-        const urlString = `${url}`.trim();
+        const urlString = `${url ?? ''}`.trim();
 
         if (urlString.length === 0) {
             return;
         }
 
-        // #132
-        let hashIndex = urlString.indexOf("#");
-        let queryIndex = urlString.indexOf("?");
-
-        if (hashIndex === -1 && queryIndex === -1) {
+        const parsedUrl = new URL(urlString);
+        if (!parsedUrl.search && !parsedUrl.hash) {
             return;
         }
-        let paramsIndex: number;
-        if (hashIndex > -1 && queryIndex === -1) {
-            paramsIndex = hashIndex;
-        } else if (queryIndex > -1 && hashIndex === -1) {
-            paramsIndex = queryIndex;
+
+        let urlParamStr;
+        if (parsedUrl.search) {
+            urlParamStr = parsedUrl.search.substr(1);
         } else {
-            paramsIndex = hashIndex > -1 && hashIndex < queryIndex ? hashIndex : queryIndex;
+            urlParamStr = parsedUrl.hash.substr(1);
         }
 
-        if (urlString.length <= paramsIndex + 1) {
-            return;
-        }
-
-        const urlParamStr = urlString.slice(paramsIndex + 1);
         const keyValuePairs: string[] = urlParamStr.split(`&`);
         // @ts-ignore
         return keyValuePairs.reduce((accumulator, currentValue) => {
