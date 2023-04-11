@@ -140,28 +140,33 @@ describe('web options', () => {
 
 describe("Url param extraction", () => {
 
-    it('should return null on null url', () => {
+    it('should return undefined on null url', () => {
         const paramObj = WebUtils.getUrlParams(null!);
         expect(paramObj).toBeUndefined();
     });
 
-    it('should return null on empty url', () => {
+    it('should return undefined on empty url', () => {
         const paramObj = WebUtils.getUrlParams("");
         expect(paramObj).toBeUndefined();
     });
 
-    it('should return null on url with spaces', () => {
+    it('should return undefined on url with spaces', () => {
         const paramObj = WebUtils.getUrlParams("    ");
         expect(paramObj).toBeUndefined();
     });
 
-    it('should return null if no params in url', () => {
+    it('should return undefined if no params in url', () => {
         const paramObj = WebUtils.getUrlParams("https://app.example.com/");
         expect(paramObj).toBeUndefined();
     });
 
-    it('should return null if no params in url', () => {
+    it('should return undefined if no params in url search', () => {
         const paramObj = WebUtils.getUrlParams("https://app.example.com?");
+        expect(paramObj).toBeUndefined();
+    });
+
+    it('should return undefined if no params in url hash', () => {
+        const paramObj = WebUtils.getUrlParams("https://app.example.com#");
         expect(paramObj).toBeUndefined();
     });
 
@@ -182,7 +187,7 @@ describe("Url param extraction", () => {
 
     it('should extract a uuid state param', () => {
         const state = WebUtils.randomString();
-        const paramObj = WebUtils.getUrlParams("https://app.example.com?state=" + state + "&access_token=testtoken");
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com?state=${state}&access_token=testtoken`);
         expect(paramObj!["state"]).toStrictEqual(state);
     });
 
@@ -191,7 +196,15 @@ describe("Url param extraction", () => {
         const foo = WebUtils.randomString();
         const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
         expect(paramObj!["random"]).toStrictEqual(random);
-        expect(paramObj!["foo"]).toStrictEqual(`${foo}`);
+        expect(paramObj!["foo"]).toStrictEqual(foo);
+    });
+
+    it('should use query flag with another question mark in a param', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}?questionmark`);
+        expect(paramObj!["random"]).toStrictEqual(random);
+        expect(paramObj!["foo"]).toStrictEqual(`${foo}?questionmark`);
     });
 
     it('should use hash flag and ignore query flag', () => {
@@ -200,6 +213,14 @@ describe("Url param extraction", () => {
         const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}?ignored`);
         expect(paramObj!["random"]).toStrictEqual(random);
         expect(paramObj!["foo"]).toStrictEqual(`${foo}?ignored`);
+    });
+
+    it('should use hash flag with another hash in a param', () => {
+        const random = WebUtils.randomString();
+        const foo = WebUtils.randomString();
+        const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}#hash`);
+        expect(paramObj!["random"]).toStrictEqual(random);
+        expect(paramObj!["foo"]).toStrictEqual(`${foo}#hash`);
     });
 
     it('should extract hash params correctly', () => {
@@ -213,6 +234,13 @@ describe("Url param extraction", () => {
         expect(paramObj!["prompt"]).toBeDefined();
         expect(paramObj!["state"]).toStrictEqual(random);
     });
+
+    it('should extract hash params if search param indicator present', () => {
+        const token = "sldfskdjflsdf12302";
+        const url = `http://localhost:3000/login?#access_token=${token}`;
+        const paramObj = WebUtils.getUrlParams(url);
+        expect(paramObj!["access_token"]).toStrictEqual(token);
+    })
 });
 
 describe("Random string gen", () => {

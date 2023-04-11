@@ -1,6 +1,6 @@
 {
     "name": "@byteowls/capacitor-oauth2",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "Capacitor OAuth 2 client plugin",
     "author": "Michael Oberwasserlechner",
     "homepage": "https://github.com/moberwasserlechner/capacitor-oauth2",
