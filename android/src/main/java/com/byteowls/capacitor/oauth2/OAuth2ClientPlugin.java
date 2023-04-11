@@ -24,6 +24,8 @@ import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.EndSessionRequest;
+import net.openid.appauth.EndSessionResponse;
 import net.openid.appauth.GrantTypeValues;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
@@ -61,6 +63,9 @@ public class OAuth2ClientPlugin extends Plugin {
     private static final String PARAM_PROMPT = "prompt";
     private static final String PARAM_RESPONSE_MODE = "response_mode";
     private static final String PARAM_LOGS_ENABLED = "logsEnabled";
+
+    private static final String PARAM_LOGOUT_URL = "logoutUrl";
+    private static final String PARAM_ID_TOKEN = "id_token";
 
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
@@ -302,9 +307,46 @@ public class OAuth2ClientPlugin extends Plugin {
                 call.reject(ERR_GENERAL, e);
             }
         } else {
-            this.disposeAuthService();
-            this.discardAuthState();
-            call.resolve();
+            String idToken = ConfigUtils.getParam(String.class, call.getData(), PARAM_ID_TOKEN);
+            if (idToken == null) {
+                this.disposeAuthService();
+                this.discardAuthState();
+                call.resolve();
+                return;
+            }
+
+            oauth2Options = buildAuthenticateOptions(call.getData());
+
+            Uri authorizationUri = Uri.parse(oauth2Options.getAuthorizationBaseUrl());
+            Uri accessTokenUri;
+            if (oauth2Options.getAccessTokenEndpoint() != null) {
+                accessTokenUri = Uri.parse(oauth2Options.getAccessTokenEndpoint());
+            } else {
+                // appAuth does not allow to be the accessTokenUri empty although it is not used unit performTokenRequest
+                accessTokenUri = authorizationUri;
+            }
+            Uri logoutUri = Uri.parse(oauth2Options.getLogoutUrl());
+
+            AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authorizationUri, accessTokenUri);
+
+            EndSessionRequest endSessionRequest =
+                new EndSessionRequest.Builder(config)
+                    .setIdTokenHint(idToken)
+                    .setPostLogoutRedirectUri(logoutUri)
+                    .build();
+
+            this.authService = new AuthorizationService(getContext());
+
+            try {
+                Intent endSessionIntent = authService.getEndSessionRequestIntent(endSessionRequest);
+                this.bridge.saveCall(call);
+                startActivityForResult(call, endSessionIntent, "handleEndSessionIntentResult");
+            } catch (ActivityNotFoundException e) {
+                call.reject(ERR_ANDROID_NO_BROWSER, e);
+            } catch (Exception e) {
+                Log.e(getLogTag(), "Unexpected exception on open browser for logout request!");
+                call.reject(ERR_GENERAL, e);
+            }
         }
     }
 
@@ -328,6 +370,29 @@ public class OAuth2ClientPlugin extends Plugin {
                 call.reject(USER_CANCELLED);
             } else {
                 handleAuthorizationRequestActivity(result.getData(), call);
+            }
+        }
+    }
+
+    @ActivityCallback
+    private void handleEndSessionIntentResult(PluginCall call, ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_CANCELED) {
+            call.reject(USER_CANCELLED);
+        } else {
+            if (result.getData() != null) {
+                try {
+                    EndSessionResponse resp = EndSessionResponse.fromIntent(result.getData());
+                    JSObject json = new JSObject(resp.jsonSerializeString());
+
+                    this.disposeAuthService();
+                    this.discardAuthState();
+
+                    call.resolve(json);
+                } catch (Exception e) {
+                    Log.e(getLogTag(), "Unexpected exception on handling result for logout request!");
+                    call.reject(ERR_GENERAL, e);
+                    return;
+                }
             }
         }
     }

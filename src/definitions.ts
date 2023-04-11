@@ -14,9 +14,10 @@ export interface OAuth2ClientPlugin {
     /**
      * Logout from the authenticated OAuth 2 provider
      * @param {OAuth2AuthenticateOptions} options Although not all options are needed. We simply reuse the options from authenticate
+     * @param {String} id_token Optional idToken, only for Android
      * @returns {Promise<boolean>} true if the logout was successful else false.
      */
-    logout(options: OAuth2AuthenticateOptions): Promise<boolean>;
+    logout(options: OAuth2AuthenticateOptions, id_token?: string): Promise<boolean>;
 }
 
 export interface OAuth2RefreshTokenOptions {

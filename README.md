@@ -117,13 +117,14 @@ import {OAuth2Client} from "@byteowls/capacitor-oauth2";
    '<button (click)="onLogoutClick()">Logout OAuth</button>'
 })
 export class SignupComponent {
+    accessToken: string;
     refreshToken: string;
 
     onOAuthBtnClick() {
         OAuth2Client.authenticate(
             oauth2Options
         ).then(response => {
-            let accessToken = response["access_token"];
+            this.accessToken = response["access_token"]; // storage recommended for android logout
             this.refreshToken = response["refresh_token"];
 
             // only if you include a resourceUrl protected user values are included in the response!
@@ -145,7 +146,7 @@ export class SignupComponent {
       OAuth2Client.refreshToken(
         oauth2RefreshOptions
       ).then(response => {
-        let accessToken = response["access_token"];
+        this.accessToken = response["access_token"]; // storage recommended for android logout
         // Don't forget to store the new refresh token as well!
         this.refreshToken = response["refresh_token"];
         // Go to backend
@@ -156,7 +157,8 @@ export class SignupComponent {
 
     onLogoutClick() {
             OAuth2Client.logout(
-                oauth2LogoutOptions
+                oauth2LogoutOptions,
+                this.accessToken // only used on android
             ).then(() => {
                 // do something
             }).catch(reason => {
@@ -362,6 +364,8 @@ android.buildTypes.release.manifestPlaceholders = [
 
 2) "ERR_ANDROID_RESULT_NULL": See [Issue #52](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515) for details.
 I cannot reproduce this behaviour. Moreover there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
+
+3) To prevent some logout issues on certain OAuth2 providers (like Salesforce for example), you should provide the `id_token` parameter on the `logout(...)` function. This ensures that not only the cookies are deleted, but also the logout link is called from the Oauth2 provider. Also, it uses the system browser that the plugin uses (and not the user's default browser) to call the logout URL. This additionally ensures that the cookies are deleted in the correct browser.
 
 ### Custom OAuth Handler
 

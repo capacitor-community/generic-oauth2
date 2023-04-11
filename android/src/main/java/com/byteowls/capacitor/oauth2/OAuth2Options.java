@@ -36,6 +36,8 @@ public class OAuth2Options {
     private String prompt;
     private String responseMode;
 
+    private String logoutUrl;
+
 
     public String getAppId() {
         return appId;
@@ -214,5 +216,9 @@ public class OAuth2Options {
             }
             this.additionalResourceHeaders.put(key, value);
         }
+    }
+
+    public String getLogoutUrl() {
+        return logoutUrl;
     }
 }
