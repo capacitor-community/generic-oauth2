@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.0.0] - 2023-09-01
+
+### Breaking
+* Minimum Capacitor version is **5.0.0**.! [#234](https://github.com/moberwasserlechner/capacitor-oauth2/issues/234)
+
 ## [4.0.2] - 2023-04-11
 
 ### Fixed

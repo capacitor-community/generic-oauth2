@@ -11,9 +11,14 @@ See [identity providers](#list-of-providers) the community has already used this
 
 ## How to install
 
-For Capacitor v4
+For Capacitor v5
 ```bash
 npm i @byteowls/capacitor-oauth2
+npx cap sync
+```
+For Capacitor v4
+```bash
+npm i @byteowls/capacitor-oauth2@4.0.2
 npx cap sync
 ```
 For Capacitor v3 use `3.0.1`
