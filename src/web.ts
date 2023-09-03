@@ -28,8 +28,8 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
         this.windowHandle = window.open(
             '',
             windowOptions.windowTarget,
-            windowOptions.windowOptions,
-            windowOptions.windowReplace);
+            windowOptions.windowOptions
+        );
 
         this.webOptions = await WebUtils.buildWebOptions(options);
         return new Promise<any>((resolve, reject) => {

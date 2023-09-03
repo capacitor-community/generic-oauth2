@@ -11,30 +11,32 @@ See [identity providers](#list-of-providers) the community has already used this
 
 ## How to install
 
-For Capacitor v4
+For Capacitor v5
 ```bash
 npm i @byteowls/capacitor-oauth2
 npx cap sync
 ```
-For Capacitor v3 use `3.0.1`
+
+For Capacitor v4
 ```bash
-npm i @byteowls/capacitor-oauth2@3.0.1
+npm i @byteowls/capacitor-oauth2@4
 npx cap sync
 ```
-For Capacitor v2 use `2.1.0`
+For Capacitor v3
 ```bash
-npm i @byteowls/capacitor-oauth2@2.1.0
+npm i @byteowls/capacitor-oauth2@3
 npx cap sync
 ```
 
 ## Versions
 
-| Plugin | For Capacitor         | Docs                                                                                        | Notes                          |
-|--------|-------------------|---------------------------------------------------------------------------------------------|--------------------------------|
-| 4.x    | 4.x.x             | [README](./README.md)                                                                       | Breaking changes see Changelog. XCode 12.0 needs this version  |
-| 3.x    | 3.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/tree/release/3.x/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version  |
-| 2.x    | 2.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/tree/release/2.x/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version  |
-| 1.x    | 1.x.x             | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md)       |                                |
+| Plugin | For Capacitor | Docs                                                                                  | Notes                                                         |
+|--------|---------------|---------------------------------------------------------------------------------------|---------------------------------------------------------------|
+| 5.x    | 5.x.x         | [README](./README.md)                                                                 | Breaking changes see Changelog. XCode 14.1 needs this version |
+| 4.x    | 4.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/4.0.0/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version |
+| 3.x    | 3.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/3.0.1/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version |
+| 2.x    | 2.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version |
+| 1.x    | 1.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md) |                                                               |
 
 For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
 
@@ -1148,12 +1150,6 @@ See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main
 ## License
 
 MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/LICENSE).
-
-## BYTEOWLS Software & Consulting
-
-This plugin is powered by [BYTEOWLS Software & Consulting](https://byteowls.com).
-
-If you need extended support for this project like critical changes or releases ahead of schedule. Feel free to contact us for a consulting offer.
 
 ## Disclaimer
 
