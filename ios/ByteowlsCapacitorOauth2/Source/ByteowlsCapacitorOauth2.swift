@@ -86,6 +86,7 @@ public class OAuth2ClientPlugin: CAPPlugin {
 
     public override func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenURL, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenUniversalLink, object: nil)
         registerHandlers()
     }
 
