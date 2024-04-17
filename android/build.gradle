@@ -1,6 +1,6 @@
 ext {
     appAuthVersion = project.hasProperty('appAuthVersion') ? rootProject.ext.appAuthVersion : '0.9.1'
-    androidxBrowserVersion = project.hasProperty('androidxBrowserVersion') ? rootProject.ext.androidxBrowserVersion : '1.5.0'
+    androidxBrowserVersion = project.hasProperty('androidxBrowserVersion') ? rootProject.ext.androidxBrowserVersion : '1.7.0'
     junitVersion = project.hasProperty('junitVersion') ? rootProject.ext.junitVersion : '4.13.2'
     commonsIoVersion = project.hasProperty('commonsIoVersion') ? rootProject.ext.commonsIoVersion : '2.10.0'
     androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.6.1'
@@ -15,7 +15,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.0.0'
+        classpath 'com.android.tools.build:gradle:8.2.1'
     }
 }
 
@@ -23,10 +23,10 @@ apply plugin: 'com.android.library'
 
 android {
     namespace "com.byteowls.capacitor.oauth2"
-    compileSdkVersion project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 33
+    compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
     defaultConfig {
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 22
-        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 33
+        targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
         versionCode 1
         versionName "1.0"
         // 1) Make sure to use the AndroidJUnitRunner, or a subclass of it. This requires a dependency on androidx.test:runner, too!
