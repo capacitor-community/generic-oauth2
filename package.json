@@ -15,7 +15,8 @@
         "test": "jest",
         "removePacked": "rimraf -g byteowls-capacitor-oauth2-*.tgz",
         "publishLocally": "npm run removePacked && npm run build && npm pack",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "postinstall": "npm run build"
     },
     "files": [
         "android/src/main/",

@@ -7,8 +7,7 @@ import AuthenticationServices
 typealias JSObject = [String:Any]
 
 @objc(OAuth2ClientPlugin)
-public class OAuth2ClientPlugin: CAPPlugin {
-
+public class OAuth2ClientPlugin: CAPPlugin, ASWebAuthenticationPresentationContextProviding {
     var savedPluginCall: CAPPluginCall?
 
     let JSON_KEY_ACCESS_TOKEN = "access_token"
@@ -62,6 +61,16 @@ public class OAuth2ClientPlugin: CAPPlugin {
     var oauth2SafariDelegate: OAuth2SafariDelegate?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
+    
+    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        var view: ASPresentationAnchor?
+        
+        DispatchQueue.main.sync {
+            view = self.bridge?.webView?.window
+        }
+        
+        return view ?? ASPresentationAnchor()
+    }
 
     func registerHandlers() {
         let classCount = objc_getClassList(nil, 0)
@@ -275,9 +284,12 @@ public class OAuth2ClientPlugin: CAPPlugin {
                     )
                 }
 
-                let urlHandler = SafariURLHandler(viewController: (bridge?.viewController)!, oauthSwift: oauthSwift)
-                // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
-                urlHandler.delegate = self.oauth2SafariDelegate
+                let urlHandler = ASWebAuthenticationURLHandler(
+                    callbackUrlScheme: redirectUrl.replacingOccurrences(of: "://oauth", with: ""),
+                    presentationContextProvider: self,
+                    prefersEphemeralWebBrowserSession: false
+                );
+                
                 oauthSwift.authorizeURLHandler = urlHandler
                 self.oauthSwift = oauthSwift
 
@@ -664,7 +676,5 @@ extension OAuth2ClientPlugin: ASAuthorizationControllerDelegate {
             self.savedPluginCall?.reject(self.ERR_GENERAL)
         }
     }
-
-
-
 }
+
