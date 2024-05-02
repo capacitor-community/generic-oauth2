@@ -244,7 +244,7 @@ These parameters are overrideable in every platform
 
 | parameter          	| default 	| required 	| description                                                                                    	| since 	|
 |--------------------	|---------	|----------	|------------------------------------------------------------------------------------------------	|-------	|
-| customHandlerClass 	|         	|          	| Provide a class name implementing `CapacitorCommunityGenericOAuth2.OAuth2CustomHandler`                	|       	|
+| customHandlerClass 	|         	|          	| Provide a class name implementing `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`                	|       	|
 | siwaUseScope       	|         	|          	| SiWA default scope is `name email` if you want to use the configured one set this param `true` 	| 2.1.0 	|
 
 
@@ -416,7 +416,7 @@ This plugin should be as generic as possible, so I don't want to include provide
 
 Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
 Simply configure the class name in the option property `ios.customHandlerClass`.
-This class has to implement `CapacitorCommunityGenericOAuth2.OAuth2CustomHandler`.
+This class has to implement `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`.
 
 See a full working example below!
 
@@ -1018,7 +1018,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorCommunityGenericOAuth2', :path => '../../node_modules/@capacitor-community/generic-oauth2'
+  pod 'CapacitorCommunityGenericOauth2', :path => '../../node_modules/@capacitor-community/generic-oauth2'
   # core plugins
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorDevice', :path => '../../node_modules/@capacitor/device'
@@ -1067,7 +1067,7 @@ import Foundation
 import FacebookCore
 import FacebookLogin
 import Capacitor
-import CapacitorCommunityGenericOAuth2
+import CapacitorCommunityGenericOauth2
 
 @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
 
