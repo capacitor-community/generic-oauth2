@@ -2,9 +2,9 @@
 
 <a href="#sponsors"><img src="https://img.shields.io/badge/plugin-Sponsors-blue?style=flat-square" /></a>
 <a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml"><img src="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
-<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/dw/@byteowls/capacitor-oauth2?style=flat-square" /></a>
-<a href="https://www.npmjs.com/package/@byteowls/capacitor-oauth2"><img src="https://img.shields.io/npm/v/@byteowls/capacitor-oauth2?style=flat-square" /></a>
-<a href="LICENSE"><img src="https://img.shields.io/npm/l/@byteowls/capacitor-oauth2?style=flat-square" /></a>
+<a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth"><img src="https://img.shields.io/npm/dw/@capacitor-community/generic-oauth?style=flat-square" /></a>
+<a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth"><img src="https://img.shields.io/npm/v/@capacitor-community/generic-oauth?style=flat-square" /></a>
+<a href="LICENSE"><img src="https://img.shields.io/npm/l/@capacitor-community/generic-oauth?style=flat-square" /></a>
 
 This is a **generic OAuth 2 client** plugin. It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
 See [identity providers](#list-of-providers) the community has already used this plugin with.
@@ -13,18 +13,18 @@ See [identity providers](#list-of-providers) the community has already used this
 
 For Capacitor v5
 ```bash
-npm i @byteowls/capacitor-oauth2
+npm i @capacitor-community/generic-oauth
 npx cap sync
 ```
 
 For Capacitor v4
 ```bash
-npm i @byteowls/capacitor-oauth2@4
+npm i @capacitor-community/generic-oauth@4
 npx cap sync
 ```
 For Capacitor v3
 ```bash
-npm i @byteowls/capacitor-oauth2@3
+npm i @capacitor-community/generic-oauth@3
 npx cap sync
 ```
 
@@ -111,7 +111,7 @@ Starting with version 3.0.0, the plugin is registered automatically on all platf
 ### Use it
 
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 @Component({
   template: '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
@@ -236,7 +236,7 @@ These parameters are overrideable in every platform
 
 | parameter                    	| default 	| required 	| description                                                                                                              	| since 	|
 |------------------------------	|---------	|----------	|--------------------------------------------------------------------------------------------------------------------------	|-------	|
-| customHandlerClass           	|         	|          	| Provide a class name implementing `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`                            	|       	|
+| customHandlerClass           	|         	|          	| Provide a class name implementing `com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler`                            	|       	|
 | handleResultOnNewIntent      	| `false` 	|          	| Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in. 	|       	|
 | handleResultOnActivityResult 	| `true`  	|          	|                                                                                                                          	|       	|
 
@@ -244,7 +244,7 @@ These parameters are overrideable in every platform
 
 | parameter          	| default 	| required 	| description                                                                                    	| since 	|
 |--------------------	|---------	|----------	|------------------------------------------------------------------------------------------------	|-------	|
-| customHandlerClass 	|         	|          	| Provide a class name implementing `ByteowlsCapacitorOauth2.OAuth2CustomHandler`                	|       	|
+| customHandlerClass 	|         	|          	| Provide a class name implementing `CapacitorCommunityGenericOAuth2.OAuth2CustomHandler`                	|       	|
 | siwaUseScope       	|         	|          	| SiWA default scope is `name email` if you want to use the configured one set this param `true` 	| 2.1.0 	|
 
 
@@ -416,7 +416,7 @@ This plugin should be as generic as possible, so I don't want to include provide
 
 Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
 Simply configure the class name in the option property `ios.customHandlerClass`.
-This class has to implement `ByteowlsCapacitorOauth2.OAuth2CustomHandler`.
+This class has to implement `CapacitorCommunityGenericOAuth2.OAuth2CustomHandler`.
 
 See a full working example below!
 
@@ -489,7 +489,7 @@ In Angular do sth like
 ```typescript
 import {Component, OnInit} from '@angular/core';
 import {Device, DeviceInfo} from "@capacitor/device";
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 @Component({
   templateUrl: './siwa.component.html'
@@ -549,7 +549,7 @@ They share the same core features and therefore the plugin should work either wa
 #### PWA
 
 ```typescript
-import {OAuth2AuthenticateOptions, OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2AuthenticateOptions, OAuth2Client} from "@capacitor-community/generic-oauth";
 
 export class AuthService {
 
@@ -589,7 +589,7 @@ Try to experiment with the config until Azure includes everything you need in th
 <summary>A configuration with custom scopes might look like this:</summary>
 
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
   getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
     return {
@@ -623,7 +623,7 @@ import {OAuth2Client} from "@byteowls/capacitor-oauth2";
 <summary>Other configs that works in prior versions</summary>
 
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 azureLogin() {
   OAuth2Client.authenticate({
@@ -654,7 +654,7 @@ azureLogin() {
 ```
 
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 azureLogin() {
   OAuth2Client.authenticate({
@@ -787,7 +787,7 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 
 #### PWA
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 googleLogin() {
     OAuth2Client.authenticate({
@@ -833,7 +833,7 @@ See [iOS Default Config](#ios-default-config)
 #### PWA
 
 ```typescript
-import {OAuth2Client} from "@byteowls/capacitor-oauth2";
+import {OAuth2Client} from "@capacitor-community/generic-oauth";
 
 facebookLogin() {
     let fbApiVersion = "2.11";
@@ -916,8 +916,8 @@ package com.companyname.appname;
 
 import android.app.Activity;
 
-import com.byteowls.capacitor.oauth2.handler.AccessTokenCallback;
-import com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler;
+import com.getcapacitor.community.genericoauth2.handler.AccessTokenCallback;
+import com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler;
 import com.companyname.appname.MainActivity;
 import com.facebook.AccessToken;
 import com.facebook.FacebookCallback;
@@ -1018,7 +1018,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-  pod 'ByteowlsCapacitorOauth2', :path => '../../node_modules/@byteowls/capacitor-oauth2'
+  pod 'CapacitorCommunityGenericOAuth2', :path => '../../node_modules/@capacitor-community/generic-oauth2'
   # core plugins
   pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
   pod 'CapacitorDevice', :path => '../../node_modules/@capacitor/device'
@@ -1067,7 +1067,7 @@ import Foundation
 import FacebookCore
 import FacebookLogin
 import Capacitor
-import ByteowlsCapacitorOauth2
+import CapacitorCommunityGenericOAuth2
 
 @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
 

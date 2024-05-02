@@ -1,10 +1,10 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { OAuth2ClientPlugin } from './definitions';
+import type { GenericOAuth2Plugin } from './definitions';
 
-const OAuth2Client = registerPlugin<OAuth2ClientPlugin>('OAuth2Client', {
-  web: () => import('./web').then((m) => new m.OAuth2ClientPluginWeb()),
+const GenericOAuth2 = registerPlugin<GenericOAuth2Plugin>('GenericOAuth2', {
+  web: () => import('./web').then(m => new m.GenericOAuth2Web()),
 });
 
 export * from './definitions';
-export { OAuth2Client };
+export { GenericOAuth2 };

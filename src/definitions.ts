@@ -1,4 +1,4 @@
-export interface OAuth2ClientPlugin {
+export interface GenericOAuth2Plugin {
   /**
    * Authenticate against a OAuth 2 provider.
    * @param {OAuth2AuthenticateOptions} options
@@ -138,7 +138,7 @@ export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {
   /**
    * Some oauth provider especially Facebook forces us to use their SDK for apps.
    *
-   * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
+   * Provide a class name implementing the 'CapacitorCommunityGenericOAuth2.OAuth2CustomHandler' protocol.
    */
   customHandlerClass?: string;
   /**
@@ -161,7 +161,7 @@ export interface IosOptions extends OAuth2AuthenticateBaseOptions {
   /**
    * Some oauth provider especially Facebook forces us to use their SDK for apps.
    *
-   * Provide a class name implementing the 'ByteowlsCapacitorOauth2.OAuth2CustomHandler' protocol.
+   * Provide a class name implementing the 'CapacitorCommunityGenericOAuth2.OAuth2CustomHandler' protocol.
    */
   customHandlerClass?: string;
 }
