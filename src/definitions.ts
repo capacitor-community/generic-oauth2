@@ -17,7 +17,10 @@ export interface GenericOAuth2Plugin {
    * @param {String} id_token Optional idToken, only for Android
    * @returns {Promise<boolean>} true if the logout was successful else false.
    */
-  logout(options: OAuth2AuthenticateOptions, id_token?: string): Promise<boolean>;
+  logout(
+    options: OAuth2AuthenticateOptions,
+    id_token?: string,
+  ): Promise<boolean>;
 }
 
 export interface OAuth2RefreshTokenOptions {
@@ -108,7 +111,8 @@ export interface OAuth2AuthenticateBaseOptions {
   additionalResourceHeaders?: { [key: string]: string };
 }
 
-export interface OAuth2AuthenticateOptions extends OAuth2AuthenticateBaseOptions {
+export interface OAuth2AuthenticateOptions
+  extends OAuth2AuthenticateBaseOptions {
   /**
    * Custom options for the platform "web"
    */

@@ -4,12 +4,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
-
-import net.openid.appauth.AuthorizationResponse;
-import net.openid.appauth.TokenResponse;
-
-import org.json.JSONException;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +12,9 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
+import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.TokenResponse;
+import org.json.JSONException;
 
 public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallResult> {
 
@@ -31,7 +28,13 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
     private final AuthorizationResponse authorizationResponse;
     private final TokenResponse accessTokenResponse;
 
-    public ResourceUrlAsyncTask(PluginCall pluginCall, OAuth2Options options, String logTag, AuthorizationResponse authorizationResponse, TokenResponse accessTokenResponse) {
+    public ResourceUrlAsyncTask(
+        PluginCall pluginCall,
+        OAuth2Options options,
+        String logTag,
+        AuthorizationResponse authorizationResponse,
+        TokenResponse accessTokenResponse
+    ) {
         this.pluginCall = pluginCall;
         this.options = options;
         this.logTag = logTag;
@@ -63,8 +66,10 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
 
                     InputStream is = null;
                     try {
-                        if (conn.getResponseCode() >= HttpURLConnection.HTTP_OK
-                            && conn.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE) {
+                        if (
+                            conn.getResponseCode() >= HttpURLConnection.HTTP_OK &&
+                            conn.getResponseCode() < HttpURLConnection.HTTP_MULT_CHOICE
+                        ) {
                             is = conn.getInputStream();
                         } else {
                             is = conn.getErrorStream();
@@ -101,7 +106,10 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
                 }
             } else {
                 if (options.isLogsEnabled()) {
-                    Log.i(logTag, "No accessToken was provided although you configured a resourceUrl. Remove the resourceUrl from the config.");
+                    Log.i(
+                        logTag,
+                        "No accessToken was provided although you configured a resourceUrl. Remove the resourceUrl from the config."
+                    );
                 }
                 pluginCall.reject(ERR_NO_ACCESS_TOKEN);
             }
@@ -141,5 +149,4 @@ public class ResourceUrlAsyncTask extends AsyncTask<String, Void, ResourceCallRe
             return sb.toString();
         }
     }
-
 }

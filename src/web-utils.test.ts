@@ -1,4 +1,5 @@
-import { OAuth2AuthenticateOptions } from './definitions';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import type { OAuth2AuthenticateOptions } from './definitions';
 import { CryptoUtils, WebUtils } from './web-utils';
 
 const mGetRandomValues = jest.fn().mockReturnValueOnce(new Uint32Array(10));
@@ -29,8 +30,10 @@ const googleOptions: OAuth2AuthenticateOptions = {
 
 const oneDriveOptions: OAuth2AuthenticateOptions = {
   appId: 'appId',
-  authorizationBaseUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-  accessTokenEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+  authorizationBaseUrl:
+    'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+  accessTokenEndpoint:
+    'https://login.microsoftonline.com/common/oauth2/v2.0/token',
   scope: 'files.readwrite offline_access',
   responseType: 'code',
   additionalParameters: {
@@ -40,10 +43,10 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
     redirectUrl: 'https://oauth2.byteowls.com/authorize',
     pkceEnabled: false,
     additionalParameters: {
-      resource: 'resource_id',
-      emptyParam: null!,
+      'resource': 'resource_id',
+      'emptyParam': null!,
       ' ': 'test',
-      nonce: WebUtils.randomString(10),
+      'nonce': WebUtils.randomString(10),
     },
   },
   android: {
@@ -56,7 +59,8 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
 
 const redirectUrlOptions: OAuth2AuthenticateOptions = {
   appId: 'appId',
-  authorizationBaseUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+  authorizationBaseUrl:
+    'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
   responseType: 'code',
   redirectUrl: 'https://mycompany.server.com/oauth',
   scope: 'files.readwrite offline_access',
@@ -84,58 +88,68 @@ describe('base options processing', () => {
   });
 
   it('should build a overwritable boolean value', () => {
-    const pkceEnabled = WebUtils.getOverwritableValue<boolean>(googleOptions, 'pkceEnabled');
+    const pkceEnabled = WebUtils.getOverwritableValue<boolean>(
+      googleOptions,
+      'pkceEnabled',
+    );
     expect(pkceEnabled).toBeTruthy();
   });
 
   it('should build a overwritable additional parameters map', () => {
-    const additionalParameters = WebUtils.getOverwritableValue<{ [key: string]: string }>(
-      oneDriveOptions,
-      'additionalParameters',
-    );
+    const additionalParameters = WebUtils.getOverwritableValue<{
+      [key: string]: string;
+    }>(oneDriveOptions, 'additionalParameters');
     expect(additionalParameters).not.toBeUndefined();
     expect(additionalParameters['resource']).toEqual('resource_id');
   });
 
   it('must not contain overwritten additional parameters', () => {
-    const additionalParameters = WebUtils.getOverwritableValue<{ [key: string]: string }>(
-      oneDriveOptions,
-      'additionalParameters',
-    );
+    const additionalParameters = WebUtils.getOverwritableValue<{
+      [key: string]: string;
+    }>(oneDriveOptions, 'additionalParameters');
     expect(additionalParameters['willbeoverwritten']).toBeUndefined();
   });
 
   it('must have a base redirect url', () => {
-    const redirectUrl = WebUtils.getOverwritableValue<string>(redirectUrlOptions, 'redirectUrl');
+    const redirectUrl = WebUtils.getOverwritableValue<string>(
+      redirectUrlOptions,
+      'redirectUrl',
+    );
     expect(redirectUrl).toBeDefined();
   });
 
   it('must be overwritten by empty string from web section', () => {
-    const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, 'accessTokenEndpoint');
+    const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(
+      googleOptions,
+      'accessTokenEndpoint',
+    );
     expect(accessTokenEndpoint).toStrictEqual('');
   });
 
   it('must not be overwritten if no key exists in web section', () => {
-    const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(googleOptions, 'scope');
+    const accessTokenEndpoint = WebUtils.getOverwritableValue<string>(
+      googleOptions,
+      'scope',
+    );
     expect(accessTokenEndpoint).toStrictEqual('email profile');
   });
 });
 
 describe('web options', () => {
   it('should build web options', async () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then((webOptions) => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
       expect(webOptions).not.toBeNull();
     });
   });
 
   it('should not have a code verifier', async () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then((webOptions) => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
       expect(webOptions.pkceCodeVerifier).toBeUndefined();
     });
   });
 
   it('must not contain empty additional parameter', async () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then((webOptions) => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
       expect(webOptions.additionalParameters[' ']).toBeUndefined();
       expect(webOptions.additionalParameters['emptyParam']).toBeUndefined();
     });
@@ -179,25 +193,33 @@ describe('Url param extraction', () => {
   });
 
   it('should remove invalid combinations multiple param', () => {
-    const paramObj = WebUtils.getUrlParams('https://app.example.com?=test&key1=param1');
+    const paramObj = WebUtils.getUrlParams(
+      'https://app.example.com?=test&key1=param1',
+    );
     expect(paramObj).toEqual({ key1: 'param1' });
   });
 
   it('should extract work with a single param', () => {
-    const paramObj = WebUtils.getUrlParams('https://app.example.com?access_token=testtoken');
+    const paramObj = WebUtils.getUrlParams(
+      'https://app.example.com?access_token=testtoken',
+    );
     expect(paramObj!['access_token']).toStrictEqual('testtoken');
   });
 
   it('should extract a uuid state param', () => {
     const state = WebUtils.randomString();
-    const paramObj = WebUtils.getUrlParams(`https://app.example.com?state=${state}&access_token=testtoken`);
+    const paramObj = WebUtils.getUrlParams(
+      `https://app.example.com?state=${state}&access_token=testtoken`,
+    );
     expect(paramObj!['state']).toStrictEqual(state);
   });
 
   it('should use query flag and ignore hash flag', () => {
     const random = WebUtils.randomString();
     const foo = WebUtils.randomString();
-    const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}#ignored`);
+    const paramObj = WebUtils.getUrlParams(
+      `https://app.example.com?random=${random}&foo=${foo}#ignored`,
+    );
     expect(paramObj!['random']).toStrictEqual(random);
     expect(paramObj!['foo']).toStrictEqual(foo);
   });
@@ -205,7 +227,9 @@ describe('Url param extraction', () => {
   it('should use query flag with another question mark in a param', () => {
     const random = WebUtils.randomString();
     const foo = WebUtils.randomString();
-    const paramObj = WebUtils.getUrlParams(`https://app.example.com?random=${random}&foo=${foo}?questionmark`);
+    const paramObj = WebUtils.getUrlParams(
+      `https://app.example.com?random=${random}&foo=${foo}?questionmark`,
+    );
     expect(paramObj!['random']).toStrictEqual(random);
     expect(paramObj!['foo']).toStrictEqual(`${foo}?questionmark`);
   });
@@ -213,7 +237,9 @@ describe('Url param extraction', () => {
   it('should use hash flag and ignore query flag', () => {
     const random = WebUtils.randomString();
     const foo = WebUtils.randomString();
-    const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}?ignored`);
+    const paramObj = WebUtils.getUrlParams(
+      `https://app.example.com#random=${random}&foo=${foo}?ignored`,
+    );
     expect(paramObj!['random']).toStrictEqual(random);
     expect(paramObj!['foo']).toStrictEqual(`${foo}?ignored`);
   });
@@ -221,7 +247,9 @@ describe('Url param extraction', () => {
   it('should use hash flag with another hash in a param', () => {
     const random = WebUtils.randomString();
     const foo = WebUtils.randomString();
-    const paramObj = WebUtils.getUrlParams(`https://app.example.com#random=${random}&foo=${foo}#hash`);
+    const paramObj = WebUtils.getUrlParams(
+      `https://app.example.com#random=${random}&foo=${foo}#hash`,
+    );
     expect(paramObj!['random']).toStrictEqual(random);
     expect(paramObj!['foo']).toStrictEqual(`${foo}#hash`);
   });
@@ -262,7 +290,7 @@ describe('Random string gen', () => {
 
 describe('Authorization url building', () => {
   it('should contain a nonce param', async () => {
-    WebUtils.buildWebOptions(oneDriveOptions).then((webOptions) => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
       const authorizationUrl = WebUtils.getAuthorizationUrl(webOptions);
       expect(authorizationUrl).toContain('nonce');
     });
@@ -271,25 +299,25 @@ describe('Authorization url building', () => {
 
 describe('Crypto utils', () => {
   it('base 64 simple', () => {
-    let arr: Uint8Array = CryptoUtils.toUint8Array('tester');
-    let expected = CryptoUtils.toBase64(arr);
+    const arr: Uint8Array = CryptoUtils.toUint8Array('tester');
+    const expected = CryptoUtils.toBase64(arr);
     expect(expected).toEqual('dGVzdGVy');
   });
 
   it('base 64 special char', () => {
-    let arr: Uint8Array = CryptoUtils.toUint8Array('testerposfieppw2874929');
-    let expected = CryptoUtils.toBase64(arr);
+    const arr: Uint8Array = CryptoUtils.toUint8Array('testerposfieppw2874929');
+    const expected = CryptoUtils.toBase64(arr);
     expect(expected).toEqual('dGVzdGVycG9zZmllcHB3Mjg3NDkyOQ==');
   });
 
   it('base 64 with space', () => {
-    let arr: Uint8Array = CryptoUtils.toUint8Array('base64 encoder');
-    let expected = CryptoUtils.toBase64(arr);
+    const arr: Uint8Array = CryptoUtils.toUint8Array('base64 encoder');
+    const expected = CryptoUtils.toBase64(arr);
     expect(expected).toEqual('YmFzZTY0IGVuY29kZXI=');
   });
 
   it('base64url safe all base64 special chars included', () => {
-    let expected = CryptoUtils.toBase64Url('YmFz+TY0IG/uY29kZXI=');
+    const expected = CryptoUtils.toBase64Url('YmFz+TY0IG/uY29kZXI=');
     expect(expected).toEqual('YmFz-TY0IG_uY29kZXI');
   });
 });
@@ -299,8 +327,10 @@ describe('additional resource headers', () => {
 
   const options: OAuth2AuthenticateOptions = {
     appId: 'appId',
-    authorizationBaseUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-    accessTokenEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+    authorizationBaseUrl:
+      'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+    accessTokenEndpoint:
+      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
     scope: 'files.readwrite offline_access',
     responseType: 'code',
     additionalResourceHeaders: {

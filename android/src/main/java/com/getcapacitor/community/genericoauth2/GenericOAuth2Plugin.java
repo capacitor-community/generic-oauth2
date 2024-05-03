@@ -6,17 +6,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import androidx.activity.result.ActivityResult;
-
-import com.getcapacitor.community.genericoauth2.handler.AccessTokenCallback;
-import com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.community.genericoauth2.handler.AccessTokenCallback;
+import com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler;
+import java.util.Map;
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
@@ -28,10 +27,7 @@ import net.openid.appauth.EndSessionResponse;
 import net.openid.appauth.GrantTypeValues;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
-
 import org.json.JSONException;
-
-import java.util.Map;
 
 @CapacitorPlugin(name = "GenericOAuth2")
 public class GenericOAuth2Plugin extends Plugin {
@@ -93,10 +89,9 @@ public class GenericOAuth2Plugin extends Plugin {
     private AuthState authState;
     private String callbackId;
 
-    public GenericOAuth2Plugin() {
-    }
+    public GenericOAuth2Plugin() {}
 
-    @PluginMethod()
+    @PluginMethod
     public void refreshToken(final PluginCall call) {
         disposeAuthService();
         OAuth2RefreshTokenOptions oAuth2RefreshTokenOptions = buildRefreshTokenOptions(call.getData());
@@ -127,36 +122,36 @@ public class GenericOAuth2Plugin extends Plugin {
             this.authState = new AuthState(config);
         }
 
-        TokenRequest tokenRequest = new TokenRequest.Builder(
-            config,
-            oAuth2RefreshTokenOptions.getAppId()
-        ).setGrantType(GrantTypeValues.REFRESH_TOKEN)
+        TokenRequest tokenRequest = new TokenRequest.Builder(config, oAuth2RefreshTokenOptions.getAppId())
+            .setGrantType(GrantTypeValues.REFRESH_TOKEN)
             .setScope(oAuth2RefreshTokenOptions.getScope())
             .setRefreshToken(oAuth2RefreshTokenOptions.getRefreshToken())
             .build();
 
-        this.authService.performTokenRequest(tokenRequest, (response1, ex) -> {
-            this.authState.update(response1, ex);
-            if (ex != null) {
-                String message = ex.error != null ? ex.error : ERR_GENERAL;
-                call.reject(message, String.valueOf(ex.code), ex);
-            } else {
-                if (response1 != null) {
-                    try {
-                        JSObject json = new JSObject(response1.jsonSerializeString());
-                        call.resolve(json);
-                    } catch (JSONException e) {
-                        call.reject(ERR_GENERAL, e);
+        this.authService.performTokenRequest(
+                tokenRequest,
+                (response1, ex) -> {
+                    this.authState.update(response1, ex);
+                    if (ex != null) {
+                        String message = ex.error != null ? ex.error : ERR_GENERAL;
+                        call.reject(message, String.valueOf(ex.code), ex);
+                    } else {
+                        if (response1 != null) {
+                            try {
+                                JSObject json = new JSObject(response1.jsonSerializeString());
+                                call.resolve(json);
+                            } catch (JSONException e) {
+                                call.reject(ERR_GENERAL, e);
+                            }
+                        } else {
+                            call.reject(ERR_NO_ACCESS_TOKEN);
+                        }
                     }
-
-                } else {
-                    call.reject(ERR_NO_ACCESS_TOKEN);
                 }
-            }
-        });
+            );
     }
 
-    @PluginMethod()
+    @PluginMethod
     public void authenticate(final PluginCall call) {
         this.callbackId = call.getCallbackId();
         disposeAuthService();
@@ -168,29 +163,32 @@ public class GenericOAuth2Plugin extends Plugin {
             try {
                 Class<OAuth2CustomHandler> handlerClass = (Class<OAuth2CustomHandler>) Class.forName(oauth2Options.getCustomHandlerClass());
                 OAuth2CustomHandler handler = handlerClass.newInstance();
-                handler.getAccessToken(getActivity(), call, new AccessTokenCallback() {
-                    @Override
-                    public void onSuccess(String accessToken) {
-                        new ResourceUrlAsyncTask(call, oauth2Options, getLogTag(), null, null).execute(accessToken);
-                    }
+                handler.getAccessToken(
+                    getActivity(),
+                    call,
+                    new AccessTokenCallback() {
+                        @Override
+                        public void onSuccess(String accessToken) {
+                            new ResourceUrlAsyncTask(call, oauth2Options, getLogTag(), null, null).execute(accessToken);
+                        }
 
-                    @Override
-                    public void onCancel() {
-                        call.reject(USER_CANCELLED);
-                    }
+                        @Override
+                        public void onCancel() {
+                            call.reject(USER_CANCELLED);
+                        }
 
-                    @Override
-                    public void onError(Exception error) {
-                        call.reject(ERR_CUSTOM_HANDLER_LOGIN, error);
+                        @Override
+                        public void onError(Exception error) {
+                            call.reject(ERR_CUSTOM_HANDLER_LOGIN, error);
+                        }
                     }
-                });
+                );
             } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
                 call.reject(ERR_CUSTOM_HANDLER_LOGIN, e);
             } catch (Exception e) {
                 call.reject(ERR_GENERAL, e);
             }
         } else {
-
             // ###################################
             // ### Validate required parameter ###
             // ###################################
@@ -287,7 +285,7 @@ public class GenericOAuth2Plugin extends Plugin {
         }
     }
 
-    @PluginMethod()
+    @PluginMethod
     public void logout(final PluginCall call) {
         String customHandlerClassname = ConfigUtils.getParam(String.class, call.getData(), PARAM_ANDROID_CUSTOM_HANDLER_CLASS);
         if (customHandlerClassname != null && customHandlerClassname.length() > 0) {
@@ -328,11 +326,10 @@ public class GenericOAuth2Plugin extends Plugin {
 
             AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authorizationUri, accessTokenUri);
 
-            EndSessionRequest endSessionRequest =
-                new EndSessionRequest.Builder(config)
-                    .setIdTokenHint(idToken)
-                    .setPostLogoutRedirectUri(logoutUri)
-                    .build();
+            EndSessionRequest endSessionRequest = new EndSessionRequest.Builder(config)
+                .setIdTokenHint(idToken)
+                .setPostLogoutRedirectUri(logoutUri)
+                .build();
 
             this.authService = new AuthorizationService(getContext());
 
@@ -439,31 +436,36 @@ public class GenericOAuth2Plugin extends Plugin {
                     TokenRequest tokenExchangeRequest;
                     try {
                         tokenExchangeRequest = authorizationResponse.createTokenExchangeRequest();
-                        this.authService.performTokenRequest(tokenExchangeRequest, (accessTokenResponse, exception) -> {
-                            authState.update(accessTokenResponse, exception);
-                            if (exception != null) {
-                                savedCall.reject(ERR_AUTHORIZATION_FAILED, String.valueOf(exception.code), exception);
-                            } else {
-                                if (accessTokenResponse != null) {
-                                    if (oauth2Options.isLogsEnabled()) {
-                                        Log.i(getLogTag(), "Access token response:\n" + accessTokenResponse.jsonSerializeString());
+                        this.authService.performTokenRequest(
+                                tokenExchangeRequest,
+                                (accessTokenResponse, exception) -> {
+                                    authState.update(accessTokenResponse, exception);
+                                    if (exception != null) {
+                                        savedCall.reject(ERR_AUTHORIZATION_FAILED, String.valueOf(exception.code), exception);
+                                    } else {
+                                        if (accessTokenResponse != null) {
+                                            if (oauth2Options.isLogsEnabled()) {
+                                                Log.i(getLogTag(), "Access token response:\n" + accessTokenResponse.jsonSerializeString());
+                                            }
+                                            authState.performActionWithFreshTokens(
+                                                authService,
+                                                (accessToken, idToken, ex1) -> {
+                                                    AsyncTask<String, Void, ResourceCallResult> asyncTask = new ResourceUrlAsyncTask(
+                                                        savedCall,
+                                                        oauth2Options,
+                                                        getLogTag(),
+                                                        authorizationResponse,
+                                                        accessTokenResponse
+                                                    );
+                                                    asyncTask.execute(accessToken);
+                                                }
+                                            );
+                                        } else {
+                                            resolveAuthorizationResponse(savedCall, authorizationResponse);
+                                        }
                                     }
-                                    authState.performActionWithFreshTokens(authService,
-                                        (accessToken, idToken, ex1) -> {
-                                            AsyncTask<String, Void, ResourceCallResult> asyncTask =
-                                                new ResourceUrlAsyncTask(
-                                                    savedCall,
-                                                    oauth2Options,
-                                                    getLogTag(),
-                                                    authorizationResponse,
-                                                    accessTokenResponse);
-                                            asyncTask.execute(accessToken);
-                                        });
-                                } else {
-                                    resolveAuthorizationResponse(savedCall, authorizationResponse);
                                 }
-                            }
-                        });
+                            );
                     } catch (Exception e) {
                         savedCall.reject(ERR_NO_AUTHORIZATION_CODE, e);
                     }
@@ -491,7 +493,9 @@ public class GenericOAuth2Plugin extends Plugin {
         OAuth2Options o = new OAuth2Options();
         // required
         o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
-        o.setAuthorizationBaseUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_AUTHORIZATION_BASE_URL)));
+        o.setAuthorizationBaseUrl(
+            ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_AUTHORIZATION_BASE_URL))
+        );
         o.setResponseType(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESPONSE_TYPE)));
         o.setRedirectUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REDIRECT_URL)));
 
@@ -499,7 +503,9 @@ public class GenericOAuth2Plugin extends Plugin {
         Boolean logsEnabled = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_LOGS_ENABLED);
         o.setLogsEnabled(logsEnabled != null && logsEnabled);
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
-        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setAccessTokenEndpoint(
+            ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT))
+        );
         Boolean pkceEnabledObj = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_PKCE_ENABLED);
         o.setPkceEnabled(pkceEnabledObj != null && pkceEnabledObj);
         if (o.isPkceEnabled()) {
@@ -533,7 +539,9 @@ public class GenericOAuth2Plugin extends Plugin {
         // android only
         o.setCustomHandlerClass(ConfigUtils.trimToNull(ConfigUtils.getParamString(callData, PARAM_ANDROID_CUSTOM_HANDLER_CLASS)));
         o.setHandleResultOnNewIntent(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_NEW_INTENT, false));
-        o.setHandleResultOnActivityResult(ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT, false));
+        o.setHandleResultOnActivityResult(
+            ConfigUtils.getParam(Boolean.class, callData, PARAM_ANDROID_HANDLE_RESULT_ON_ACTIVITY_RESULT, false)
+        );
         if (!o.isHandleResultOnNewIntent() && !o.isHandleResultOnActivityResult()) {
             o.setHandleResultOnActivityResult(true);
         }
@@ -543,7 +551,9 @@ public class GenericOAuth2Plugin extends Plugin {
     OAuth2RefreshTokenOptions buildRefreshTokenOptions(JSObject callData) {
         OAuth2RefreshTokenOptions o = new OAuth2RefreshTokenOptions();
         o.setAppId(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_APP_ID)));
-        o.setAccessTokenEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT)));
+        o.setAccessTokenEndpoint(
+            ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT))
+        );
         o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));
         o.setRefreshToken(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REFRESH_TOKEN)));
         return o;

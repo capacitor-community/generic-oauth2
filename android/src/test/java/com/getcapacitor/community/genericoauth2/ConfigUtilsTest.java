@@ -1,9 +1,9 @@
 package com.getcapacitor.community.genericoauth2;
 
 import android.util.Log;
-
 import com.getcapacitor.JSObject;
-
+import java.util.Map;
+import java.util.stream.Stream;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +12,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Map;
-import java.util.stream.Stream;
-
 public class ConfigUtilsTest {
 
-    private final static String BASE_JSON = "{\n" +
+    private static final String BASE_JSON =
+        "{\n" +
         "    \"doubleValue\": 123.4567,\n" +
         "    \"floatValue\": 123.4,\n" +
         "    \"intValue\": 1,\n" +
@@ -107,7 +105,6 @@ public class ConfigUtilsTest {
     public void getOverwrittenAndroidParam() {
         String overwrittenString = ConfigUtils.getOverwrittenAndroidParam(String.class, jsObject, "stringValue");
         Assertions.assertEquals("stringAndroid", overwrittenString);
-
 
         int intValue = ConfigUtils.getOverwrittenAndroidParam(Integer.class, jsObject, "intValue");
         Assertions.assertEquals(1, intValue);
