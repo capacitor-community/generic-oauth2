@@ -22,7 +22,7 @@ buildscript {
 apply plugin: 'com.android.library'
 
 android {
-    namespace "com.byteowls.capacitor.oauth2"
+    namespace "com.getcapacitor.community.genericoauth2"
     compileSdk project.hasProperty('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
     defaultConfig {
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 22
@@ -51,14 +51,14 @@ android {
 
     unitTestVariants.all {
         it.mergedFlavor.manifestPlaceholders += [
-            appAuthRedirectScheme: "com.byteowls.capacitorapp"
+            appAuthRedirectScheme: "com.getcapacitor.community.genericoauth2app"
         ]
     }
 
 //    testOptions {
 //        unitTests {
 //            all {
-//                include 'com.byteowls.capacitor.oauth2'
+//                include 'com.getcapacitor.community.genericoauth2'
 //            }
 //        }
 //    }
@@ -90,5 +90,5 @@ dependencies {
 // ###############
 
 android.defaultConfig.manifestPlaceholders = [
-    'appAuthRedirectScheme': 'com.byteowls.capacitorapp'
+    'appAuthRedirectScheme': 'com.getcapacitor.community.genericoauth2app'
 ]

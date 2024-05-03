@@ -1,8 +1,8 @@
 import { WebPlugin } from '@capacitor/core';
-import type { OAuth2AuthenticateOptions, OAuth2ClientPlugin, OAuth2RefreshTokenOptions } from './definitions';
+import type { OAuth2AuthenticateOptions, GenericOAuth2Plugin, OAuth2RefreshTokenOptions } from './definitions';
 import { WebOptions, WebUtils } from './web-utils';
 
-export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlugin {
+export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   private webOptions: WebOptions;
   private windowHandle: Window | null;
   private intervalId: number;
@@ -239,6 +239,6 @@ export class OAuth2ClientPluginWeb extends WebPlugin implements OAuth2ClientPlug
   }
 
   private doLog(msg: string, obj: any = null) {
-    console.log('I/Capacitor/OAuth2ClientPlugin: ' + msg, obj);
+    console.log('I/Capacitor/GenericOAuth2Plugin: ' + msg, obj);
   }
 }
