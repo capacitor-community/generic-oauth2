@@ -1,62 +1,40 @@
-# Capacitor OAuth 2 client plugin
+<p align="center"><br><img src="https://user-images.githubusercontent.com/236501/85893648-1c92e880-b7a8-11ea-926d-95355b8175c7.png" width="128" height="128" /></p>
+<h3 align="center">Safe Area</h3>
+<p align="center"><strong><code>@capacitor-community/generic-oauth2</code></strong></p>
+<p align="center">
+  Generic Capacitor OAuth 2 client plugin.
+</p>
 
-<a href="#sponsors"><img src="https://img.shields.io/badge/plugin-Sponsors-blue?style=flat-square" /></a>
-<a href="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml"><img src="https://github.com/moberwasserlechner/capacitor-oauth2/actions/workflows/ci.yml/badge.svg?branch=main" /></a>
-<a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth"><img src="https://img.shields.io/npm/dw/@capacitor-community/generic-oauth?style=flat-square" /></a>
-<a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth"><img src="https://img.shields.io/npm/v/@capacitor-community/generic-oauth?style=flat-square" /></a>
-<a href="LICENSE"><img src="https://img.shields.io/npm/l/@capacitor-community/generic-oauth?style=flat-square" /></a>
+<p align="center">
+  <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square" />
+   <a href="https://github.com/capacitor-community/generic-oauth2/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/generic-oauth2/ci.yml?branch=main&style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth2"><img src="https://img.shields.io/npm/l/@capacitor-community/generic-oauth2?style=flat-square" /></a>
+<br>
+  <a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth2"><img src="https://img.shields.io/npm/dw/@capacitor-community/generic-oauth2?style=flat-square" /></a>
+  <a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth2"><img src="https://img.shields.io/npm/v/@capacitor-community/generic-oauth2?style=flat-square" /></a>
+</p>
 
-This is a **generic OAuth 2 client** plugin. It let you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers.
-See [identity providers](#list-of-providers) the community has already used this plugin with.
+## Introduction
 
-## How to install
+This is a **generic OAuth 2 client** plugin. It lets you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers. See [identity providers](#list-of-providers) the community has already used this plugin with.
 
-For Capacitor v5
-
-```bash
-npm i @capacitor-community/generic-oauth
-npx cap sync
-```
-
-For Capacitor v4
-
-```bash
-npm i @capacitor-community/generic-oauth@4
-npx cap sync
-```
-
-For Capacitor v3
+## Installation
 
 ```bash
-npm i @capacitor-community/generic-oauth@3
+npm install @capacitor-community/generic-oauth2
 npx cap sync
 ```
 
 ## Versions
 
-| Plugin | For Capacitor | Docs                                                                                  | Notes                                                         |
-| ------ | ------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| 5.x    | 5.x.x         | [README](./README.md)                                                                 | Breaking changes see Changelog. XCode 14.1 needs this version |
-| 4.x    | 4.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/4.0.0/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version |
-| 3.x    | 3.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/3.0.1/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version |
-| 2.x    | 2.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version |
-| 1.x    | 1.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md) |                                                               |
-
-For further details on what has changed see the [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
-
-## Sponsors
-
-I would like to especially thank some people and companies for supporting my work on this plugin and therefore improving it for everybody.
-
-- [Mark Laurence](https://github.com/UnclearMaker) and the [Royal Veterinary College](https://www.rvc.ac.uk/) - Thanks for supporting open source.
-
-## Maintainers
-
-| Maintainer                | GitHub                                                      | Social                                                |
-| ------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| Michael Oberwasserlechner | [moberwasserlechner](https://github.com/moberwasserlechner) | [@michaelowl_web](https://twitter.com/michaelowl_web) |
-
-Actively maintained: YES
+| Plugin | For Capacitor | Docs                                                                                  | Notes                                                                                                                             |
+| ------ | ------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 6.x    | 6.x.x         | [README](./README.md)                                                                 | Breaking changes. As of this version the changelog will be available in the Releases tab in GitHub. XCode 15.0 needs this version |
+| 5.x    | 5.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/5.0.0/README.md) | Breaking changes see Changelog. XCode 14.1 needs this version                                                                     |
+| 4.x    | 4.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/4.0.0/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version                                                                     |
+| 3.x    | 3.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/3.0.1/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version                                                                     |
+| 2.x    | 2.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version                                                                     |
+| 1.x    | 1.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md) |                                                                                                                                   |
 
 ## Supported flows
 
@@ -108,12 +86,10 @@ That flow should only be used on the backend (server).
 
 ## Configuration
 
-Starting with version 3.0.0, the plugin is registered automatically on all platforms.
-
 ### Use it
 
 ```typescript
-import { OAuth2Client } from '@capacitor-community/generic-oauth';
+import { OAuth2Client } from '@capacitor-community/generic-oauth2';
 
 @Component({
   template:
@@ -295,21 +271,20 @@ This implementation just opens a browser window to let users enter their credent
 As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance
 impact using this plugin in a web application.
 
-### Register plugin
-
-On Web/PWA the plugin is registered **automatically** by Capacitor.
-
 ## Platform: Android
 
-Prerequisite: [Capacitor Android Docs](https://capacitor.ionicframework.com/docs/android/configuration)
+There are two options when configuring an OAuth 2 protocol:
 
-### Register plugin
+1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the default config available,
+2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a _Custom OAuth Handler_.
 
-On Android the plugin is registered **automatically** by Capacitor.
+### 1. Android Default Config
 
-### Android Default Config
+> [!NOTE]
+> You can skip this, if you're only exclusively configuring providers using a _Custom OAuth Handler_.
 
-Skip this, if you use a `OAuth2CustomHandler`. See below.
+> [!NOTE]
+> For more information about configuring your Android app, refer to the [offical Capacitor documentation](https://capacitor.ionicframework.com/docs/android/configuration)
 
 #### android/app/src/main/res/AndroidManifest.xml
 
@@ -336,10 +311,12 @@ and change it to
 <data android:scheme="@string/custom_url_scheme" android:host="oauth" />
 ```
 
-Note: Actually any value for `android:host` will do. It does not has to be `oauth`.
-
-This will fix an issues within the oauth workflow when the application is shown twice.
-See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
+> [!NOTE]
+> Actually any value for `android:host` will do. It does not have to be `oauth`.
+>
+> This will fix an issues within the oauth workflow where the application is shown twice.
+>
+> See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
 
 #### android/app/src/main/res/values/strings.xml
 
@@ -383,27 +360,29 @@ android.buildTypes.release.manifestPlaceholders = [
    Also, it uses the system browser that the plugin uses (and not the user's default browser) to call the logout URL.
    This additionally ensures that the cookies are deleted in the correct browser.
 
-### Custom OAuth Handler
+### 2. Custom OAuth Handler
 
-Some OAuth provider (Facebook) force developers to use their SDK on Android.
+Some OAuth providers (e.g. Facebook) force developers to use their SDK.
 
-This plugin should be as generic as possible so I don't want to include provider specific dependencies.
+This plugin should be as generic as possible, so I don't want to include provider specific dependencies.
 
 Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
 Simply configure a full qualified classname in the option property `android.customHandlerClass`.
-This class has to implement `com.byteowls.capacitor.oauth2.handler.OAuth2CustomHandler`.
+This class has to implement `com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler`.
 
-See a full working example below!
+Refer to the [Facebook example below](#facebook) for a reference implementation.
 
 ## Platform: iOS
 
-### Register plugin
+There are two options when configuring an OAuth 2 protocol:
 
-On iOS the plugin is registered **automatically** by Capacitor.
+1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the default config available,
+2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a _Custom OAuth Handler_.
 
-### iOS Default Config
+### 1. iOS Default Config
 
-Skip this, if you use a `OAuth2CustomHandler`. See below.
+> [!NOTE]
+> You can skip this, if you're only exclusively configuring providers using a _Custom OAuth Handler_.
 
 Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and add the value of `redirectUrl` from your config without `:/` like that
 
@@ -419,9 +398,9 @@ Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and a
 	</array>
 ```
 
-### Custom OAuth Handler
+### 2. Custom OAuth Handler
 
-Some OAuth provider (e.g., Facebook) force developers to use their SDK on iOS.
+Some OAuth providers (e.g. Facebook) force developers to use their SDK.
 
 This plugin should be as generic as possible, so I don't want to include provider specific dependencies.
 
@@ -429,7 +408,7 @@ Therefore, I created a mechanism which let developers integrate custom SDK featu
 Simply configure the class name in the option property `ios.customHandlerClass`.
 This class has to implement `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`.
 
-See a full working example below!
+Refer to the [Facebook example below](#facebook) for a reference implementation.
 
 ## Platform: Electron
 
@@ -499,7 +478,7 @@ In Angular do sth like
 ```typescript
 import { Component, OnInit } from '@angular/core';
 import { Device, DeviceInfo } from '@capacitor/device';
-import { OAuth2Client } from '@capacitor-community/generic-oauth';
+import { OAuth2Client } from '@capacitor-community/generic-oauth2';
 
 @Component({
   templateUrl: './siwa.component.html',
@@ -560,7 +539,7 @@ They share the same core features and therefore the plugin should work either wa
 import {
   OAuth2AuthenticateOptions,
   OAuth2Client,
-} from '@capacitor-community/generic-oauth';
+} from '@capacitor-community/generic-oauth2';
 
 export class AuthService {
   getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
@@ -599,7 +578,7 @@ Try to experiment with the config until Azure includes everything you need in th
 <summary>A configuration with custom scopes might look like this:</summary>
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth";
+import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 
   getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
     return {
@@ -635,7 +614,7 @@ import {OAuth2Client} from "@capacitor-community/generic-oauth";
 <summary>Other configs that works in prior versions</summary>
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth";
+import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 
 azureLogin() {
   OAuth2Client.authenticate({
@@ -666,7 +645,7 @@ azureLogin() {
 ```
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth";
+import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 
 azureLogin() {
   OAuth2Client.authenticate({
@@ -803,7 +782,7 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 #### PWA
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth";
+import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 
 googleLogin() {
     OAuth2Client.authenticate({
@@ -849,7 +828,7 @@ See [iOS Default Config](#ios-default-config)
 #### PWA
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth";
+import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 
 facebookLogin() {
     let fbApiVersion = "2.11";
@@ -1173,10 +1152,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 ## Contribute
 
 See [Contribution Guidelines](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/.github/CONTRIBUTING.md).
-
-## Changelog
-
-See [CHANGELOG](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/CHANGELOG.md).
 
 ## License
 
