@@ -35,7 +35,6 @@ public class OAuth2Options {
 
     private String logoutUrl;
 
-
     public String getAppId() {
         return appId;
     }
@@ -180,7 +179,6 @@ public class OAuth2Options {
     public void setResponseMode(String responseMode) {
         this.responseMode = responseMode;
     }
-
 
     public boolean isHandleResultOnNewIntent() {
         return handleResultOnNewIntent;

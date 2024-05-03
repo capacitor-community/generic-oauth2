@@ -1,9 +1,7 @@
 package com.getcapacitor.community.genericoauth2;
 
 import android.util.Log;
-
 import com.getcapacitor.JSObject;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +18,8 @@ public class GenericOAuth2PluginTest {
 
     @Test
     public void allBooleanValues() {
-        JSObject jsObject = loadJson("{\n" +
+        JSObject jsObject = loadJson(
+            "{\n" +
             "    \"appId\": \"CLIENT_ID\",\n" +
             "    \"authorizationBaseUrl\": \"https://accounts.google.com/o/oauth2/auth\",\n" +
             "    \"accessTokenEndpoint\": \"https://www.googleapis.com/oauth2/v4/token\",\n" +
@@ -33,7 +32,9 @@ public class GenericOAuth2PluginTest {
             "        \"windowOptions\": \"height=600,left=0,top=0\"\n" +
             "    },\n" +
             "    \"android\": {\n" +
-            "        \"appId\": \"" + CLIENT_ID_ANDROID + "\",\n" +
+            "        \"appId\": \"" +
+            CLIENT_ID_ANDROID +
+            "\",\n" +
             "        \"redirectUrl\": \"com.company.project:/\",\n" +
             "        \"handleResultMethod\": \"TEST\",\n" +
             "        \"logsEnabled\": false,\n" +
@@ -46,7 +47,8 @@ public class GenericOAuth2PluginTest {
             "        \"responseType\": \"code\",\n" +
             "        \"redirectUrl\": \"com.company.project:/\"\n" +
             "    }\n" +
-            "}\n");
+            "}\n"
+        );
         OAuth2Options options = plugin.buildAuthenticateOptions(jsObject);
         Assertions.assertNotNull(options);
         Assertions.assertTrue(options.isPkceEnabled());
@@ -57,7 +59,8 @@ public class GenericOAuth2PluginTest {
 
     @Test
     public void responseTypeToken() {
-        JSObject jsObject = loadJson("{\n" +
+        JSObject jsObject = loadJson(
+            "{\n" +
             "    \"appId\": \"CLIENT_ID\",\n" +
             "    \"authorizationBaseUrl\": \"https://accounts.google.com/o/oauth2/auth\",\n" +
             "    \"accessTokenEndpoint\": \"https://www.googleapis.com/oauth2/v4/token\",\n" +
@@ -69,7 +72,9 @@ public class GenericOAuth2PluginTest {
             "        \"windowOptions\": \"height=600,left=0,top=0\"\n" +
             "    },\n" +
             "    \"android\": {\n" +
-            "        \"appId\": \"" + CLIENT_ID_ANDROID + "\",\n" +
+            "        \"appId\": \"" +
+            CLIENT_ID_ANDROID +
+            "\",\n" +
             "        \"redirectUrl\": \"com.company.project:/\",\n" +
             "        \"handleResultMethod\": \"TEST\",\n" +
             "        \"responseType\": \"TOKEN\"\n" +
@@ -79,7 +84,8 @@ public class GenericOAuth2PluginTest {
             "        \"responseType\": \"code\",\n" +
             "        \"redirectUrl\": \"com.company.project:/\"\n" +
             "    }\n" +
-            "}\n");
+            "}\n"
+        );
         OAuth2Options options = plugin.buildAuthenticateOptions(jsObject);
         Assertions.assertNotNull(options);
         Assertions.assertEquals(CLIENT_ID_ANDROID, options.getAppId());
@@ -89,7 +95,8 @@ public class GenericOAuth2PluginTest {
 
     @Test
     public void serverAuthorizationHandling() {
-        JSObject jsObject = loadJson("{\n" +
+        JSObject jsObject = loadJson(
+            "{\n" +
             "    \"appId\": \"CLIENT_ID\",\n" +
             "    \"authorizationBaseUrl\": \"https://accounts.google.com/o/oauth2/auth\",\n" +
             "    \"responseType\": \"code id_token\",\n" +
@@ -100,12 +107,15 @@ public class GenericOAuth2PluginTest {
             "        \"windowOptions\": \"height=600,left=0,top=0\"\n" +
             "    },\n" +
             "    \"android\": {\n" +
-            "        \"appId\": \"" + CLIENT_ID_ANDROID + "\"\n" +
+            "        \"appId\": \"" +
+            CLIENT_ID_ANDROID +
+            "\"\n" +
             "    },\n" +
             "    \"ios\": {\n" +
             "        \"appId\":  \"CLIENT_ID_IOS\"\n" +
             "    }\n" +
-            "}\n");
+            "}\n"
+        );
         OAuth2Options options = plugin.buildAuthenticateOptions(jsObject);
         Assertions.assertNotNull(options.getAppId());
         Assertions.assertEquals(CLIENT_ID_ANDROID, options.getAppId());
@@ -116,12 +126,14 @@ public class GenericOAuth2PluginTest {
 
     @Test
     public void buildRefreshTokenOptions() {
-        JSObject jsObject = loadJson("{\n" +
+        JSObject jsObject = loadJson(
+            "{\n" +
             "    \"appId\": \"CLIENT_ID\",\n" +
             "    \"accessTokenEndpoint\": \"https://www.googleapis.com/oauth2/v4/token\",\n" +
             "    \"refreshToken\": \"ss4f6sd5f4\",\n" +
             "    \"scope\": \"email profile\"\n" +
-            "}");
+            "}"
+        );
         OAuth2RefreshTokenOptions options = plugin.buildRefreshTokenOptions(jsObject);
         Assertions.assertNotNull(options);
         Assertions.assertNotNull(options.getAppId());

@@ -1,6 +1,12 @@
 import { WebPlugin } from '@capacitor/core';
-import type { OAuth2AuthenticateOptions, GenericOAuth2Plugin, OAuth2RefreshTokenOptions } from './definitions';
-import { WebOptions, WebUtils } from './web-utils';
+
+import type {
+  OAuth2AuthenticateOptions,
+  GenericOAuth2Plugin,
+  OAuth2RefreshTokenOptions,
+} from './definitions';
+import type { WebOptions } from './web-utils';
+import { WebUtils } from './web-utils';
 
 export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   private webOptions: WebOptions;
@@ -13,6 +19,7 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   /**
    * Get a new access token using an existing refresh token.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async refreshToken(_options: OAuth2RefreshTokenOptions): Promise<any> {
     return new Promise<any>((_resolve, reject) => {
       reject(new Error('Functionality not implemented for PWAs yet'));
@@ -24,18 +31,31 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
 
     // we open the window first to avoid popups being blocked because of
     // the asynchronous buildWebOptions call
-    this.windowHandle = window.open('', windowOptions.windowTarget, windowOptions.windowOptions);
+    this.windowHandle = window.open(
+      '',
+      windowOptions.windowTarget,
+      windowOptions.windowOptions,
+    );
 
     this.webOptions = await WebUtils.buildWebOptions(options);
     return new Promise<any>((resolve, reject) => {
       // validate
       if (!this.webOptions.appId || this.webOptions.appId.length == 0) {
         reject(new Error('ERR_PARAM_NO_APP_ID'));
-      } else if (!this.webOptions.authorizationBaseUrl || this.webOptions.authorizationBaseUrl.length == 0) {
+      } else if (
+        !this.webOptions.authorizationBaseUrl ||
+        this.webOptions.authorizationBaseUrl.length == 0
+      ) {
         reject(new Error('ERR_PARAM_NO_AUTHORIZATION_BASE_URL'));
-      } else if (!this.webOptions.redirectUrl || this.webOptions.redirectUrl.length == 0) {
+      } else if (
+        !this.webOptions.redirectUrl ||
+        this.webOptions.redirectUrl.length == 0
+      ) {
         reject(new Error('ERR_PARAM_NO_REDIRECT_URL'));
-      } else if (!this.webOptions.responseType || this.webOptions.responseType.length == 0) {
+      } else if (
+        !this.webOptions.responseType ||
+        this.webOptions.responseType.length == 0
+      ) {
         reject(new Error('ERR_PARAM_NO_RESPONSE_TYPE'));
       } else {
         // init internal control params
@@ -57,35 +77,51 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
             window.clearInterval(this.intervalId);
             reject(new Error('USER_CANCELLED'));
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             let href: string = undefined!;
             try {
-              href = this.windowHandle?.location.href!;
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              href = this.windowHandle!.location.href!;
             } catch (ignore) {
               // ignore DOMException: Blocked a frame with origin "http://localhost:4200" from accessing a cross-origin frame.
             }
 
-            if (href != null && href.indexOf(this.webOptions.redirectUrl) >= 0) {
+            if (
+              href != null &&
+              href.indexOf(this.webOptions.redirectUrl) >= 0
+            ) {
               if (this.webOptions.logsEnabled) {
                 this.doLog('Url from Provider: ' + href);
               }
-              let authorizationRedirectUrlParamObj = WebUtils.getUrlParams(href);
+              const authorizationRedirectUrlParamObj =
+                WebUtils.getUrlParams(href);
               if (authorizationRedirectUrlParamObj) {
                 if (this.webOptions.logsEnabled) {
-                  this.doLog('Authorization response:', authorizationRedirectUrlParamObj);
+                  this.doLog(
+                    'Authorization response:',
+                    authorizationRedirectUrlParamObj,
+                  );
                 }
                 window.clearInterval(this.intervalId);
                 // check state
-                if (authorizationRedirectUrlParamObj.state === this.webOptions.state) {
+                if (
+                  authorizationRedirectUrlParamObj.state ===
+                  this.webOptions.state
+                ) {
                   if (this.webOptions.accessTokenEndpoint) {
                     const self = this;
-                    let authorizationCode = authorizationRedirectUrlParamObj.code;
+                    const authorizationCode =
+                      authorizationRedirectUrlParamObj.code;
                     if (authorizationCode) {
                       const tokenRequest = new XMLHttpRequest();
                       tokenRequest.onload = function () {
                         if (this.status === 200) {
-                          let accessTokenResponse = JSON.parse(this.response);
+                          const accessTokenResponse = JSON.parse(this.response);
                           if (self.webOptions.logsEnabled) {
-                            self.doLog('Access token response:', accessTokenResponse);
+                            self.doLog(
+                              'Access token response:',
+                              accessTokenResponse,
+                            );
                           }
                           self.requestResource(
                             accessTokenResponse.access_token,
@@ -98,14 +134,35 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
                       };
                       tokenRequest.onerror = function () {
                         // always log error because of CORS hint
-                        self.doLog('ERR_GENERAL: See client logs. It might be CORS. Status text: ' + this.statusText);
+                        self.doLog(
+                          'ERR_GENERAL: See client logs. It might be CORS. Status text: ' +
+                            this.statusText,
+                        );
                         reject(new Error('ERR_GENERAL'));
                       };
-                      tokenRequest.open('POST', this.webOptions.accessTokenEndpoint, true);
-                      tokenRequest.setRequestHeader('accept', 'application/json');
-                      tokenRequest.setRequestHeader('cache-control', 'no-cache');
-                      tokenRequest.setRequestHeader('content-type', 'application/x-www-form-urlencoded');
-                      tokenRequest.send(WebUtils.getTokenEndpointData(this.webOptions, authorizationCode));
+                      tokenRequest.open(
+                        'POST',
+                        this.webOptions.accessTokenEndpoint,
+                        true,
+                      );
+                      tokenRequest.setRequestHeader(
+                        'accept',
+                        'application/json',
+                      );
+                      tokenRequest.setRequestHeader(
+                        'cache-control',
+                        'no-cache',
+                      );
+                      tokenRequest.setRequestHeader(
+                        'content-type',
+                        'application/x-www-form-urlencoded',
+                      );
+                      tokenRequest.send(
+                        WebUtils.getTokenEndpointData(
+                          this.webOptions,
+                          authorizationCode,
+                        ),
+                      );
                     } else {
                       reject(new Error('ERR_NO_AUTHORIZATION_CODE'));
                     }
@@ -121,8 +178,13 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
                   }
                 } else {
                   if (this.webOptions.logsEnabled) {
-                    this.doLog('State from web options: ' + this.webOptions.state);
-                    this.doLog('State returned from provider: ' + authorizationRedirectUrlParamObj.state);
+                    this.doLog(
+                      'State from web options: ' + this.webOptions.state,
+                    );
+                    this.doLog(
+                      'State returned from provider: ' +
+                        authorizationRedirectUrlParamObj.state,
+                    );
                   }
                   reject(new Error('ERR_STATES_NOT_MATCH'));
                   this.closeWindow();
@@ -158,12 +220,17 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
         const request = new XMLHttpRequest();
         request.onload = function () {
           if (this.status === 200) {
-            let resp = JSON.parse(this.response);
+            const resp = JSON.parse(this.response);
             if (logsEnabled) {
               self.doLog('Resource response:', resp);
             }
             if (resp) {
-              self.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
+              self.assignResponses(
+                resp,
+                accessToken,
+                authorizationResponse,
+                accessTokenResponse,
+              );
             }
             if (logsEnabled) {
               self.doLog(self.MSG_RETURNED_TO_JS, resp);
@@ -185,7 +252,10 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
         request.setRequestHeader('Authorization', `Bearer ${accessToken}`);
         if (this.webOptions.additionalResourceHeaders) {
           for (const key in this.webOptions.additionalResourceHeaders) {
-            request.setRequestHeader(key, this.webOptions.additionalResourceHeaders[key]);
+            request.setRequestHeader(
+              key,
+              this.webOptions.additionalResourceHeaders[key],
+            );
           }
         }
         request.send();
@@ -201,7 +271,12 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
     } else {
       // if no resource url exists just return the accessToken response
       const resp = {};
-      this.assignResponses(resp, accessToken, authorizationResponse, accessTokenResponse);
+      this.assignResponses(
+        resp,
+        accessToken,
+        authorizationResponse,
+        accessTokenResponse,
+      );
       if (this.webOptions.logsEnabled) {
         this.doLog(this.MSG_RETURNED_TO_JS, resp);
       }
@@ -210,7 +285,12 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
     }
   }
 
-  assignResponses(resp: any, accessToken: string, authorizationResponse: any, accessTokenResponse: any = null): void {
+  assignResponses(
+    resp: any,
+    accessToken: string,
+    authorizationResponse: any,
+    accessTokenResponse: any = null,
+  ): void {
     // #154
     if (authorizationResponse) {
       resp['authorization_response'] = authorizationResponse;
@@ -222,6 +302,7 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   }
 
   async logout(options: OAuth2AuthenticateOptions): Promise<boolean> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise<any>((resolve, _reject) => {
       localStorage.removeItem(WebUtils.getAppId(options));
       resolve(true);

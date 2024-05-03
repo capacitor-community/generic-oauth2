@@ -4,7 +4,7 @@ import OAuthSwift
 import CommonCrypto
 import AuthenticationServices
 
-typealias JSObject = [String:Any]
+typealias JSObject = [String: Any]
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -88,7 +88,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
         classes.deallocate()
     }
 
-    public override func load() {
+    override public func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenURL, object: nil)
         registerHandlers()
     }
@@ -100,7 +100,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
         guard let url = object["url"] as? URL else {
             return
         }
-        OAuth2Swift.handle(url: url);
+        OAuth2Swift.handle(url: url)
     }
 
     /*
@@ -132,11 +132,11 @@ public class GenericOAuth2Plugin: CAPPlugin {
 
         self.oauthSwift = oauthSwift
 
-        let scope = getOverwritableString(call, PARAM_SCOPE) ?? nil;
-        var parameters: OAuthSwift.Parameters = [:];
+        let scope = getOverwritableString(call, PARAM_SCOPE) ?? nil
+        var parameters: OAuthSwift.Parameters = [:]
 
         if scope != nil {
-            parameters["scope"] = scope;
+            parameters["scope"] = scope
         }
 
         oauthSwift.renewAccessToken(withRefreshToken: refreshToken, parameters: parameters) { result in
@@ -151,27 +151,27 @@ public class GenericOAuth2Plugin: CAPPlugin {
                 }
             case .failure(let error):
                 switch error {
-                case .cancelled, .accessDenied(_, _):
+                case .cancelled, .accessDenied:
                     call.reject(SharedConstants.ERR_USER_CANCELLED)
-                case .stateNotEqual( _, _):
+                case .stateNotEqual:
                     self.log("The given state does not match the one in the respond!")
                     call.reject(self.ERR_STATES_NOT_MATCH)
                 case .requestError(let underlyingError, _):
-                    let nsError = (underlyingError as NSError);
-                    let errorCode = nsError.code;
-                    let responseBodyString = (nsError.userInfo["Response-Body"]) as? String;
-                    self.log("Authorization failed with requestError \(responseBodyString ?? "")");
+                    let nsError = (underlyingError as NSError)
+                    let errorCode = nsError.code
+                    let responseBodyString = (nsError.userInfo["Response-Body"]) as? String
+                    self.log("Authorization failed with requestError \(responseBodyString ?? "")")
 
                     do {
-                        let responseBody = Data((responseBodyString ?? "").utf8);
+                        let responseBody = Data((responseBodyString ?? "").utf8)
                         if let json = try JSONSerialization.jsonObject(with: responseBody, options: []) as? [String: Any] {
                             call.reject(json["error"] as? String ?? self.ERR_GENERAL, String(errorCode), underlyingError, json)
                         }
-                    } catch  {
+                    } catch {
                         call.reject(self.ERR_GENERAL, String(errorCode), underlyingError)
                     }
                 default:
-                    self.log("Authorization failed with \(error.localizedDescription)");
+                    self.log("Authorization failed with \(error.localizedDescription)")
                     call.reject(self.ERR_AUTHORIZATION_FAILED)
                 }
             }
@@ -219,7 +219,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
                                 }
                             case .failure(let error):
                                 self.log("Resource url request error '\(error)'")
-                                call.reject(self.ERR_CUSTOM_HANDLER_LOGIN);
+                                call.reject(self.ERR_CUSTOM_HANDLER_LOGIN)
                             }
                         }
                     } else {
@@ -260,7 +260,6 @@ public class GenericOAuth2Plugin: CAPPlugin {
                     return
                 }
 
-
                 var oauthSwift: OAuth2Swift
                 if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
                     oauthSwift = OAuth2Swift(
@@ -287,7 +286,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
 
                 // additional parameters #18
                 let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_PARAMETERS) as? [String: Any] ?? [:]
-                let additionalParameters = buildStringDict(callParameter);
+                let additionalParameters = buildStringDict(callParameter)
 
                 let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
                 let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
@@ -303,7 +302,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
                         codeChallenge: pkceCodeChallenge,
                         codeVerifier: pkceCodeVerifier,
                         parameters: additionalParameters) { result in
-                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
+                        self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
                     }
                 } else {
                     oauthSwift.authorize(
@@ -311,11 +310,10 @@ public class GenericOAuth2Plugin: CAPPlugin {
                         scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
                         state: requestState,
                         parameters: additionalParameters) { result in
-                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
+                        self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
                     }
                 }
             }
-
 
         }
     }
@@ -328,7 +326,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
             if let handlerInstance = self.getOrLoadHandlerInstance(className: handlerClassName) {
                 let success: Bool! = handlerInstance.logout(viewController: (bridge?.viewController!)!, call: call)
                 if success {
-                    call.resolve();
+                    call.resolve()
                 } else {
                     self.log("Custom handler logout failed!")
                     call.reject(self.ERR_CUSTOM_HANDLER_LOGOUT)
@@ -369,42 +367,42 @@ public class GenericOAuth2Plugin: CAPPlugin {
                 }
                 // resource url request headers
                 let callParameter: [String: Any] = getOverwritable(call, PARAM_ADDITIONAL_RESOURCE_HEADERS) as? [String: Any] ?? [:]
-                let additionalHeadersDict = buildStringDict(callParameter);
+                let additionalHeadersDict = buildStringDict(callParameter)
 
                 self.oauthSwift!.client.get(resourceUrl!,
                                             headers: additionalHeadersDict) { result in
-                        switch result {
-                        case .success(let resourceResponse):
-                            do {
-                                if logsEnabled {
-                                    self.logDataObj("Resource response:", resourceResponse.data)
-                                }
-
-                                var jsonObj = try JSONSerialization.jsonObject(with: resourceResponse.data, options: []) as! JSObject
-                                // send the access token to the caller so e.g. it can be stored on a backend
-                                // #154
-                                if let accessTokenResponse = response {
-                                    let accessTokenJsObject = try? JSONSerialization.jsonObject(with: accessTokenResponse.data, options: []) as? JSObject
-                                    jsonObj.updateValue(accessTokenJsObject!, forKey: self.JSON_KEY_ACCESS_TOKEN_RESPONSE)
-                                }
-
-                                jsonObj.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
-
-                                if logsEnabled {
-                                    self.log("Returned to JS:\n\(jsonObj)")
-                                }
-
-                                call.resolve(jsonObj)
-                            } catch {
-                                self.log("Invalid json in resource response:\n \(error.localizedDescription)")
-                                call.reject(self.ERR_GENERAL)
+                    switch result {
+                    case .success(let resourceResponse):
+                        do {
+                            if logsEnabled {
+                                self.logDataObj("Resource response:", resourceResponse.data)
                             }
-                        case .failure(let error):
-                            self.log("Resource url request failed:\n\(error.description)");
+
+                            var jsonObj = try JSONSerialization.jsonObject(with: resourceResponse.data, options: []) as! JSObject
+                            // send the access token to the caller so e.g. it can be stored on a backend
+                            // #154
+                            if let accessTokenResponse = response {
+                                let accessTokenJsObject = try? JSONSerialization.jsonObject(with: accessTokenResponse.data, options: []) as? JSObject
+                                jsonObj.updateValue(accessTokenJsObject!, forKey: self.JSON_KEY_ACCESS_TOKEN_RESPONSE)
+                            }
+
+                            jsonObj.updateValue(credential.oauthToken, forKey: self.JSON_KEY_ACCESS_TOKEN)
+
+                            if logsEnabled {
+                                self.log("Returned to JS:\n\(jsonObj)")
+                            }
+
+                            call.resolve(jsonObj)
+                        } catch {
+                            self.log("Invalid json in resource response:\n \(error.localizedDescription)")
                             call.reject(self.ERR_GENERAL)
                         }
+                    case .failure(let error):
+                        self.log("Resource url request failed:\n\(error.description)")
+                        call.reject(self.ERR_GENERAL)
+                    }
                 }
-            // no resource url
+                // no resource url
             } else if let responseData = response?.data {
                 do {
                     var jsonObj = JSObject()
@@ -427,25 +425,25 @@ public class GenericOAuth2Plugin: CAPPlugin {
             }
         case .failure(let error):
             switch error {
-            case .cancelled, .accessDenied(_, _):
+            case .cancelled, .accessDenied:
                 call.reject(SharedConstants.ERR_USER_CANCELLED)
-            case .stateNotEqual(_, _):
+            case .stateNotEqual:
                 self.log("The given state does not match the one in the respond!")
                 call.reject(self.ERR_STATES_NOT_MATCH)
             default:
-                self.log("Authorization failed with \(error.localizedDescription)");
+                self.log("Authorization failed with \(error.localizedDescription)")
                 call.reject(self.ERR_NO_AUTHORIZATION_CODE)
             }
         }
     }
 
-    private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable:Any?]? {
+    private func getConfigObjectDeepest(_ options: [AnyHashable: Any?]!, key: String) -> [AnyHashable: Any?]? {
         let parts = key.split(separator: ".")
 
         var o = options
         for (_, k) in parts[0..<parts.count-1].enumerated() {
             if o != nil {
-                o = o?[String(k)] as? [String:Any?] ?? nil
+                o = o?[String(k)] as? [String: Any?] ?? nil
             }
         }
         return o
@@ -465,7 +463,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
         if ios != nil {
             base = ios
         }
-        return base;
+        return base
     }
 
     private func getOverwritable(_ call: CAPPluginCall, _ key: String) -> Any? {
@@ -474,7 +472,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
         if ios != nil {
             base = ios
         }
-        return base;
+        return base
     }
 
     private func getValue(_ call: CAPPluginCall, _ key: String) -> Any? {
@@ -511,18 +509,18 @@ public class GenericOAuth2Plugin: CAPPlugin {
         log("\(msg)\n\(json ?? "")")
     }
 
-    private func buildStringDict(_ callParameter: [String: Any]) -> [String: String]  {
+    private func buildStringDict(_ callParameter: [String: Any]) -> [String: String] {
         var dict: [String: String] = [:]
         for (key, value) in callParameter {
             // only non empty string values are allowed
             if !key.isEmpty && value is String {
-                let str = value as! String;
+                let str = value as! String
                 if !str.isEmpty {
                     dict[key] = str
                 }
             }
         }
-        return dict;
+        return dict
     }
 
     private func loadHandlerInstance(className: String) -> OAuth2CustomHandler? {
@@ -558,7 +556,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
 extension String {
     func sha256() -> Data {
         let data = self.data(using: .utf8)!
-        var buffer = [UInt8](repeating: 0,  count: Int(CC_SHA256_DIGEST_LENGTH))
+        var buffer = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
         data.withUnsafeBytes {
             _ = CC_SHA256($0.baseAddress, CC_LONG(data.count), &buffer)
         }
@@ -587,11 +585,11 @@ extension GenericOAuth2Plugin: ASAuthorizationControllerDelegate {
 
         if let _: Bool = getValue(call, PARAM_IOS_USE_SCOPE) as? Bool {
             if let scopeStr = getOverwritableString(call, PARAM_SCOPE), !scopeStr.isEmpty {
-                var scopeArr: Array<ASAuthorization.Scope> = []
+                var scopeArr: [ASAuthorization.Scope] = []
                 if scopeStr.localizedCaseInsensitiveContains("fullName")
-                   || scopeStr.localizedCaseInsensitiveContains("name") {
-                   scopeArr.append(.fullName)
-               }
+                    || scopeStr.localizedCaseInsensitiveContains("name") {
+                    scopeArr.append(.fullName)
+                }
 
                 if scopeStr.localizedCaseInsensitiveContains("email") {
                     scopeArr.append(.email)
@@ -634,7 +632,7 @@ extension GenericOAuth2Plugin: ASAuthorizationControllerDelegate {
                 "state": appleIDCredential.state  as Any,
                 "id_token": String(data: appleIDCredential.identityToken!, encoding: .utf8) as Any,
                 "code": String(data: appleIDCredential.authorizationCode!, encoding: .utf8) as Any
-            ] as [String : Any]
+            ] as [String: Any]
             self.savedPluginCall?.resolve(result as PluginCallResultData)
         default:
             self.log("SIWA: Authorization failed!")
@@ -668,7 +666,5 @@ extension GenericOAuth2Plugin: ASAuthorizationControllerDelegate {
             self.savedPluginCall?.reject(self.ERR_GENERAL)
         }
     }
-
-
 
 }

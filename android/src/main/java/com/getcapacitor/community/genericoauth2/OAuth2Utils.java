@@ -1,13 +1,17 @@
 package com.getcapacitor.community.genericoauth2;
 
 import com.getcapacitor.JSObject;
-
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.TokenResponse;
 
 public abstract class OAuth2Utils {
 
-    public static void assignResponses(JSObject resp, String accessToken, AuthorizationResponse authorizationResponse, TokenResponse accessTokenResponse) {
+    public static void assignResponses(
+        JSObject resp,
+        String accessToken,
+        AuthorizationResponse authorizationResponse,
+        TokenResponse accessTokenResponse
+    ) {
         // #154
         if (authorizationResponse != null) {
             resp.put("authorization_response", authorizationResponse.jsonSerialize());
