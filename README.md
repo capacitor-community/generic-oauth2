@@ -89,7 +89,7 @@ That flow should only be used on the backend (server).
 ### Use it
 
 ```typescript
-import { OAuth2Client } from '@capacitor-community/generic-oauth2';
+import { GenericOAuth2 } from '@capacitor-community/generic-oauth2';
 
 @Component({
   template:
@@ -102,7 +102,7 @@ export class SignupComponent {
   refreshToken: string;
 
   onOAuthBtnClick() {
-    OAuth2Client.authenticate(oauth2Options)
+    GenericOAuth2.authenticate(oauth2Options)
       .then(response => {
         this.accessToken = response['access_token']; // storage recommended for android logout
         this.refreshToken = response['refresh_token'];
