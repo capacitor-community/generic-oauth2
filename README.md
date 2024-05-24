@@ -89,7 +89,7 @@ That flow should only be used on the backend (server).
 ### Use it
 
 ```typescript
-import { OAuth2Client } from '@capacitor-community/generic-oauth2';
+import { GenericOAuth2 } from '@capacitor-community/generic-oauth2';
 
 @Component({
   template:
@@ -102,7 +102,7 @@ export class SignupComponent {
   refreshToken: string;
 
   onOAuthBtnClick() {
-    OAuth2Client.authenticate(oauth2Options)
+    GenericOAuth2.authenticate(oauth2Options)
       .then(response => {
         this.accessToken = response['access_token']; // storage recommended for android logout
         this.refreshToken = response['refresh_token'];
@@ -124,7 +124,7 @@ export class SignupComponent {
       console.error('No refresh token found. Log in with OAuth first.');
     }
 
-    OAuth2Client.refreshToken(oauth2RefreshOptions)
+    GenericOAuth2.refreshToken(oauth2RefreshOptions)
       .then(response => {
         this.accessToken = response['access_token']; // storage recommended for android logout
         // Don't forget to store the new refresh token as well!
@@ -137,7 +137,7 @@ export class SignupComponent {
   }
 
   onLogoutClick() {
-    OAuth2Client.logout(
+    GenericOAuth2.logout(
       oauth2LogoutOptions,
       this.accessToken, // only used on android
     )
@@ -200,7 +200,7 @@ These parameters are overrideable in every platform
 | resourceUrl               |         |          | If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                                         |       |
 | additionalResourceHeaders |         |          | Additional headers for the resource request                                                                                                                                                                                                         | 3.0.0 |
 | pkceEnabled               | `false` |          | Enable PKCE if you need it. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.                                                                                             |       |
-| logsEnabled               | `false` |          | Enable extensive logging. All plugin outputs are prefixed with `I/Capacitor/OAuth2ClientPlugin: ` across all platforms. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection. | 3.0.0 |
+| logsEnabled               | `false` |          | Enable extensive logging. All plugin outputs are prefixed with `I/Capacitor/GenericOAuth2Plugin: ` across all platforms. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection. | 3.0.0 |
 | scope                     |         |          |                                                                                                                                                                                                                                                     |       |
 | state                     |         |          | The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                                         |       |
 | additionalParameters      |         |          | Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>`{ "key1": "value", "key2": "value, "response_mode": "value"}`                                                            |       |
@@ -444,7 +444,7 @@ Minimum config
 
 ```typescript
 appleLogin() {
-  OAuth2Client.authenticate({
+  GenericOAuth2.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
   });
@@ -460,7 +460,7 @@ Then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is
 
 ```typescript
 appleLogin() {
-  OAuth2Client.authenticate({
+  GenericOAuth2.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
     ios: {
@@ -478,7 +478,7 @@ In Angular do sth like
 ```typescript
 import { Component, OnInit } from '@angular/core';
 import { Device, DeviceInfo } from '@capacitor/device';
-import { OAuth2Client } from '@capacitor-community/generic-oauth2';
+import { GenericOAuth2 } from '@capacitor-community/generic-oauth2';
 
 @Component({
   templateUrl: './siwa.component.html',
@@ -538,7 +538,7 @@ They share the same core features and therefore the plugin should work either wa
 ```typescript
 import {
   OAuth2AuthenticateOptions,
-  OAuth2Client,
+  GenericOAuth2,
 } from '@capacitor-community/generic-oauth2';
 
 export class AuthService {
@@ -578,7 +578,7 @@ Try to experiment with the config until Azure includes everything you need in th
 <summary>A configuration with custom scopes might look like this:</summary>
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth2";
+import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
   getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
     return {
@@ -614,10 +614,10 @@ import {OAuth2Client} from "@capacitor-community/generic-oauth2";
 <summary>Other configs that works in prior versions</summary>
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth2";
+import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
 azureLogin() {
-  OAuth2Client.authenticate({
+  GenericOAuth2.authenticate({
     appId: "xxxxxxxxx",
     authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
     accessTokenEndpoint: "",
@@ -645,10 +645,10 @@ azureLogin() {
 ```
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth2";
+import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
 azureLogin() {
-  OAuth2Client.authenticate({
+  GenericOAuth2.authenticate({
     appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
     authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
     accessTokenEndpoint: '',
@@ -782,10 +782,10 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 #### PWA
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth2";
+import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
 googleLogin() {
-    OAuth2Client.authenticate({
+    GenericOAuth2.authenticate({
       authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
       accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
       scope: "email profile",
@@ -828,11 +828,11 @@ See [iOS Default Config](#ios-default-config)
 #### PWA
 
 ```typescript
-import {OAuth2Client} from "@capacitor-community/generic-oauth2";
+import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
 facebookLogin() {
     let fbApiVersion = "2.11";
-    OAuth2Client.authenticate({
+    GenericOAuth2.authenticate({
       appId: "YOUR_FACEBOOK_APP_ID",
       authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
       resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
