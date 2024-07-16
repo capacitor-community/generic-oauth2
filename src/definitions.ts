@@ -6,6 +6,14 @@ export interface GenericOAuth2Plugin {
    */
   authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
   /**
+   * Handle OAuth implicit flow
+   * @param {OAuth2RedirectAuthenticationOptions} options
+   * @returns {Promise<any>} the token endpoint response
+   */
+  handleRedirectAuthentication(
+    options: OAuth2RedirectAuthenticationOptions,
+  ): Promise<any>;
+  /**
    * Get a new access token based on the given refresh token.
    * @param {OAuth2RefreshTokenOptions} options
    * @returns {Promise<any>} the token endpoint response
@@ -21,6 +29,14 @@ export interface GenericOAuth2Plugin {
     options: OAuth2AuthenticateOptions,
     id_token?: string,
   ): Promise<boolean>;
+}
+
+export interface OAuth2RedirectAuthenticationOptions
+  extends OAuth2AuthenticateOptions {
+  /**
+   * The URL where we get the code
+   */
+  response_url: string;
 }
 
 export interface OAuth2RefreshTokenOptions {
