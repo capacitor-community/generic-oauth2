@@ -27,7 +27,7 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
     });
   }
 
-  async handleRedirectAuthentication(
+  async redirectFlowCodeListener(
     options: OAuth2RedirectAuthenticationOptions,
   ): Promise<any> {
     this.webOptions = await WebUtils.buildWebOptions(options);

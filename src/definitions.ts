@@ -6,11 +6,11 @@ export interface GenericOAuth2Plugin {
    */
   authenticate(options: OAuth2AuthenticateOptions): Promise<any>;
   /**
-   * Handle OAuth implicit flow
+   * Listens for OAuth implicit redirect flow queryString CODE to generate an access_token
    * @param {OAuth2RedirectAuthenticationOptions} options
    * @returns {Promise<any>} the token endpoint response
    */
-  handleRedirectAuthentication(
+  redirectFlowCodeListener(
     options: OAuth2RedirectAuthenticationOptions,
   ): Promise<any>;
   /**
