@@ -6,6 +6,21 @@ const mGetRandomValues = jest.fn().mockReturnValueOnce(new Uint32Array(10));
 Object.defineProperty(window, 'crypto', {
   value: { getRandomValues: mGetRandomValues },
 });
+let store: {
+  [k: string]: string;
+} = {};
+const sessionStorageMock = {
+  getItem: jest.fn().mockImplementation((key: string) => store[key] ?? null),
+  setItem: jest
+    .fn()
+    .mockImplementation((key: string, value: string) => (store[key] = value)),
+  removeItem: jest.fn().mockImplementation((key: string) => delete store[key]),
+  clear: jest.fn().mockImplementation(() => (store = {})),
+};
+
+Object.defineProperty(window, 'sessionStorage', {
+  value: sessionStorageMock,
+});
 
 const googleOptions: OAuth2AuthenticateOptions = {
   appId: 'appId',
@@ -54,6 +69,15 @@ const oneDriveOptions: OAuth2AuthenticateOptions = {
   },
   ios: {
     redirectUrl: 'com.byteowls.oauth2://authorize',
+  },
+};
+
+const implicitFlowOptions: OAuth2AuthenticateOptions = {
+  ...oneDriveOptions,
+  pkceEnabled: true,
+  web: {
+    ...oneDriveOptions.web,
+    pkceEnabled: true,
   },
 };
 
@@ -152,6 +176,32 @@ describe('web options', () => {
     WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
       expect(webOptions.additionalParameters[' ']).toBeUndefined();
       expect(webOptions.additionalParameters['emptyParam']).toBeUndefined();
+    });
+  });
+
+  describe('if pkceCode enabled', () => {
+    beforeEach(() => {
+      sessionStorageMock.clear();
+    });
+    describe('if a code exists in sessionStorage', () => {
+      beforeEach(() => {
+        const code = 'DEMO_CODE';
+        WebUtils.setCodeVerifier(code);
+      });
+      it('should get the code correctly', async () => {
+        const spy = jest.spyOn(WebUtils, 'getCodeVerifier');
+        const webOptions = await WebUtils.buildWebOptions(implicitFlowOptions);
+        expect(spy).toBeCalled();
+        expect(webOptions.pkceCodeVerifier).toBe('DEMO_CODE');
+      });
+    });
+    describe("if a code doesn't exist in sessionStorage", () => {
+      it('should set the code', async () => {
+        const spy = jest.spyOn(WebUtils, 'setCodeVerifier');
+        const webOptions = await WebUtils.buildWebOptions(implicitFlowOptions);
+        expect(webOptions.pkceCodeVerifier).toBeDefined();
+        expect(spy).toBeCalled();
+      });
     });
   });
 });
@@ -353,5 +403,46 @@ describe('additional resource headers', () => {
   it('should equal *', async () => {
     const webOptions = await WebUtils.buildWebOptions(options);
     expect(webOptions.additionalResourceHeaders[headerKey]).toEqual('*');
+  });
+});
+
+describe('implicit redirect authentication flow helpers', () => {
+  beforeEach(() => {
+    sessionStorageMock.clear();
+  });
+
+  it('should set code in session storage', () => {
+    const code = 'DEMO_CODE';
+    const codeSet = WebUtils.setCodeVerifier(code);
+    expect(window.sessionStorage.setItem).toBeCalledWith(
+      `I_Capacitor_GenericOAuth2Plugin_PKCE`,
+      code,
+    );
+    expect(codeSet).toEqual(true);
+  });
+
+  it('should get code if it exists in sessionStorage', () => {
+    const code = 'DEMO_CODE';
+    WebUtils.setCodeVerifier(code);
+    const readCode = WebUtils.getCodeVerifier();
+    expect(readCode).toBe(code);
+    expect(window.sessionStorage.getItem).toBeCalledWith(
+      `I_Capacitor_GenericOAuth2Plugin_PKCE`,
+    );
+  });
+
+  it("should get null if code doesn't exist in sessionStorage", () => {
+    const readCode = WebUtils.getCodeVerifier();
+    expect(readCode).toBeNull();
+    expect(window.sessionStorage.getItem).toBeCalledWith(
+      `I_Capacitor_GenericOAuth2Plugin_PKCE`,
+    );
+  });
+
+  it('should remove the code from sessionStorage', () => {
+    WebUtils.clearCodeVerifier();
+    expect(window.sessionStorage.removeItem).toBeCalledWith(
+      `I_Capacitor_GenericOAuth2Plugin_PKCE`,
+    );
   });
 });
