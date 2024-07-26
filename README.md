@@ -75,6 +75,9 @@ pkceEnable: true
 ...
 ```
 
+Supported on Web with the new method `redirectFlowCodeListener` which should be called on your app init process
+so it watches for the URL queryString `code` to generate an `access_token` correctly.
+
 Please be aware that some providers (OneDrive, Auth0) allow **Code Flow + PKCE** only for native apps. Web apps have to use implicit flow.
 
 ### Important
