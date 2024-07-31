@@ -90,6 +90,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
 
     override public func load() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenURL, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.handleRedirect(notification:)), name: .capacitorOpenUniversalLink, object: nil)
         registerHandlers()
     }
 
