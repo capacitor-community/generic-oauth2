@@ -1,5 +1,9 @@
 # Changelog
 
+## [6.x.x] - 2024
+
+See [GitHub Releases](https://github.com/capacitor-community/generic-oauth2/releases) for details
+
 ## [5.0.0] - 2023-09-04
 
 ### Breaking

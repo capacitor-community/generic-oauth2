@@ -59,3 +59,6 @@ captures
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild
+
+# Locally published versions
+capacitor-community-generic-oauth2-*.tgz
