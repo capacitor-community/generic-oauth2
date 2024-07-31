@@ -73,6 +73,23 @@ export class WebUtils {
     return body;
   }
 
+  static setCodeVerifier(code: string): boolean {
+    try {
+      window.sessionStorage.setItem(`I_Capacitor_GenericOAuth2Plugin_PKCE`, code);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  static clearCodeVerifier(): void {
+    window.sessionStorage.removeItem(`I_Capacitor_GenericOAuth2Plugin_PKCE`);
+  }
+
+  static getCodeVerifier(): string | null {
+    return window.sessionStorage.getItem(`I_Capacitor_GenericOAuth2Plugin_PKCE`);
+  }
+
   /**
    * Public only for testing
    */
@@ -175,7 +192,13 @@ export class WebUtils {
       this.getOverwritableValue(configOptions, 'sendCacheControlHeader') ??
       webOptions.sendCacheControlHeader;
     if (webOptions.pkceEnabled) {
-      webOptions.pkceCodeVerifier = this.randomString(64);
+      const pkceCode = this.getCodeVerifier();
+      if (pkceCode) {
+        webOptions.pkceCodeVerifier = pkceCode;
+      } else {
+        webOptions.pkceCodeVerifier = this.randomString(64);
+        this.setCodeVerifier(webOptions.pkceCodeVerifier);
+      }
       if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
         await CryptoUtils.deriveChallenge(webOptions.pkceCodeVerifier).then(
           c => {

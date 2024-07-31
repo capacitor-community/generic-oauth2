@@ -4,6 +4,7 @@ import type {
   OAuth2AuthenticateOptions,
   GenericOAuth2Plugin,
   OAuth2RefreshTokenOptions,
+  ImplicitFlowRedirectOptions,
 } from './definitions';
 import type { WebOptions } from './web-utils';
 import { WebUtils } from './web-utils';
@@ -23,6 +24,25 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   async refreshToken(_options: OAuth2RefreshTokenOptions): Promise<any> {
     return new Promise<any>((_resolve, reject) => {
       reject(new Error('Functionality not implemented for PWAs yet'));
+    });
+  }
+
+  async redirectFlowCodeListener(
+    options: ImplicitFlowRedirectOptions,
+  ): Promise<any> {
+    this.webOptions = await WebUtils.buildWebOptions(options);
+    return new Promise((resolve, reject) => {
+      const urlParamObj = WebUtils.getUrlParams(options.response_url);
+      if (urlParamObj) {
+        const code = urlParamObj.code;
+        if (code) {
+          this.getAccessToken(urlParamObj, resolve, reject, code);
+        } else {
+          reject(new Error('Oauth Code parameter was not present in url.'));
+        }
+      } else {
+        reject(new Error('Oauth Parameters where not present in url.'));
+      }
     });
   }
 
@@ -109,61 +129,14 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
                   this.webOptions.state
                 ) {
                   if (this.webOptions.accessTokenEndpoint) {
-                    const self = this;
                     const authorizationCode =
                       authorizationRedirectUrlParamObj.code;
                     if (authorizationCode) {
-                      const tokenRequest = new XMLHttpRequest();
-                      tokenRequest.onload = function () {
-                        if (this.status === 200) {
-                          const accessTokenResponse = JSON.parse(this.response);
-                          if (self.webOptions.logsEnabled) {
-                            self.doLog(
-                              'Access token response:',
-                              accessTokenResponse,
-                            );
-                          }
-                          self.requestResource(
-                            accessTokenResponse.access_token,
-                            resolve,
-                            reject,
-                            authorizationRedirectUrlParamObj,
-                            accessTokenResponse,
-                          );
-                        }
-                      };
-                      tokenRequest.onerror = function () {
-                        // always log error because of CORS hint
-                        self.doLog(
-                          'ERR_GENERAL: See client logs. It might be CORS. Status text: ' +
-                            this.statusText,
-                        );
-                        reject(new Error('ERR_GENERAL'));
-                      };
-                      tokenRequest.open(
-                        'POST',
-                        this.webOptions.accessTokenEndpoint,
-                        true,
-                      );
-                      tokenRequest.setRequestHeader(
-                        'accept',
-                        'application/json',
-                      );
-                      if (this.webOptions.sendCacheControlHeader) {
-                        tokenRequest.setRequestHeader(
-                          'cache-control',
-                          'no-cache',
-                        );
-                      }
-                      tokenRequest.setRequestHeader(
-                        'content-type',
-                        'application/x-www-form-urlencoded',
-                      );
-                      tokenRequest.send(
-                        WebUtils.getTokenEndpointData(
-                          this.webOptions,
-                          authorizationCode,
-                        ),
+                      this.getAccessToken(
+                        authorizationRedirectUrlParamObj,
+                        resolve,
+                        reject,
+                        authorizationCode,
                       );
                     } else {
                       reject(new Error('ERR_NO_AUTHORIZATION_CODE'));
@@ -201,6 +174,53 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   }
 
   private readonly MSG_RETURNED_TO_JS = 'Returned to JS:';
+
+  private getAccessToken(
+    authorizationRedirectUrlParamObj: { [p: string]: string } | undefined,
+    resolve: (value: any) => void,
+    reject: (reason?: any) => void,
+    authorizationCode: string,
+  ) {
+    const tokenRequest = new XMLHttpRequest();
+    tokenRequest.onload = () => {
+      WebUtils.clearCodeVerifier();
+      if (tokenRequest.status === 200) {
+        const accessTokenResponse = JSON.parse(tokenRequest.response);
+        if (this.webOptions.logsEnabled) {
+          this.doLog('Access token response:', accessTokenResponse);
+        }
+        this.requestResource(
+          accessTokenResponse.access_token,
+          resolve,
+          reject,
+          authorizationRedirectUrlParamObj,
+          accessTokenResponse,
+        );
+      }
+    };
+    tokenRequest.onerror = () => {
+      this.doLog(
+        'ERR_GENERAL: See client logs. It might be CORS. Status text: ' +
+          tokenRequest.statusText,
+      );
+      reject(new Error('ERR_GENERAL'));
+    };
+    tokenRequest.open('POST', this.webOptions.accessTokenEndpoint, true);
+    tokenRequest.setRequestHeader('accept', 'application/json');
+    if (this.webOptions.sendCacheControlHeader) {
+      tokenRequest.setRequestHeader(
+          'cache-control',
+          'no-cache',
+      );
+    }
+    tokenRequest.setRequestHeader(
+      'content-type',
+      'application/x-www-form-urlencoded',
+    );
+    tokenRequest.send(
+      WebUtils.getTokenEndpointData(this.webOptions, authorizationCode),
+    );
+  }
 
   private requestResource(
     accessToken: string,
