@@ -4,7 +4,7 @@ import type {
   OAuth2AuthenticateOptions,
   GenericOAuth2Plugin,
   OAuth2RefreshTokenOptions,
-  OAuth2RedirectAuthenticationOptions,
+  ImplicitFlowRedirectOptions,
 } from './definitions';
 import type { WebOptions } from './web-utils';
 import { WebUtils } from './web-utils';
@@ -28,7 +28,7 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
   }
 
   async redirectFlowCodeListener(
-    options: OAuth2RedirectAuthenticationOptions,
+    options: ImplicitFlowRedirectOptions,
   ): Promise<any> {
     this.webOptions = await WebUtils.buildWebOptions(options);
     return new Promise((resolve, reject) => {

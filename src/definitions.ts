@@ -11,7 +11,7 @@ export interface GenericOAuth2Plugin {
    * @returns {Promise<any>} the token endpoint response
    */
   redirectFlowCodeListener(
-    options: OAuth2RedirectAuthenticationOptions,
+    options: ImplicitFlowRedirectOptions,
   ): Promise<any>;
   /**
    * Get a new access token based on the given refresh token.
@@ -31,8 +31,7 @@ export interface GenericOAuth2Plugin {
   ): Promise<boolean>;
 }
 
-export interface OAuth2RedirectAuthenticationOptions
-  extends OAuth2AuthenticateOptions {
+export interface ImplicitFlowRedirectOptions extends OAuth2AuthenticateOptions {
   /**
    * The URL where we get the code
    */
