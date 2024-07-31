@@ -136,6 +136,10 @@ export interface WebOption extends OAuth2AuthenticateBaseOptions {
    * Options for the window target. Defaults to _blank
    */
   windowTarget?: string;
+  /**
+   * Whether to send the cache control header with the token request, unsupported by some providers. Defaults to true.
+   */
+  sendCacheControlHeader?: boolean;
 }
 
 export interface AndroidOptions extends OAuth2AuthenticateBaseOptions {

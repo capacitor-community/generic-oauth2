@@ -154,6 +154,22 @@ describe('web options', () => {
       expect(webOptions.additionalParameters['emptyParam']).toBeUndefined();
     });
   });
+
+  it('must have the sendCacheControlHeader enabled by default', async () => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
+      expect(webOptions.sendCacheControlHeader).toBeTruthy();
+    });
+  });
+
+  it('must allow the sendCacheControlHeader to be set to false', async () => {
+    WebUtils.buildWebOptions({
+      web: {
+        sendCacheControlHeader: false,
+      },
+    }).then(webOptions => {
+      expect(webOptions.sendCacheControlHeader).toBeFalsy();
+    });
+  });
 });
 
 describe('Url param extraction', () => {

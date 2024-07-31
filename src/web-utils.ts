@@ -171,6 +171,9 @@ export class WebUtils {
       configOptions,
       'pkceEnabled',
     );
+    webOptions.sendCacheControlHeader =
+      this.getOverwritableValue(configOptions, 'sendCacheControlHeader') ??
+      webOptions.sendCacheControlHeader;
     if (webOptions.pkceEnabled) {
       webOptions.pkceCodeVerifier = this.randomString(64);
       if (CryptoUtils.HAS_SUBTLE_CRYPTO) {
@@ -311,6 +314,7 @@ export class WebOptions {
   resourceUrl: string;
   responseType: string;
   scope: string;
+  sendCacheControlHeader = true;
   state: string;
   redirectUrl: string;
   logsEnabled: boolean;

@@ -207,11 +207,12 @@ These parameters are overrideable in every platform
 
 **Platform Web**
 
-| parameter     | default  | required | description                            | since |
-| ------------- | -------- | -------- | -------------------------------------- | ----- |
-| windowOptions |          |          | e.g. width=500,height=600,left=0,top=0 |       |
-| windowTarget  | `_blank` |          |                                        |       |
-| windowReplace |          |          |                                        | 3.0.0 |
+| parameter              | default  | required | description                                                                                     | since |
+|------------------------|----------|----------|-------------------------------------------------------------------------------------------------|-------|
+| windowOptions          |          |          | e.g. width=500,height=600,left=0,top=0                                                          |       |
+| windowTarget           | `_blank` |          |                                                                                                 |       |
+| windowReplace          |          |          |                                                                                                 | 3.0.0 |
+| sendCacheControlHeader | true     |          | Whether to send the cache control header with the token request, unsupported by some providers. | 6.1.0 |
 
 **Platform Android**
 
