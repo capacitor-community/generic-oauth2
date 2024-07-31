@@ -188,6 +188,9 @@ export class WebUtils {
       configOptions,
       'pkceEnabled',
     );
+    webOptions.sendCacheControlHeader =
+      this.getOverwritableValue(configOptions, 'sendCacheControlHeader') ??
+      webOptions.sendCacheControlHeader;
     if (webOptions.pkceEnabled) {
       const pkceCode = this.getCodeVerifier();
       if (pkceCode) {
@@ -334,6 +337,7 @@ export class WebOptions {
   resourceUrl: string;
   responseType: string;
   scope: string;
+  sendCacheControlHeader = true;
   state: string;
   redirectUrl: string;
   logsEnabled: boolean;

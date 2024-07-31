@@ -179,6 +179,22 @@ describe('web options', () => {
     });
   });
 
+  it('must have the sendCacheControlHeader enabled by default', async () => {
+    WebUtils.buildWebOptions(oneDriveOptions).then(webOptions => {
+      expect(webOptions.sendCacheControlHeader).toBeTruthy();
+    });
+  });
+
+  it('must allow the sendCacheControlHeader to be set to false', async () => {
+    WebUtils.buildWebOptions({
+      web: {
+        sendCacheControlHeader: false,
+      },
+    }).then(webOptions => {
+      expect(webOptions.sendCacheControlHeader).toBeFalsy();
+    });
+  });
+
   describe('if pkceCode enabled', () => {
     beforeEach(() => {
       sessionStorageMock.clear();

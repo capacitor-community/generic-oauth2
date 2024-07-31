@@ -207,7 +207,12 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
     };
     tokenRequest.open('POST', this.webOptions.accessTokenEndpoint, true);
     tokenRequest.setRequestHeader('accept', 'application/json');
-    tokenRequest.setRequestHeader('cache-control', 'no-cache');
+    if (this.webOptions.sendCacheControlHeader) {
+      tokenRequest.setRequestHeader(
+          'cache-control',
+          'no-cache',
+      );
+    }
     tokenRequest.setRequestHeader(
       'content-type',
       'application/x-www-form-urlencoded',
