@@ -229,7 +229,7 @@ These parameters are overrideable in every platform
 
 | parameter          | default | required | description                                                                                    | since |
 | ------------------ | ------- | -------- | ---------------------------------------------------------------------------------------------- | ----- |
-| customHandlerClass |         |          | Provide a class name implementing `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`        |       |
+| customHandlerClass |         |          | Provide a class name implementing `GenericOAuth2Plugin.OAuth2CustomHandler`        |       |
 | siwaUseScope       |         |          | SiWA default scope is `name email` if you want to use the configured one set this param `true` | 2.1.0 |
 
 #### refreshToken()
@@ -410,7 +410,7 @@ This plugin should be as generic as possible, so I don't want to include provide
 
 Therefore, I created a mechanism which let developers integrate custom SDK features in this plugin.
 Simply configure the class name in the option property `ios.customHandlerClass`.
-This class has to implement `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`.
+This class has to implement `GenericOAuth2Plugin.OAuth2CustomHandler`.
 
 Refer to the [Facebook example below](#facebook) for a reference implementation.
 
@@ -1080,7 +1080,7 @@ import Foundation
 import FacebookCore
 import FacebookLogin
 import Capacitor
-import CapacitorCommunityGenericOauth2
+import GenericOAuth2Plugin
 
 @objc class YourIOsFacebookOAuth2Handler: NSObject, OAuth2CustomHandler {
 

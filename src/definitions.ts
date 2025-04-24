@@ -184,7 +184,7 @@ export interface IosOptions extends OAuth2AuthenticateBaseOptions {
   /**
    * Some oauth provider especially Facebook forces us to use their SDK for apps.
    *
-   * Provide a class name implementing the 'CapacitorCommunityGenericOAuth2.OAuth2CustomHandler' protocol.
+   * Provide a class name implementing the 'GenericOAuth2Plugin.OAuth2CustomHandler' protocol.
    */
   customHandlerClass?: string;
 }
