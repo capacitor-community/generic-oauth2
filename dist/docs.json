@@ -1,0 +1,305 @@
+{
+  "api": {
+    "name": "GenericOAuth2Plugin",
+    "slug": "genericoauth2plugin",
+    "docs": "",
+    "tags": [],
+    "methods": [
+      {
+        "name": "authenticate",
+        "signature": "(options: OAuth2AuthenticateOptions) => Promise<any>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "OAuth2AuthenticateOptions"
+          }
+        ],
+        "returns": "Promise<any>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options"
+          },
+          {
+            "name": "returns",
+            "text": "the resource url response"
+          }
+        ],
+        "docs": "Authenticate against a OAuth 2 provider.",
+        "complexTypes": [
+          "OAuth2AuthenticateOptions"
+        ],
+        "slug": "authenticate"
+      },
+      {
+        "name": "redirectFlowCodeListener",
+        "signature": "(options: ImplicitFlowRedirectOptions) => Promise<any>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "ImplicitFlowRedirectOptions"
+          }
+        ],
+        "returns": "Promise<any>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options"
+          },
+          {
+            "name": "returns",
+            "text": "the token endpoint response"
+          }
+        ],
+        "docs": "Listens for OAuth implicit redirect flow queryString CODE to generate an access_token",
+        "complexTypes": [
+          "ImplicitFlowRedirectOptions"
+        ],
+        "slug": "redirectflowcodelistener"
+      },
+      {
+        "name": "refreshToken",
+        "signature": "(options: OAuth2RefreshTokenOptions) => Promise<any>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "",
+            "type": "OAuth2RefreshTokenOptions"
+          }
+        ],
+        "returns": "Promise<any>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options"
+          },
+          {
+            "name": "returns",
+            "text": "the token endpoint response"
+          }
+        ],
+        "docs": "Get a new access token based on the given refresh token.",
+        "complexTypes": [
+          "OAuth2RefreshTokenOptions"
+        ],
+        "slug": "refreshtoken"
+      },
+      {
+        "name": "logout",
+        "signature": "(options: OAuth2AuthenticateOptions, id_token?: string | undefined) => Promise<boolean>",
+        "parameters": [
+          {
+            "name": "options",
+            "docs": "Although not all options are needed. We simply reuse the options from authenticate",
+            "type": "OAuth2AuthenticateOptions"
+          },
+          {
+            "name": "id_token",
+            "docs": "Optional idToken, only for Android",
+            "type": "string | undefined"
+          }
+        ],
+        "returns": "Promise<boolean>",
+        "tags": [
+          {
+            "name": "param",
+            "text": "options Although not all options are needed. We simply reuse the options from authenticate"
+          },
+          {
+            "name": "param",
+            "text": "id_token Optional idToken, only for Android"
+          },
+          {
+            "name": "returns",
+            "text": "true if the logout was successful else false."
+          }
+        ],
+        "docs": "Logout from the authenticated OAuth 2 provider",
+        "complexTypes": [
+          "OAuth2AuthenticateOptions"
+        ],
+        "slug": "logout"
+      }
+    ],
+    "properties": []
+  },
+  "interfaces": [
+    {
+      "name": "OAuth2AuthenticateOptions",
+      "slug": "oauth2authenticateoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "web",
+          "tags": [],
+          "docs": "Custom options for the platform \"web\"",
+          "complexTypes": [
+            "WebOption"
+          ],
+          "type": "WebOption"
+        },
+        {
+          "name": "android",
+          "tags": [],
+          "docs": "Custom options for the platform \"android\"",
+          "complexTypes": [
+            "AndroidOptions"
+          ],
+          "type": "AndroidOptions"
+        },
+        {
+          "name": "ios",
+          "tags": [],
+          "docs": "Custom options for the platform \"ios\"",
+          "complexTypes": [
+            "IosOptions"
+          ],
+          "type": "IosOptions"
+        }
+      ]
+    },
+    {
+      "name": "WebOption",
+      "slug": "weboption",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "windowOptions",
+          "tags": [],
+          "docs": "Options for the window the plugin open for authentication. e.g. width=500,height=600,left=0,top=0",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "windowTarget",
+          "tags": [],
+          "docs": "Options for the window target. Defaults to _blank",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "sendCacheControlHeader",
+          "tags": [],
+          "docs": "Whether to send the cache control header with the token request, unsupported by some providers. Defaults to true.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "AndroidOptions",
+      "slug": "androidoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "customHandlerClass",
+          "tags": [],
+          "docs": "Some oauth provider especially Facebook forces us to use their SDK for apps.\n\nProvide a class name implementing the 'CapacitorCommunityGenericOAuth2.OAuth2CustomHandler' protocol.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        },
+        {
+          "name": "handleResultOnNewIntent",
+          "tags": [],
+          "docs": "Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "handleResultOnActivityResult",
+          "tags": [],
+          "docs": "Default handling the activity result.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        }
+      ]
+    },
+    {
+      "name": "IosOptions",
+      "slug": "iosoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "siwaUseScope",
+          "tags": [],
+          "docs": "If true the iOS 13+ feature Sign in with Apple (SiWA) try to build the scope from the standard \"scope\" parameter.\n\nIf false scope is set to email and fullName.",
+          "complexTypes": [],
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "customHandlerClass",
+          "tags": [],
+          "docs": "Some oauth provider especially Facebook forces us to use their SDK for apps.\n\nProvide a class name implementing the 'CapacitorCommunityGenericOAuth2.OAuth2CustomHandler' protocol.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    },
+    {
+      "name": "ImplicitFlowRedirectOptions",
+      "slug": "implicitflowredirectoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "response_url",
+          "tags": [],
+          "docs": "The URL where we get the code",
+          "complexTypes": [],
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "OAuth2RefreshTokenOptions",
+      "slug": "oauth2refreshtokenoptions",
+      "docs": "",
+      "tags": [],
+      "methods": [],
+      "properties": [
+        {
+          "name": "appId",
+          "tags": [],
+          "docs": "The app id (client id) you get from the oauth provider like Google, Facebook,...",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "accessTokenEndpoint",
+          "tags": [],
+          "docs": "Url for retrieving the access_token.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "refreshToken",
+          "tags": [],
+          "docs": "The refresh token that will be used to obtain the new access token.",
+          "complexTypes": [],
+          "type": "string"
+        },
+        {
+          "name": "scope",
+          "tags": [],
+          "docs": "A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.",
+          "complexTypes": [],
+          "type": "string | undefined"
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "typeAliases": [],
+  "pluginConfigs": []
+}
