@@ -3,6 +3,7 @@ import Capacitor
 import OAuthSwift
 import CommonCrypto
 import AuthenticationServices
+import Security
 
 typealias JSObject = [String: Any]
 
@@ -14,6 +15,7 @@ typealias JSObject = [String: Any]
 public class GenericOAuth2Plugin: CAPPlugin {
 
     var savedPluginCall: CAPPluginCall?
+    var mtlsSessionDelegate: URLSessionMTLSDelegate?
 
     let JSON_KEY_ACCESS_TOKEN = "access_token"
     let JSON_KEY_AUTHORIZATION_RESPONSE = "authorization_response"
@@ -40,6 +42,10 @@ public class GenericOAuth2Plugin: CAPPlugin {
     let PARAM_LOGOUT_URL = "logoutUrl"
     let PARAM_LOGS_ENABLED = "logsEnabled"
 
+    // mTLS params
+    let PARAM_RAW_PKCS = "rawPkcs"
+    let PARAM_PKCS_PASSWORD = "pkcsPassword"
+
     let ERR_GENERAL = "ERR_GENERAL"
 
     // authenticate param validation
@@ -57,6 +63,8 @@ public class GenericOAuth2Plugin: CAPPlugin {
     let ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH"
     let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
     let ERR_AUTHORIZATION_FAILED = "ERR_AUTHORIZATION_FAILED"
+
+    let ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED = "ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED"
 
     struct SharedConstants {
         static let ERR_USER_CANCELLED = "USER_CANCELLED"
@@ -123,6 +131,9 @@ public class GenericOAuth2Plugin: CAPPlugin {
             return
         }
 
+        let rawPkcsString = getOverwritableString(call, PARAM_RAW_PKCS) ?? ""
+        let pkcsPassword = getOverwritableString(call, PARAM_PKCS_PASSWORD) ?? ""
+
         let oauthSwift = OAuth2Swift(
             consumerKey: appId,
             consumerSecret: "", // never ever store the app secret on client!
@@ -131,6 +142,17 @@ public class GenericOAuth2Plugin: CAPPlugin {
             responseType: "code"
         )
 
+        if (rawPkcsString.count > 0) {
+            if self.mtlsSessionDelegate == nil {
+                self.mtlsSessionDelegate = self.createMTLSSessionDelegate(rawPkcsString: rawPkcsString, pkcsPassword: pkcsPassword, call: call) 
+            }
+            if self.mtlsSessionDelegate == nil {
+                call.reject(self.ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED)
+                return
+            }
+            oauthSwift.client.sessionFactory.delegate = self.mtlsSessionDelegate
+        }
+        
         self.oauthSwift = oauthSwift
 
         let scope = getOverwritableString(call, PARAM_SCOPE) ?? nil
@@ -192,6 +214,9 @@ public class GenericOAuth2Plugin: CAPPlugin {
         // #71
         self.oauth2SafariDelegate = OAuth2SafariDelegate(call)
 
+        let rawPkcsString = getOverwritableString(call, PARAM_RAW_PKCS) ?? ""
+        let pkcsPassword = getOverwritableString(call, PARAM_PKCS_PASSWORD) ?? ""
+
         // ######### Custom Handler ########
 
         if let handlerClassName = getString(call, PARAM_CUSTOM_HANDLER_CLASS) {
@@ -206,6 +231,15 @@ public class GenericOAuth2Plugin: CAPPlugin {
                             oauthToken: accessToken,
                             oauthTokenSecret: "",
                             version: OAuthSwiftCredential.Version.oauth2)
+
+                        if (rawPkcsString.count > 0) {
+                            self.mtlsSessionDelegate = self.createMTLSSessionDelegate(rawPkcsString: rawPkcsString, pkcsPassword: pkcsPassword, call: call)
+                            if self.mtlsSessionDelegate == nil {
+                                call.reject(self.ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED)
+                                return
+                            }
+                            client.sessionFactory.delegate = self.mtlsSessionDelegate
+                        }
 
                         client.get(resourceUrl!) { result in
                             switch result {
@@ -279,10 +313,25 @@ public class GenericOAuth2Plugin: CAPPlugin {
                     )
                 }
 
+                if (rawPkcsString.count > 0) {
+                    if self.mtlsSessionDelegate == nil {
+                        self.mtlsSessionDelegate = self.createMTLSSessionDelegate(rawPkcsString: rawPkcsString, pkcsPassword: pkcsPassword, call: call)
+                    }
+                    if self.mtlsSessionDelegate == nil {
+                        call.reject(self.ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED)
+                        return
+                    }
+                    oauthSwift.client.sessionFactory.delegate = self.mtlsSessionDelegate
+                }
+
                 let urlHandler = SafariURLHandler(viewController: (bridge?.viewController)!, oauthSwift: oauthSwift)
                 // if the user touches "done" in safari without entering the credentials the USER_CANCELLED error is sent #71
                 urlHandler.delegate = self.oauth2SafariDelegate
                 oauthSwift.authorizeURLHandler = urlHandler
+
+                //TODO: remove after development
+                OAuthSwift.setLogLevel(OAuthLogLevel.trace)
+
                 self.oauthSwift = oauthSwift
 
                 // additional parameters #18
@@ -550,6 +599,28 @@ public class GenericOAuth2Plugin: CAPPlugin {
         return randomString
     }
 
+    private func createMTLSSessionDelegate(rawPkcsString: String, pkcsPassword: String, call: CAPPluginCall) -> URLSessionMTLSDelegate? {
+        let pkcsData = Data(base64Encoded: rawPkcsString) ?? Data()
+
+        var importedItems: CFArray?
+        let options = [kSecImportExportPassphrase as String: pkcsPassword]
+        let importStatus = SecPKCS12Import(pkcsData as CFData, options as CFDictionary, &importedItems)
+        
+        guard importStatus == errSecSuccess else {
+            self.log("Failed to import pkcs file. Error code: \(importStatus)")
+            return nil
+        }
+
+        guard let itemsArray = importedItems as? [[String: AnyObject]],
+              let firstItem = itemsArray.first,
+              let secIdentity = firstItem[kSecImportItemIdentity as String] as! SecIdentity?
+        else {
+            self.log("Failed to extract identity from the pkcs file")
+            return nil
+        }
+
+        return URLSessionMTLSDelegate(secIdentity: secIdentity)
+    }
 }
 
 // see https://auth0.com/docs/api-auth/tutorials/authorization-code-grant-pkce

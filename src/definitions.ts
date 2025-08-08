@@ -124,6 +124,17 @@ export interface OAuth2AuthenticateBaseOptions {
    * @since 3.0.0
    */
   additionalResourceHeaders?: { [key: string]: string };
+
+  /**
+   * Client certificate data for mTLS authentication
+   * Raw PKCS data from a .p12 or .pfx file as a base64 encoded string
+   */
+  rawPkcs?: string;
+  
+  /**
+   * Password for the client certificate
+   */
+  pkcsPassword?: string;
 }
 
 export interface OAuth2AuthenticateOptions

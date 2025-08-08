@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		03FC29A292ACC40490383A1F /* Pods_Plugin.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */; };
 		20C0B05DCFC8E3958A738AF2 /* Pods_PluginTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F6753A823D3815DB436415E3 /* Pods_PluginTests.framework */; };
+		22BF03F12E44D2D30092F0FA /* URLSessionMTLSDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BF03F02E44D2D30092F0FA /* URLSessionMTLSDelegate.swift */; };
+		22BF03F22E44D2D30092F0FA /* URLSessionMTLSDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22BF03F02E44D2D30092F0FA /* URLSessionMTLSDelegate.swift */; };
 		451C6E972BE3BF4400D9577D /* OAuth2CustomHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451C6E962BE3BF4400D9577D /* OAuth2CustomHandler.swift */; };
 		451C6E992BE3BF7200D9577D /* OAuth2SafariDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451C6E982BE3BF7200D9577D /* OAuth2SafariDelegate.swift */; };
 		451C6E9B2BE3BF9F00D9577D /* GenericOAuth2Plugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451C6E9A2BE3BF9F00D9577D /* GenericOAuth2Plugin.swift */; };
@@ -31,6 +33,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		22BF03F02E44D2D30092F0FA /* URLSessionMTLSDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionMTLSDelegate.swift; sourceTree = "<group>"; };
 		3B2A61DA5A1F2DD4F959604D /* Pods_Plugin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Plugin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		451C6E962BE3BF4400D9577D /* OAuth2CustomHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuth2CustomHandler.swift; sourceTree = "<group>"; };
 		451C6E982BE3BF7200D9577D /* OAuth2SafariDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuth2SafariDelegate.swift; sourceTree = "<group>"; };
@@ -96,6 +99,7 @@
 		50ADFF8A201F53D600D50D53 /* Plugin */ = {
 			isa = PBXGroup;
 			children = (
+				22BF03F02E44D2D30092F0FA /* URLSessionMTLSDelegate.swift */,
 				451C6E982BE3BF7200D9577D /* OAuth2SafariDelegate.swift */,
 				451C6E962BE3BF4400D9577D /* OAuth2CustomHandler.swift */,
 				50E1A94720377CB70090CE1A /* GenericOAuth2Plugin.swift */,
@@ -315,6 +319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				451C6E972BE3BF4400D9577D /* OAuth2CustomHandler.swift in Sources */,
+				22BF03F12E44D2D30092F0FA /* URLSessionMTLSDelegate.swift in Sources */,
 				50E1A94820377CB70090CE1A /* GenericOAuth2Plugin.swift in Sources */,
 				50ADFFA82020EE4F00D50D53 /* GenericOAuth2Plugin.m in Sources */,
 				451C6E992BE3BF7200D9577D /* OAuth2SafariDelegate.swift in Sources */,
@@ -327,6 +332,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				50ADFF97201F53D600D50D53 /* GenericOAuth2Tests.swift in Sources */,
+				22BF03F22E44D2D30092F0FA /* URLSessionMTLSDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
