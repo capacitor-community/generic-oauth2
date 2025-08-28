@@ -55,6 +55,15 @@ export interface OAuth2RefreshTokenOptions {
    * A space-delimited list of permissions that identify the resources that your application could access on the user's behalf.
    */
   scope?: string;
+  /**
+   * Client certificate data for mTLS authentication
+   * Raw PKCS data from a .p12 or .pfx file as a base64 encoded string
+   */
+  rawPkcs?: string;
+  /**
+   * Password for the client certificate
+   */
+  pkcsPassword?: string;
 }
 
 export interface OAuth2AuthenticateBaseOptions {

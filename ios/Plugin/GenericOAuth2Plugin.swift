@@ -15,7 +15,6 @@ typealias JSObject = [String: Any]
 public class GenericOAuth2Plugin: CAPPlugin {
 
     var savedPluginCall: CAPPluginCall?
-    var mtlsSessionDelegate: URLSessionMTLSDelegate?
 
     let JSON_KEY_ACCESS_TOKEN = "access_token"
     let JSON_KEY_AUTHORIZATION_RESPONSE = "authorization_response"
@@ -74,6 +73,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
     var oauth2SafariDelegate: OAuth2SafariDelegate?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
+    var mtlsSessionDelegate: URLSessionMTLSDelegate?
 
     func registerHandlers() {
         let classCount = objc_getClassList(nil, 0)
