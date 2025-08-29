@@ -170,6 +170,15 @@ public class GenericOAuth2Plugin extends Plugin {
         this.callbackId = call.getCallbackId();
         disposeAuthService();
         oauth2Options = buildAuthenticateOptions(call.getData());
+        
+        if (oauth2Options.getRawPkcs() != null && !oauth2Options.getRawPkcs().isEmpty()) {
+            try {
+                MTLSHelper.configureMTLS(getContext(), oauth2Options.getRawPkcs(), oauth2Options.getPkcsPassword());
+            } catch (Exception e) {
+                call.reject(ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED, e);
+            }
+        }
+
         if (oauth2Options.getCustomHandlerClass() != null) {
             if (oauth2Options.isLogsEnabled()) {
                 Log.i(getLogTag(), "Entering custom handler: " + oauth2Options.getCustomHandlerClass().getClass().getName());
@@ -284,14 +293,6 @@ public class GenericOAuth2Plugin extends Plugin {
             }
 
             AuthorizationRequest req = builder.build();
-
-            if (oauth2Options.getRawPkcs() != null && !oauth2Options.getRawPkcs().isEmpty()) {
-                try {
-                    MTLSHelper.configureMTLS(getContext(), oauth2Options.getRawPkcs(), oauth2Options.getPkcsPassword());
-                } catch (Exception e) {
-                    call.reject(ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED, e);
-                }
-            }
 
             this.authService = new AuthorizationService(getContext());
             try {
