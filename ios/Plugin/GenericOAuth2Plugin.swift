@@ -329,9 +329,6 @@ public class GenericOAuth2Plugin: CAPPlugin {
                 urlHandler.delegate = self.oauth2SafariDelegate
                 oauthSwift.authorizeURLHandler = urlHandler
 
-                //TODO: remove after development
-                OAuthSwift.setLogLevel(OAuthLogLevel.trace)
-
                 self.oauthSwift = oauthSwift
 
                 // additional parameters #18
