@@ -213,13 +213,17 @@ These parameters are overrideable in every platform
 | customHandlerClass           |         |          | Provide a class name implementing `com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler`                 |       |
 | handleResultOnNewIntent      | `false` |          | Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in. |       |
 | handleResultOnActivityResult | `true`  |          |                                                                                                                          |       |
+| rawPkcs                      |         |          | Provide raw PKCS data from a .p12 or .pfx file as a base64 encoded string for mTLS authentication.                       |       |
+| pkcsPassword                 |         |          | Provide an optional password for the PKCS data if it is password secured.                                                |       |
 
 **Platform iOS**
 
-| parameter          | default | required | description                                                                                    | since |
-|--------------------|---------|----------|------------------------------------------------------------------------------------------------|-------|
-| customHandlerClass |         |          | Provide a class name implementing `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`        |       |
-| siwaUseScope       |         |          | SiWA default scope is `name email` if you want to use the configured one set this param `true` | 2.1.0 |
+| parameter          | default | required | description                                                                                        | since |
+|--------------------|---------|----------|----------------------------------------------------------------------------------------------------|-------|
+| customHandlerClass |         |          | Provide a class name implementing `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`            |       |
+| siwaUseScope       |         |          | SiWA default scope is `name email` if you want to use the configured one set this param `true`     | 2.1.0 |
+| rawPkcs            |         |          | Provide raw PKCS data from a .p12 or .pfx file as a base64 encoded string for mTLS authentication. |       |
+| pkcsPassword       |         |          | Provide an optional password for the PKCS data if it is password secured.                          |       |
 
 #### logout()
 
@@ -254,6 +258,7 @@ See [Issue #97](https://github.com/capacitor-community/generic-oauth2/issues/97)
 - ERR_ANDROID_NO_BROWSER ... No suitable browser could be found! (Android)
 - ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid
   state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
+- ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED ... Importing the provided pkcs data was not successful. Most likely the string you provided is in the wrong format. A base64 encoded string of the raw pkcs data file is expected. Also check if the file is protected by a password and if so, if you provided the correct password accordingly
 - ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
 #### refreshToken()
@@ -263,6 +268,7 @@ See [Issue #97](https://github.com/capacitor-community/generic-oauth2/issues/97)
   authenticate it is optional. (android, ios)
 - ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing. (android, ios)
 - ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
+- ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED ... Importing the provided pkcs data was not successful. Most likely the string you provided is in the wrong format. A base64 encoded string of the raw pkcs data file is expected. Also check if the file is protected by a password and if so, if you provided the correct password accordingly
 - ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (android, ios)
 
 ## Platform: Web/PWA

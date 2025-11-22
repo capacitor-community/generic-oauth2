@@ -28,6 +28,9 @@ public class OAuth2Options {
     private boolean handleResultOnNewIntent;
     private boolean handleResultOnActivityResult = true;
 
+    private String rawPkcs;
+    private String pkcsPassword;
+
     private String display;
     private String loginHint;
     private String prompt;
@@ -215,5 +218,21 @@ public class OAuth2Options {
 
     public String getLogoutUrl() {
         return logoutUrl;
+    }
+
+    public String getRawPkcs() {
+        return rawPkcs;
+    }
+
+    public void setRawPkcs(String rawPkcs) {
+        this.rawPkcs = rawPkcs;
+    }
+    
+    public String getPkcsPassword() {
+        return pkcsPassword;
+    }
+
+    public void setPkcsPassword(String pkcsPassword) {
+        this.pkcsPassword = pkcsPassword;
     }
 }

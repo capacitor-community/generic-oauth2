@@ -28,7 +28,7 @@ import net.openid.appauth.GrantTypeValues;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 import org.json.JSONException;
-
+import com.getcapacitor.community.genericoauth2.MTLSHelper;
 @CapacitorPlugin(name = "GenericOAuth2")
 public class GenericOAuth2Plugin extends Plugin {
 
@@ -62,6 +62,10 @@ public class GenericOAuth2Plugin extends Plugin {
     private static final String PARAM_LOGOUT_URL = "logoutUrl";
     private static final String PARAM_ID_TOKEN = "id_token";
 
+    // mTLS params
+    private static final String PARAM_RAW_PKCS = "rawPkcs";
+    private static final String PARAM_PKCS_PASSWORD = "pkcsPassword";
+
     private static final String USER_CANCELLED = "USER_CANCELLED";
 
     private static final String ERR_PARAM_NO_APP_ID = "ERR_PARAM_NO_APP_ID";
@@ -83,6 +87,8 @@ public class GenericOAuth2Plugin extends Plugin {
     private static final String ERR_GENERAL = "ERR_GENERAL";
     private static final String ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH";
     private static final String ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE";
+
+    private static final String ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED = "ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED";
 
     private OAuth2Options oauth2Options;
     private AuthorizationService authService;
@@ -109,6 +115,14 @@ public class GenericOAuth2Plugin extends Plugin {
         if (oAuth2RefreshTokenOptions.getRefreshToken() == null) {
             call.reject(ERR_PARAM_NO_REFRESH_TOKEN);
             return;
+        }
+
+        if (oAuth2RefreshTokenOptions.getRawPkcs() != null && !oAuth2RefreshTokenOptions.getRawPkcs().isEmpty()) {
+            try {
+                MTLSHelper.configureMTLS(getContext(), oAuth2RefreshTokenOptions.getRawPkcs(), oAuth2RefreshTokenOptions.getPkcsPassword());
+            } catch (Exception e) {
+                call.reject(ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED, e);
+            }
         }
 
         this.authService = new AuthorizationService(getContext());
@@ -156,6 +170,15 @@ public class GenericOAuth2Plugin extends Plugin {
         this.callbackId = call.getCallbackId();
         disposeAuthService();
         oauth2Options = buildAuthenticateOptions(call.getData());
+        
+        if (oauth2Options.getRawPkcs() != null && !oauth2Options.getRawPkcs().isEmpty()) {
+            try {
+                MTLSHelper.configureMTLS(getContext(), oauth2Options.getRawPkcs(), oauth2Options.getPkcsPassword());
+            } catch (Exception e) {
+                call.reject(ERR_MTLS_CLIENT_CERTIFICATE_IMPORT_FAILED, e);
+            }
+        }
+
         if (oauth2Options.getCustomHandlerClass() != null) {
             if (oauth2Options.isLogsEnabled()) {
                 Log.i(getLogTag(), "Entering custom handler: " + oauth2Options.getCustomHandlerClass().getClass().getName());
@@ -511,6 +534,8 @@ public class GenericOAuth2Plugin extends Plugin {
         if (o.isPkceEnabled()) {
             o.setPkceCodeVerifier(ConfigUtils.getRandomString(64));
         }
+        o.setRawPkcs(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RAW_PKCS)));
+        o.setPkcsPassword(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_PKCS_PASSWORD)));
 
         o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));
         o.setState(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_STATE)));
@@ -556,6 +581,10 @@ public class GenericOAuth2Plugin extends Plugin {
         );
         o.setScope(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_SCOPE)));
         o.setRefreshToken(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_REFRESH_TOKEN)));
+
+        // mTLS
+        o.setRawPkcs(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RAW_PKCS)));
+        o.setPkcsPassword(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_PKCS_PASSWORD)));
         return o;
     }
 
