@@ -24,6 +24,19 @@ export class WebUtils {
    * Public only for testing
    */
   static getAuthorizationUrl(options: WebOptions): string {
+    // If a PAR request_uri is present, build a minimal authorization URL
+    // that uses the pushed authorization request instead of sending all
+    // parameters again.
+    if (options.parRequestUri) {
+      let url =
+        options.authorizationBaseUrl +
+        '?client_id=' +
+        options.appId +
+        '&request_uri=' +
+        encodeURIComponent(options.parRequestUri);
+      return encodeURI(url);
+    }
+
     let url = options.authorizationBaseUrl + '?client_id=' + options.appId;
     url += '&response_type=' + options.responseType;
 
@@ -88,6 +101,98 @@ export class WebUtils {
 
   static getCodeVerifier(): string | null {
     return window.sessionStorage.getItem(`I_Capacitor_GenericOAuth2Plugin_PKCE`);
+  }
+
+  static async performPar(options: WebOptions): Promise<void> {
+    if (!options.parEndpoint) {
+      return;
+    }
+
+    const params: { [key: string]: string } = {};
+
+    params['client_id'] = options.appId;
+    params['response_type'] = options.responseType;
+    if (options.redirectUrl) {
+      params['redirect_uri'] = options.redirectUrl;
+    }
+    if (options.scope) {
+      params['scope'] = options.scope;
+    }
+    if (options.state) {
+      params['state'] = options.state;
+    }
+
+    if (options.pkceCodeChallenge) {
+      params['code_challenge'] = options.pkceCodeChallenge;
+      if (options.pkceCodeChallengeMethod) {
+        params['code_challenge_method'] = options.pkceCodeChallengeMethod;
+      }
+    }
+
+    if (options.additionalParameters) {
+      for (const key in options.additionalParameters) {
+        const value = options.additionalParameters[key];
+        if (key && key.trim().length > 0 && value && value.trim().length > 0) {
+          if (!(key in params)) {
+            params[key] = value;
+          }
+        }
+      }
+    }
+
+    const body = Object.keys(params)
+      .map(
+        key =>
+          encodeURIComponent(key) + '=' + encodeURIComponent(params[key] ?? ''),
+      )
+      .join('&');
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', options.parEndpoint!, true);
+      xhr.setRequestHeader(
+        'Content-Type',
+        'application/x-www-form-urlencoded;charset=UTF-8',
+      );
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const json = JSON.parse(xhr.responseText || '{}');
+            const requestUri =
+              json.request_uri || json.requestUri || json['request-uri'];
+            if (!requestUri || typeof requestUri !== 'string') {
+              reject(new Error('PAR_FAILED: missing request_uri in response'));
+              return;
+            }
+            options.parRequestUri = requestUri;
+            resolve();
+          } catch (e) {
+            reject(new Error('PAR_FAILED: invalid JSON response'));
+          }
+        } else {
+          let message = `PAR_FAILED: HTTP ${xhr.status}`;
+          try {
+            const json = JSON.parse(xhr.responseText || '{}');
+            if (json.error) {
+              message += ` ${json.error}`;
+              if (json.error_description) {
+                message += ` - ${json.error_description}`;
+              }
+            }
+          } catch {
+            // ignore, fall back to generic message
+          }
+          reject(new Error(message));
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('PAR_FAILED: network error'));
+      };
+
+      xhr.send(body);
+    });
   }
 
   /**
@@ -182,6 +287,11 @@ export class WebUtils {
     webOptions.accessTokenEndpoint = this.getOverwritableValue(
       configOptions,
       'accessTokenEndpoint',
+    );
+
+    webOptions.parEndpoint = this.getOverwritableValue(
+      configOptions,
+      'parEndpoint',
     );
 
     webOptions.pkceEnabled = this.getOverwritableValue(
@@ -343,6 +453,9 @@ export class WebOptions {
   logsEnabled: boolean;
   windowOptions: string;
   windowTarget = '_blank';
+
+  parEndpoint?: string;
+  parRequestUri?: string;
 
   pkceEnabled: boolean;
   pkceCodeVerifier: string;

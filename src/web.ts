@@ -58,6 +58,14 @@ export class GenericOAuth2Web extends WebPlugin implements GenericOAuth2Plugin {
     );
 
     this.webOptions = await WebUtils.buildWebOptions(options);
+    if (this.webOptions.parEndpoint) {
+      try {
+        await WebUtils.performPar(this.webOptions);
+      } catch (e: any) {
+        this.closeWindow();
+        return Promise.reject(e);
+      }
+    }
     return new Promise<any>((resolve, reject) => {
       // validate
       if (!this.webOptions.appId || this.webOptions.appId.length == 0) {

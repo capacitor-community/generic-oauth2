@@ -17,6 +17,8 @@ public class OAuth2Options {
     private String accessTokenEndpoint;
     private String resourceUrl;
     private Map<String, String> additionalResourceHeaders;
+    private String parEndpoint;
+    private String parRequestUri;
 
     private boolean pkceEnabled;
     private boolean logsEnabled;
@@ -65,6 +67,22 @@ public class OAuth2Options {
 
     public void setResourceUrl(String resourceUrl) {
         this.resourceUrl = resourceUrl;
+    }
+
+    public String getParEndpoint() {
+        return parEndpoint;
+    }
+
+    public void setParEndpoint(String parEndpoint) {
+        this.parEndpoint = parEndpoint;
+    }
+
+    public String getParRequestUri() {
+        return parRequestUri;
+    }
+
+    public void setParRequestUri(String parRequestUri) {
+        this.parRequestUri = parRequestUri;
     }
 
     public boolean isLogsEnabled() {

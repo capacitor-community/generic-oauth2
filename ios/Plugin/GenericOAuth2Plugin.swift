@@ -33,6 +33,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
 
     let PARAM_ADDITIONAL_PARAMETERS = "additionalParameters"
     let PARAM_CUSTOM_HANDLER_CLASS = "ios.customHandlerClass"
+    let PARAM_PAR_ENDPOINT = "parEndpoint"
     let PARAM_SCOPE = "scope"
     let PARAM_STATE = "state"
     let PARAM_PKCE_ENABLED = "pkceEnabled"
@@ -57,6 +58,7 @@ public class GenericOAuth2Plugin: CAPPlugin {
     let ERR_STATES_NOT_MATCH = "ERR_STATES_NOT_MATCH"
     let ERR_NO_AUTHORIZATION_CODE = "ERR_NO_AUTHORIZATION_CODE"
     let ERR_AUTHORIZATION_FAILED = "ERR_AUTHORIZATION_FAILED"
+    let ERR_PAR_FAILED = "ERR_PAR_FAILED"
 
     struct SharedConstants {
         static let ERR_USER_CANCELLED = "USER_CANCELLED"
@@ -291,28 +293,127 @@ public class GenericOAuth2Plugin: CAPPlugin {
 
                 let requestState = getOverwritableString(call, PARAM_STATE) ?? generateRandom(withLength: 20)
                 let pkceEnabled: Bool = getOverwritable(call, PARAM_PKCE_ENABLED) as? Bool ?? false
-                // if response type is code and pkce is not disabled
-                if pkceEnabled {
-                    let pkceCodeVerifier = generateRandom(withLength: 64)
-                    let pkceCodeChallenge = pkceCodeVerifier.sha256().base64()
+                let parEndpoint = getOverwritableString(call, PARAM_PAR_ENDPOINT)
 
-                    oauthSwift.authorize(
-                        withCallbackURL: redirectUrl,
-                        scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
-                        state: requestState,
-                        codeChallenge: pkceCodeChallenge,
-                        codeVerifier: pkceCodeVerifier,
-                        parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
+                let scope = getOverwritableString(call, PARAM_SCOPE) ?? ""
+
+                var pkceCodeVerifier: String?
+                var pkceCodeChallenge: String?
+                if pkceEnabled {
+                    pkceCodeVerifier = generateRandom(withLength: 64)
+                    pkceCodeChallenge = pkceCodeVerifier!.sha256().base64()
+                }
+
+                func startAuthorization(withRequestUri requestUri: String?) {
+                    var parameters = additionalParameters
+                    if let requestUri = requestUri {
+                        parameters["request_uri"] = requestUri
                     }
+
+                    if pkceEnabled, let verifier = pkceCodeVerifier, let challenge = pkceCodeChallenge {
+                        oauthSwift.authorize(
+                            withCallbackURL: redirectUrl,
+                            scope: scope,
+                            state: requestState,
+                            codeChallenge: challenge,
+                            codeVerifier: verifier,
+                            parameters: parameters) { result in
+                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
+                        }
+                    } else {
+                        oauthSwift.authorize(
+                            withCallbackURL: redirectUrl,
+                            scope: scope,
+                            state: requestState,
+                            parameters: parameters) { result in
+                            self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
+                        }
+                    }
+                }
+
+                if let parEndpoint = parEndpoint {
+                    var parParams: [String: String] = [:]
+                    parParams["client_id"] = appId
+                    parParams["response_type"] = responseType
+                    parParams["redirect_uri"] = redirectUrl
+                    if !scope.isEmpty {
+                        parParams["scope"] = scope
+                    }
+                    parParams["state"] = requestState
+                    if pkceEnabled, let challenge = pkceCodeChallenge {
+                        parParams["code_challenge"] = challenge
+                        parParams["code_challenge_method"] = "S256"
+                    }
+                    for (key, value) in additionalParameters where !key.isEmpty && !value.isEmpty && parParams[key] == nil {
+                        parParams[key] = value
+                    }
+
+                    if logsEnabled {
+                        log("PAR request: POST \(parEndpoint)")
+                    }
+
+                    var request = URLRequest(url: URL(string: parEndpoint)!)
+                    request.httpMethod = "POST"
+                    request.setValue("application/x-www-form-urlencoded;charset=UTF-8", forHTTPHeaderField: "Content-Type")
+                    request.httpBody = parParams
+                        .map { key, value in
+                            "\(key.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? key)=\(value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? value)"
+                        }
+                        .joined(separator: "&")
+                        .data(using: .utf8)
+
+                    URLSession.shared.dataTask(with: request) { data, response, error in
+                        if let error = error {
+                            self.log("PAR request failed: \(error.localizedDescription)")
+                            call.reject(self.ERR_PAR_FAILED, error.localizedDescription)
+                            return
+                        }
+
+                        guard let httpResponse = response as? HTTPURLResponse else {
+                            call.reject(self.ERR_PAR_FAILED, "Invalid PAR response")
+                            return
+                        }
+
+                        guard let data = data else {
+                            call.reject(self.ERR_PAR_FAILED, "Empty PAR response")
+                            return
+                        }
+
+                        if logsEnabled {
+                            self.logDataObj("PAR response:", data)
+                        }
+
+                        if (200..<300).contains(httpResponse.statusCode) {
+                            do {
+                                let jsonObj = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+                                let requestUri = (jsonObj?["request_uri"] as? String) ??
+                                    (jsonObj?["requestUri"] as? String) ??
+                                    (jsonObj?["request-uri"] as? String)
+                                if let requestUri = requestUri, !requestUri.isEmpty {
+                                    DispatchQueue.main.async {
+                                        startAuthorization(withRequestUri: requestUri)
+                                    }
+                                } else {
+                                    call.reject(self.ERR_PAR_FAILED, "PAR_FAILED: missing request_uri in response")
+                                }
+                            } catch {
+                                call.reject(self.ERR_PAR_FAILED, "PAR_FAILED: invalid JSON response")
+                            }
+                        } else {
+                            var message = "PAR_FAILED: HTTP \(httpResponse.statusCode)"
+                            if let jsonObj = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                                if let error = jsonObj["error"] as? String {
+                                    message += " \(error)"
+                                    if let desc = jsonObj["error_description"] as? String {
+                                        message += " - \(desc)"
+                                    }
+                                }
+                            }
+                            call.reject(self.ERR_PAR_FAILED, message)
+                        }
+                    }.resume()
                 } else {
-                    oauthSwift.authorize(
-                        withCallbackURL: redirectUrl,
-                        scope: getOverwritableString(call, PARAM_SCOPE) ?? "",
-                        state: requestState,
-                        parameters: additionalParameters) { result in
-                        self.handleAuthorizationResult(result, call, responseType, requestState, logsEnabled, resourceUrl)
-                    }
+                    startAuthorization(withRequestUri: nil)
                 }
             }
 

@@ -93,6 +93,12 @@ export interface OAuth2AuthenticateBaseOptions {
    */
   resourceUrl?: string;
   /**
+   * Pushed Authorization Request (PAR) endpoint. If set, the plugin will
+   * perform a PAR call before starting the authorization flow and will use
+   * the returned request_uri for the authorization request.
+   */
+  parEndpoint?: string;
+  /**
    * Enable PKCE if you need it.
    */
   pkceEnabled?: boolean;

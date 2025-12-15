@@ -40,6 +40,7 @@ public class GenericOAuth2Plugin extends Plugin {
     private static final String PARAM_STATE = "state";
 
     private static final String PARAM_ACCESS_TOKEN_ENDPOINT = "accessTokenEndpoint";
+    private static final String PARAM_PAR_ENDPOINT = "parEndpoint";
     private static final String PARAM_PKCE_ENABLED = "pkceEnabled";
     private static final String PARAM_RESOURCE_URL = "resourceUrl";
     private static final String PARAM_ADDITIONAL_RESOURCE_HEADERS = "additionalResourceHeaders";
@@ -213,75 +214,97 @@ public class GenericOAuth2Plugin extends Plugin {
                 return;
             }
 
-            // ### Configure
-
-            Uri authorizationUri = Uri.parse(oauth2Options.getAuthorizationBaseUrl());
-            Uri accessTokenUri;
-            if (oauth2Options.getAccessTokenEndpoint() != null) {
-                accessTokenUri = Uri.parse(oauth2Options.getAccessTokenEndpoint());
+            if (oauth2Options.getParEndpoint() != null) {
+                AsyncTask<Void, Void, ParRequestResult> asyncTask = new ParRequestAsyncTask(call, oauth2Options, getLogTag(), this);
+                asyncTask.execute();
             } else {
-                // appAuth does not allow to be the accessTokenUri empty although it is not used unit performTokenRequest
-                accessTokenUri = authorizationUri;
+                startAuthorization(call);
             }
+        }
+    }
 
-            AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authorizationUri, accessTokenUri);
+    void startAuthorization(final PluginCall call) {
+        // ### Configure
 
-            if (this.authState == null) {
-                this.authState = new AuthState(config);
-            }
+        Uri authorizationUri = Uri.parse(oauth2Options.getAuthorizationBaseUrl());
+        Uri accessTokenUri;
+        if (oauth2Options.getAccessTokenEndpoint() != null) {
+            accessTokenUri = Uri.parse(oauth2Options.getAccessTokenEndpoint());
+        } else {
+            // appAuth does not allow to be the accessTokenUri empty although it is not used until performTokenRequest
+            accessTokenUri = authorizationUri;
+        }
 
-            AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
-                config,
-                oauth2Options.getAppId(),
-                oauth2Options.getResponseType(),
-                Uri.parse(oauth2Options.getRedirectUrl())
-            );
+        AuthorizationServiceConfiguration config = new AuthorizationServiceConfiguration(authorizationUri, accessTokenUri);
 
-            // app auth always uses a state
-            if (oauth2Options.getState() != null) {
-                builder.setState(oauth2Options.getState());
-            }
-            builder.setScope(oauth2Options.getScope());
-            if (oauth2Options.isPkceEnabled()) {
-                builder.setCodeVerifier(oauth2Options.getPkceCodeVerifier());
-            } else {
-                builder.setCodeVerifier(null);
-            }
-            if (oauth2Options.getPrompt() != null) {
-                builder.setPrompt(oauth2Options.getPrompt());
-            }
-            if (oauth2Options.getLoginHint() != null) {
-                builder.setLoginHint(oauth2Options.getLoginHint());
-            }
-            if (oauth2Options.getResponseMode() != null) {
-                builder.setResponseMode(oauth2Options.getResponseMode());
-            }
-            if (oauth2Options.getDisplay() != null) {
-                builder.setDisplay(oauth2Options.getDisplay());
-            }
+        if (this.authState == null) {
+            this.authState = new AuthState(config);
+        }
 
-            if (oauth2Options.getAdditionalParameters() != null) {
-                try {
-                    builder.setAdditionalParameters(oauth2Options.getAdditionalParameters());
-                } catch (IllegalArgumentException e) {
-                    // ignore all additional parameter on error
-                    Log.e(getLogTag(), "Additional parameter error", e);
-                }
-            }
+        AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
+            config,
+            oauth2Options.getAppId(),
+            oauth2Options.getResponseType(),
+            Uri.parse(oauth2Options.getRedirectUrl())
+        );
 
-            AuthorizationRequest req = builder.build();
+        // app auth always uses a state
+        if (oauth2Options.getState() != null) {
+            builder.setState(oauth2Options.getState());
+        }
+        builder.setScope(oauth2Options.getScope());
+        if (oauth2Options.isPkceEnabled()) {
+            builder.setCodeVerifier(oauth2Options.getPkceCodeVerifier());
+        } else {
+            builder.setCodeVerifier(null);
+        }
+        if (oauth2Options.getPrompt() != null) {
+            builder.setPrompt(oauth2Options.getPrompt());
+        }
+        if (oauth2Options.getLoginHint() != null) {
+            builder.setLoginHint(oauth2Options.getLoginHint());
+        }
+        if (oauth2Options.getResponseMode() != null) {
+            builder.setResponseMode(oauth2Options.getResponseMode());
+        }
+        if (oauth2Options.getDisplay() != null) {
+            builder.setDisplay(oauth2Options.getDisplay());
+        }
 
-            this.authService = new AuthorizationService(getContext());
+        if (oauth2Options.getAdditionalParameters() != null) {
             try {
-                Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
-                this.bridge.saveCall(call);
-                startActivityForResult(call, authIntent, "handleIntentResult");
-            } catch (ActivityNotFoundException e) {
-                call.reject(ERR_ANDROID_NO_BROWSER, e);
-            } catch (Exception e) {
-                Log.e(getLogTag(), "Unexpected exception on open browser for authorization request!");
-                call.reject(ERR_GENERAL, e);
+                Map<String, String> additional = oauth2Options.getAdditionalParameters();
+                if (oauth2Options.getParRequestUri() != null) {
+                    if (additional == null) {
+                        additional = new java.util.HashMap<>();
+                    } else {
+                        additional = new java.util.HashMap<>(additional);
+                    }
+                    additional.put("request_uri", oauth2Options.getParRequestUri());
+                }
+                builder.setAdditionalParameters(additional);
+            } catch (IllegalArgumentException e) {
+                // ignore all additional parameter on error
+                Log.e(getLogTag(), "Additional parameter error", e);
             }
+        } else if (oauth2Options.getParRequestUri() != null) {
+            Map<String, String> additional = new java.util.HashMap<>();
+            additional.put("request_uri", oauth2Options.getParRequestUri());
+            builder.setAdditionalParameters(additional);
+        }
+
+        AuthorizationRequest req = builder.build();
+
+        this.authService = new AuthorizationService(getContext());
+        try {
+            Intent authIntent = this.authService.getAuthorizationRequestIntent(req);
+            this.bridge.saveCall(call);
+            startActivityForResult(call, authIntent, "handleIntentResult");
+        } catch (ActivityNotFoundException e) {
+            call.reject(ERR_ANDROID_NO_BROWSER, e);
+        } catch (Exception e) {
+            Log.e(getLogTag(), "Unexpected exception on open browser for authorization request!");
+            call.reject(ERR_GENERAL, e);
         }
     }
 
@@ -503,6 +526,7 @@ public class GenericOAuth2Plugin extends Plugin {
         Boolean logsEnabled = ConfigUtils.getOverwrittenAndroidParam(Boolean.class, callData, PARAM_LOGS_ENABLED);
         o.setLogsEnabled(logsEnabled != null && logsEnabled);
         o.setResourceUrl(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_RESOURCE_URL)));
+        o.setParEndpoint(ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_PAR_ENDPOINT)));
         o.setAccessTokenEndpoint(
             ConfigUtils.trimToNull(ConfigUtils.getOverwrittenAndroidParam(String.class, callData, PARAM_ACCESS_TOKEN_ENDPOINT))
         );
