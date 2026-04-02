@@ -11,7 +11,14 @@ typealias JSObject = [String: Any]
  * here: https://capacitorjs.com/docs/plugins/ios
  */
 @objc(GenericOAuth2Plugin)
-public class GenericOAuth2Plugin: CAPPlugin {
+public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "GenericOAuth2Plugin"
+    public let jsName = "GenericOAuth2"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "refreshToken", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "authenticate", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "logout", returnType: CAPPluginReturnPromise),
+    ]
 
     var savedPluginCall: CAPPluginCall?
 

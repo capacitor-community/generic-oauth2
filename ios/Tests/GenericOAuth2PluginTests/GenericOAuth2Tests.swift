@@ -1,5 +1,5 @@
 import XCTest
-@testable import Plugin
+@testable import GenericOAuth2Plugin
 
 class GenericOAuth2Tests: XCTestCase {
     override func setUp() {
