@@ -10,14 +10,16 @@ let package = Package(
             targets: ["CapacitorCommunityGenericOauth2"])
     ],
     dependencies: [
-        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0")
+        .package(url: "https://github.com/ionic-team/capacitor-swift-pm.git", from: "7.0.0"),
+        .package(url: "https://github.com/OAuthSwift/OAuthSwift.git", from: "2.2.0")
     ],
     targets: [
         .target(
             name: "CapacitorCommunityGenericOauth2",
             dependencies: [
                 .product(name: "Capacitor", package: "capacitor-swift-pm"),
-                .product(name: "Cordova", package: "capacitor-swift-pm")
+                .product(name: "Cordova", package: "capacitor-swift-pm"),
+                .product(name: "OAuthSwift", package: "OAuthSwift")
             ],
             path: "ios/Sources/GenericOAuth2Plugin"),
 
