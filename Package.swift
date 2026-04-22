@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "CapacitorCommunityGenericOauth2",
-    platforms: [.iOS(.v15)],
+    platforms: [.iOS(.v14)],
     products: [
         .library(
             name: "CapacitorCommunityGenericOauth2",
