@@ -6,6 +6,35 @@ import AuthenticationServices
 
 typealias JSObject = [String: Any]
 
+public class MyOAuth2Swift: OAuth2Swift  {
+    var codeVerifier: String?
+    override open func authorize(withCallbackURL url: URLConvertible, scope: String, state: String, codeChallenge: String, codeChallengeMethod: String = "S256", codeVerifier: String, parameters: Parameters = [:], headers: OAuthSwift.Headers? = nil, completionHandler completion: @escaping TokenCompletionHandler) -> OAuthSwiftRequestHandle? {
+        self.codeVerifier = codeVerifier
+        return super.authorize(
+            withCallbackURL:url, 
+            scope: scope, 
+            state: state, 
+            codeChallenge: codeChallenge, 
+            codeChallengeMethod: codeChallengeMethod, 
+            codeVerifier: codeVerifier, 
+            parameters: parameters, 
+            headers: headers, 
+            completionHandler: completion
+        )
+    }
+ 
+    override open func postOAuthAccessTokenWithRequestToken(byCode code: String, callbackURL: URL?, headers: OAuthSwift.Headers? = nil, completionHandler completion: @escaping TokenCompletionHandler) -> OAuthSwiftRequestHandle? {
+        var authorization_response = OAuthSwift.Parameters()
+        authorization_response["code"] = code
+        var parameters =  OAuthSwift.Parameters()
+        if let codeVerifier = self.codeVerifier {
+            authorization_response["request"] = ["codeVerifier": codeVerifier]
+        }
+        parameters["authorization_response"] = authorization_response
+        completion(.success((self.client.credential, nil, parameters)))
+        return nil
+    }
+}
 /**
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitorjs.com/docs/plugins/ios
@@ -69,7 +98,7 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin {
         static let ERR_USER_CANCELLED = "USER_CANCELLED"
     }
 
-    var oauthSwift: OAuth2Swift?
+    var oauthSwift: MyOAuth2Swift?
     var oauth2SafariDelegate: OAuth2SafariDelegate?
     var handlerClasses = [String: OAuth2CustomHandler.Type]()
     var handlerInstances = [String: OAuth2CustomHandler]()
@@ -130,7 +159,7 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin {
             return
         }
 
-        let oauthSwift = OAuth2Swift(
+        let oauthSwift = MyOAuth2Swift(
             consumerKey: appId,
             consumerSecret: "", // never ever store the app secret on client!
             authorizeUrl: "",
@@ -268,9 +297,9 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin {
                     return
                 }
 
-                var oauthSwift: OAuth2Swift
+                var oauthSwift: MyOAuth2Swift
                 if let accessTokenEndpoint = getOverwritableString(call, PARAM_ACCESS_TOKEN_ENDPOINT), !accessTokenEndpoint.isEmpty {
-                    oauthSwift = OAuth2Swift(
+                    oauthSwift = MyOAuth2Swift(
                         consumerKey: appId,
                         consumerSecret: "", // never ever store the app secret on client!
                         authorizeUrl: baseUrl,
@@ -278,7 +307,7 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin {
                         responseType: responseType
                     )
                 } else {
-                    oauthSwift = OAuth2Swift(
+                    oauthSwift = MyOAuth2Swift(
                         consumerKey: appId,
                         consumerSecret: "", // never ever store the app secret on client!
                         authorizeUrl: baseUrl,
