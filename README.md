@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/maintenance/yes/2024?style=flat-square" />
+  <img src="https://img.shields.io/maintenance/yes/2025?style=flat-square" />
    <a href="https://github.com/capacitor-community/generic-oauth2/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/capacitor-community/generic-oauth2/ci.yml?branch=main&style=flat-square" /></a>
   <a href="https://www.npmjs.com/package/@capacitor-community/generic-oauth2"><img src="https://img.shields.io/npm/l/@capacitor-community/generic-oauth2?style=flat-square" /></a>
 <br>
@@ -16,7 +16,9 @@
 
 ## Introduction
 
-This is a **generic OAuth 2 client** plugin. It lets you configure the oauth parameters yourself instead of using SDKs. Therefore it is usable with various providers. See [identity providers](#list-of-providers) the community has already used this plugin with.
+This is a **generic OAuth 2 client** plugin. It lets you configure the oauth parameters yourself instead of using SDKs.
+Therefore, it is usable with various providers. See [identity providers](#list-of-providers) the community has already
+used this plugin with.
 
 ## Installation
 
@@ -28,13 +30,10 @@ npx cap sync
 ## Versions
 
 | Plugin | For Capacitor | Docs                                                                                  | Notes                                                                                                                             |
-| ------ | ------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| 6.x    | 6.x.x         | [README](./README.md)                                                                 | Breaking changes. As of this version the changelog will be available in the Releases tab in GitHub. XCode 15.0 needs this version |
-| 5.x    | 5.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/5.0.0/README.md) | Breaking changes see Changelog. XCode 14.1 needs this version                                                                     |
-| 4.x    | 4.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/4.0.0/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version                                                                     |
-| 3.x    | 3.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/3.0.1/README.md) | Breaking changes see Changelog. XCode 12.0 needs this version                                                                     |
-| 2.x    | 2.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/2.1.0/README.md) | Breaking changes see Changelog. XCode 11.4 needs this version                                                                     |
-| 1.x    | 1.x.x         | [README](https://github.com/moberwasserlechner/capacitor-oauth2/blob/1.1.0/README.md) |                                                                                                                                   |
+|--------|---------------|---------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|
+| 7.x    | 7.x.x         | [README](./README.md)                                                                 | Xcode 16.0+ required!                                                                                                             |
+| 6.x    | 6.x.x         | [README](https://github.com/capacitor-community/generic-oauth2/blob/6.1.0/README.md) | Breaking changes. As of this version the changelog will be available in the Releases tab in GitHub. XCode 15.0 needs this version |
+| 5.x    | 5.x.x         | [README](https://github.com/capacitor-community/generic-oauth2/blob/5.0.0/README.md) | Breaking changes see Changelog. XCode 14.1 needs this version                                                                     |
 
 ## Supported flows
 
@@ -51,10 +50,12 @@ These parameters are:
 
 e.g.
 
-1.  If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be resolve along with the whole authorization response.
-    This only works for the Web and Android. On iOS the used lib does not allows to cancel after the authorization request see #13.
+1. If `responseType=code`, `pkceDisable=true` and `accessTokenEndpoint` is missing the `authorizationCode` will be
+   resolve along with the whole authorization response.
+   This only works for the Web and Android. On iOS the used lib does not allows to cancel after the authorization
+   request see #13.
 
-2.  If you just need the `id_token` JWT you have to set `accessTokenEndpoint` and `resourceUrl` to `null`.
+2. If you just need the `id_token` JWT you have to set `accessTokenEndpoint` and `resourceUrl` to `null`.
 
 ### Tested / working flows
 
@@ -71,14 +72,15 @@ responseType: "token"
 ```
 ...
 responseType: "code"
-pkceEnable: true
+pkceEnabled: true
 ...
 ```
 
 Supported on Web with the new method `redirectFlowCodeListener` which should be called on your app init process
 so it watches for the URL queryString `code` to generate an `access_token` correctly.
 
-Please be aware that some providers (OneDrive, Auth0) allow **Code Flow + PKCE** only for native apps. Web apps have to use implicit flow.
+Please be aware that some providers (OneDrive, Auth0) allow **Code Flow + PKCE** only for native apps. Web apps have to
+use implicit flow.
 
 ### Important
 
@@ -92,71 +94,58 @@ That flow should only be used on the backend (server).
 ### Use it
 
 ```typescript
-import { GenericOAuth2 } from '@capacitor-community/generic-oauth2';
+import {GenericOAuth2} from '@capacitor-community/generic-oauth2';
 
 @Component({
-  template:
-    '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
-    '<button (click)="onOAuthRefreshBtnClick()">Refresh token</button>' +
-    '<button (click)="onLogoutClick()">Logout OAuth</button>',
+    template:
+        '<button (click)="onOAuthBtnClick()">Login with OAuth</button>' +
+        '<button (click)="onOAuthRefreshBtnClick()">Refresh token</button>',
 })
 export class SignupComponent {
-  accessToken: string;
-  refreshToken: string;
+    accessToken: string;
+    refreshToken: string;
 
-  onOAuthBtnClick() {
-    GenericOAuth2.authenticate(oauth2Options)
-      .then(response => {
-        this.accessToken = response['access_token']; // storage recommended for android logout
-        this.refreshToken = response['refresh_token'];
+    onOAuthBtnClick() {
+        GenericOAuth2.authenticate(oauth2Options)
+            .then(response => {
+                this.accessToken = response['access_token'];
+                this.refreshToken = response['refresh_token'];
 
-        // only if you include a resourceUrl protected user values are included in the response!
-        let oauthUserId = response['id'];
-        let name = response['name'];
+                // only if you include a resourceUrl protected user values are included in the response!
+                let oauthUserId = response['id'];
+                let name = response['name'];
 
-        // go to backend
-      })
-      .catch(reason => {
-        console.error('OAuth rejected', reason);
-      });
-  }
-
-  // Refreshing tokens only works on iOS/Android for now
-  onOAuthRefreshBtnClick() {
-    if (!this.refreshToken) {
-      console.error('No refresh token found. Log in with OAuth first.');
+                // go to backend
+            })
+            .catch(reason => {
+                console.error('OAuth rejected', reason);
+            });
     }
 
-    GenericOAuth2.refreshToken(oauth2RefreshOptions)
-      .then(response => {
-        this.accessToken = response['access_token']; // storage recommended for android logout
-        // Don't forget to store the new refresh token as well!
-        this.refreshToken = response['refresh_token'];
-        // Go to backend
-      })
-      .catch(reason => {
-        console.error('Refreshing token failed', reason);
-      });
-  }
+    // Refreshing tokens only works on iOS/Android for now
+    onOAuthRefreshBtnClick() {
+        if (!this.refreshToken) {
+            console.error('No refresh token found. Log in with OAuth first.');
+        }
 
-  onLogoutClick() {
-    GenericOAuth2.logout(
-      oauth2LogoutOptions,
-      this.accessToken, // only used on android
-    )
-      .then(() => {
-        // do something
-      })
-      .catch(reason => {
-        console.error('OAuth logout failed', reason);
-      });
-  }
+        GenericOAuth2.refreshToken(oauth2RefreshOptions)
+            .then(response => {
+                this.accessToken = response['access_token'];
+                // Don't forget to store the new refresh token as well!
+                this.refreshToken = response['refresh_token'];
+                // Go to backend
+            })
+            .catch(reason => {
+                console.error('Refreshing token failed', reason);
+            });
+    }
 }
 ```
 
 ### Options
 
-See the `oauth2Options` and `oauth2RefreshOptions` interfaces at https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/src/definitions.ts for details.
+See the `oauth2Options` and `oauth2RefreshOptions` interfaces
+at https://github.com/capacitor-community/generic-oauth2/blob/main/src/definitions.ts for details.
 
 Example:
 
@@ -187,26 +176,26 @@ Example:
     }
 ```
 
-#### authenticate() and logout()
+#### authenticate()
 
 **Overrideable Base Parameter**
 
 These parameters are overrideable in every platform
 
-| parameter                 | default | required | description                                                                                                                                                                                                                                         | since |
-| ------------------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| appId                     |         | yes      | aka clientId, serviceId, ...                                                                                                                                                                                                                        |       |
-| authorizationBaseUrl      |         | yes      |                                                                                                                                                                                                                                                     |       |
-| responseType              |         | yes      |                                                                                                                                                                                                                                                     |       |
-| redirectUrl               |         | yes      |                                                                                                                                                                                                                                                     | 2.0.0 |
-| accessTokenEndpoint       |         |          | If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                                 |       |
-| resourceUrl               |         |          | If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                                         |       |
-| additionalResourceHeaders |         |          | Additional headers for the resource request                                                                                                                                                                                                         | 3.0.0 |
-| pkceEnabled               | `false` |          | Enable PKCE if you need it. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.                                                                                             |       |
+| parameter                 | default | required | description                                                                                                                                                                                                                                          | since |
+|---------------------------|---------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------|
+| appId                     |         | yes      | aka clientId, serviceId, ...                                                                                                                                                                                                                         |       |
+| authorizationBaseUrl      |         | yes      |                                                                                                                                                                                                                                                      |       |
+| responseType              |         | yes      |                                                                                                                                                                                                                                                      |       |
+| redirectUrl               |         | yes      |                                                                                                                                                                                                                                                      | 2.0.0 |
+| accessTokenEndpoint       |         |          | If empty the authorization response incl code is returned. Known issue: Not on iOS!                                                                                                                                                                  |       |
+| resourceUrl               |         |          | If empty the tokens are return instead. If you need just the `id_token` you have to set both `accessTokenEndpoint` and `resourceUrl` to `null` or empty ``.                                                                                          |       |
+| additionalResourceHeaders |         |          | Additional headers for the resource request                                                                                                                                                                                                          | 3.0.0 |
+| pkceEnabled               | `false` |          | Enable PKCE if you need it. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection.                                                                                              |       |
 | logsEnabled               | `false` |          | Enable extensive logging. All plugin outputs are prefixed with `I/Capacitor/GenericOAuth2Plugin: ` across all platforms. Note: On iOS because of #111 boolean values are not overwritten. You have to explicitly define the param in the subsection. | 3.0.0 |
-| scope                     |         |          |                                                                                                                                                                                                                                                     |       |
-| state                     |         |          | The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                                         |       |
-| additionalParameters      |         |          | Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>`{ "key1": "value", "key2": "value, "response_mode": "value"}`                                                            |       |
+| scope                     |         |          |                                                                                                                                                                                                                                                      |       |
+| state                     |         |          | The plugin always uses a state.<br>If you don't provide one we generate it.                                                                                                                                                                          |       |
+| additionalParameters      |         |          | Additional parameters for anything you might miss, like `none`, `response_mode`. <br><br>Just create a key value pair.<br>`{ "key1": "value", "key2": "value, "response_mode": "value"}`                                                             |       |
 
 **Platform Web**
 
@@ -220,7 +209,7 @@ These parameters are overrideable in every platform
 **Platform Android**
 
 | parameter                    | default | required | description                                                                                                              | since |
-| ---------------------------- | ------- | -------- | ------------------------------------------------------------------------------------------------------------------------ | ----- |
+|------------------------------|---------|----------|--------------------------------------------------------------------------------------------------------------------------|-------|
 | customHandlerClass           |         |          | Provide a class name implementing `com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler`                 |       |
 | handleResultOnNewIntent      | `false` |          | Alternative to handle the activity result. The `onNewIntent` method is only call if the App was killed while logging in. |       |
 | handleResultOnActivityResult | `true`  |          |                                                                                                                          |       |
@@ -228,14 +217,19 @@ These parameters are overrideable in every platform
 **Platform iOS**
 
 | parameter          | default | required | description                                                                                    | since |
-| ------------------ | ------- | -------- | ---------------------------------------------------------------------------------------------- | ----- |
+|--------------------|---------|----------|------------------------------------------------------------------------------------------------|-------|
 | customHandlerClass |         |          | Provide a class name implementing `CapacitorCommunityGenericOauth2.OAuth2CustomHandler`        |       |
 | siwaUseScope       |         |          | SiWA default scope is `name email` if you want to use the configured one set this param `true` | 2.1.0 |
+
+#### logout()
+
+The existing `logout()` method has some issues and is not currently functional.
+See [Issue #97](https://github.com/capacitor-community/generic-oauth2/issues/97) for possible workarounds.
 
 #### refreshToken()
 
 | parameter           | default | required | description                  | since |
-| ------------------- | ------- | -------- | ---------------------------- | ----- |
+|---------------------|---------|----------|------------------------------|-------|
 | appId               |         | yes      | aka clientId, serviceId, ... |       |
 | accessTokenEndpoint |         | yes      |                              |       |
 | refreshToken        |         | yes      |                              |       |
@@ -249,7 +243,8 @@ These parameters are overrideable in every platform
 - ERR_PARAM_NO_AUTHORIZATION_BASE_URL ... The authorization base url is missing. (web, android, ios)
 - ERR_PARAM_NO_RESPONSE_TYPE ... The response type is missing. (web, android, ios)
 - ERR_PARAM_NO_REDIRECT_URL ... The redirect url is missing. (web, android, ios)
-- ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect. Security risk! (web, android, ios)
+- ERR_STATES_NOT_MATCH ... The state included in the authorization code request does not match the one in the redirect.
+  Security risk! (web, android, ios)
 - ERR_AUTHORIZATION_FAILED ... The authorization failed.
 - ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 - ERR_NO_AUTHORIZATION_CODE ... No authorization code was returned in the redirect response. (web, android, ios)
@@ -257,13 +252,15 @@ These parameters are overrideable in every platform
 - ERR_CUSTOM_HANDLER_LOGIN ... Login through custom handler class failed. See logs and check your code. (android, ios)
 - ERR_CUSTOM_HANDLER_LOGOUT ... Logout through custom handler class failed. See logs and check your code. (android, ios)
 - ERR_ANDROID_NO_BROWSER ... No suitable browser could be found! (Android)
-- ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
+- ERR_ANDROID_RESULT_NULL ... The auth result is null. The intent in the ActivityResult is null. This might be a valid
+  state but make sure you configured Android part correctly! See [Platform Android](#platform-android)
 - ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (web, android, ios)
 
 #### refreshToken()
 
 - ERR_PARAM_NO_APP_ID ... The appId / clientId is missing. (android, ios)
-- ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed on refresh, on authenticate it is optional. (android, ios)
+- ERR_PARAM_NO_ACCESS_TOKEN_ENDPOINT ... The access token endpoint url is missing. It is only needed on refresh, on
+  authenticate it is optional. (android, ios)
 - ERR_PARAM_NO_REFRESH_TOKEN ... The refresh token is missing. (android, ios)
 - ERR_NO_ACCESS_TOKEN ... No access_token found. (web, android)
 - ERR_GENERAL ... A unspecific error. Check the logs to see want exactly happened. (android, ios)
@@ -272,15 +269,18 @@ These parameters are overrideable in every platform
 
 This implementation just opens a browser window to let users enter their credentials.
 
-As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no performance
+As there is no provider SDK used to accomplish OAuth, no additional javascript files must be loaded and so there is no
+performance
 impact using this plugin in a web application.
 
 ## Platform: Android
 
 There are two options when configuring an OAuth 2 protocol:
 
-1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the default config available,
-2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a _Custom OAuth Handler_.
+1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the
+   default config available,
+2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a
+   _Custom OAuth Handler_.
 
 ### 1. Android Default Config
 
@@ -288,31 +288,35 @@ There are two options when configuring an OAuth 2 protocol:
 > You can skip this, if you're only exclusively configuring providers using a _Custom OAuth Handler_.
 
 > [!NOTE]
-> For more information about configuring your Android app, refer to the [offical Capacitor documentation](https://capacitor.ionicframework.com/docs/android/configuration)
+> For more information about configuring your Android app, refer to
+> the [offical Capacitor documentation](https://capacitor.ionicframework.com/docs/android/configuration)
 
 #### android/app/src/main/res/AndroidManifest.xml
 
 The `AndroidManifest.xml` in your Capacitor Android project already contains
 
 ```xml
-    <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/custom_url_scheme" />
-    </intent-filter>
+
+<intent-filter>
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="@string/custom_url_scheme"/>
+</intent-filter>
 ```
 
 Find the following line in your `AndroidManifest.xml`
 
 ```xml
-<data android:scheme="@string/custom_url_scheme" />
+
+<data android:scheme="@string/custom_url_scheme"/>
 ```
 
 and change it to
 
 ```xml
-<data android:scheme="@string/custom_url_scheme" android:host="oauth" />
+
+<data android:scheme="@string/custom_url_scheme" android:host="oauth"/>
 ```
 
 > [!NOTE]
@@ -320,25 +324,27 @@ and change it to
 >
 > This will fix an issues within the oauth workflow where the application is shown twice.
 >
-> See [Issue #15](https://github.com/moberwasserlechner/capacitor-oauth2/issues/15) for details what happens.
+> See [Issue #15](https://github.com/capacitor-community/generic-oauth2/issues/15) for details what happens.
 
 #### android/app/src/main/res/values/strings.xml
 
-In your `strings.xml` change the `custom_url_scheme` string to your actual scheme value. Do NOT include `://oauth/redirect` or other endpoint urls here!
+In your `strings.xml` change the `custom_url_scheme` string to your actual scheme value. Do NOT include
+`://oauth/redirect` or other endpoint urls here!
 
 ```xml
+
 <string name="custom_url_scheme">com.example.yourapp</string>
 
-<!-- wrong -->
-<!-- <string name="custom_url_scheme">com.example.yourapp://endpoint/path</string> -->
+        <!-- wrong -->
+        <!-- <string name="custom_url_scheme">com.example.yourapp://endpoint/path</string> -->
 ```
 
 #### android/app/build.gradle
 
 ```groovy
 android.defaultConfig.manifestPlaceholders = [
-  // change to the 'custom_url_scheme' value in your strings.xml. They need to be the same. e.g.
-  "appAuthRedirectScheme": "com.example.yourapp"
+        // change to the 'custom_url_scheme' value in your strings.xml. They need to be the same. e.g.
+        "appAuthRedirectScheme": "com.example.yourapp"
 ]
 ```
 
@@ -348,18 +354,21 @@ android.defaultConfig.manifestPlaceholders = [
    (e.g.: onesignal-cordova-plugin), you will have to add it to your `buildTypes` like the following:
 
 ```groovy
-android.buildTypes.debug.manifestPlaceholders =  [
-  'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
+android.buildTypes.debug.manifestPlaceholders = [
+        'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
 ]
 android.buildTypes.release.manifestPlaceholders = [
-  'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
+        'appAuthRedirectScheme': '<@string/custom_url_scheme from string.xml>' // e.g. com.companyname.appname
 ]
 ```
 
-2. "ERR_ANDROID_RESULT_NULL": See [Issue #52](https://github.com/moberwasserlechner/capacitor-oauth2/issues/52#issuecomment-525715515) for details.
-   I cannot reproduce this behaviour. Moreover, there might be situation this state is valid. In other cases e.g. in the linked issue a configuration tweak fixed it.
+2. "ERR_ANDROID_RESULT_NULL":
+   See [Issue #52](https://github.com/capacitor-community/generic-oauth2/issues/52#issuecomment-525715515) for details.
+   I cannot reproduce this behaviour. Moreover, there might be situation this state is valid. In other cases e.g. in the
+   linked issue a configuration tweak fixed it.
 
-3. To prevent some logout issues on certain OAuth2 providers (like Salesforce for example), you should provide the `id_token` parameter on the `logout(...)` function.
+3. To prevent some logout issues on certain OAuth2 providers (like Salesforce for example), you should provide the
+   `id_token` parameter on the `logout(...)` function.
    This ensures that not only the cookies are deleted, but also the logout link is called from the OAuth2 provider.
    Also, it uses the system browser that the plugin uses (and not the user's default browser) to call the logout URL.
    This additionally ensures that the cookies are deleted in the correct browser.
@@ -380,26 +389,30 @@ Refer to the [Facebook example below](#facebook) for a reference implementation.
 
 There are two options when configuring an OAuth 2 protocol:
 
-1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the default config available,
-2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a _Custom OAuth Handler_.
+1. Some OAuth providers allow using their service _without_ implementing their SDK. For these providers, you can use the
+   default config available,
+2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a
+   _Custom OAuth Handler_.
 
 ### 1. iOS Default Config
 
 > [!NOTE]
 > You can skip this, if you're only exclusively configuring providers using a _Custom OAuth Handler_.
 
-Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and add the value of `redirectUrl` from your config without `:/` like that
+Open `ios/App/App/Info.plist` in XCode (Context menu -> Open as -> Source) and add the value of `redirectUrl` from your
+config without `:/` like that
 
 ```xml
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.companyname.appname</string>
-			</array>
-		</dict>
-	</array>
+
+<key>CFBundleURLTypes</key>
+<array>
+<dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+        <string>com.companyname.appname</string>
+    </array>
+</dict>
+</array>
 ```
 
 ### 2. Custom OAuth Handler
@@ -420,19 +433,22 @@ Refer to the [Facebook example below](#facebook) for a reference implementation.
 
 ## Where to store access tokens?
 
-You can use the [capacitor-secure-storage](https://www.npmjs.com/package/capacitor-secure-storage-plugin) plugin for this.
+You can use the [capacitor-secure-storage](https://www.npmjs.com/package/capacitor-secure-storage-plugin) plugin for
+this.
 
 This plugin stores data in secure locations for natives devices.
 
-- For Android, it will store data in a [`AndroidKeyStore`](https://developer.android.com/training/articles/keystore) and a [`SharedPreferences`](https://developer.android.com/reference/android/content/SharedPreferences).
+- For Android, it will store data in a [`AndroidKeyStore`](https://developer.android.com/training/articles/keystore) and
+  a [`SharedPreferences`](https://developer.android.com/reference/android/content/SharedPreferences).
 - For iOS, it will store data in a [`SwiftKeychainWrapper`](https://github.com/jrendel/SwiftKeychainWrapper).
 
 ## List of Providers
 
-These are some of the providers that can be configured with this plugin. I'm happy to add others ot the list, if you let me know.
+These are some of the providers that can be configured with this plugin. I'm happy to add others ot the list, if you let
+me know.
 
 | Name     | Example (config,...)                               | Notes    |
-| -------- | -------------------------------------------------- | -------- |
+|----------|----------------------------------------------------|----------|
 | Google   | [see below](#google)                               |          |
 | Facebook | [see below](#facebook)                             |          |
 | Azure    | [see below](#azure-active-directory--azure-ad-b2c) |          |
@@ -447,31 +463,36 @@ These are some of the providers that can be configured with this plugin. I'm hap
 Minimum config
 
 ```typescript
-appleLogin() {
-  GenericOAuth2.authenticate({
-    appId: "xxxxxxxxx",
-    authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
-  });
+appleLogin()
+{
+    GenericOAuth2.authenticate({
+        appId: "xxxxxxxxx",
+        authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
+    });
 }
 ```
 
-The plugin requires `authorizationBaseUrl` as it triggers the native support and because it is needed for other platforms anyway. Those platforms are not supported yet.
+The plugin requires `authorizationBaseUrl` as it triggers the native support and because it is needed for other
+platforms anyway. Those platforms are not supported yet.
 
 `appId` is required as well for internal, generic reasons and any not blank value is fine.
 
-It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add `siwaUseScope: true` to the ios section.
-Then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is not set or false.
+It is also possible to control the scope although Apple only supports `email` and/or `fullName`. Add
+`siwaUseScope: true` to the ios section.
+Then you can use `scope: "fullName"`, `scope: "email"` or both but the latter is the default one if `siwaUseScope` is
+not set or false.
 
 ```typescript
-appleLogin() {
-  GenericOAuth2.authenticate({
-    appId: "xxxxxxxxx",
-    authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
-    ios: {
-      siwaUseScope: true,
-      scope: "fullName"
-    }
-  });
+appleLogin()
+{
+    GenericOAuth2.authenticate({
+        appId: "xxxxxxxxx",
+        authorizationBaseUrl: "https://appleid.apple.com/auth/authorize",
+        ios: {
+            siwaUseScope: true,
+            scope: "fullName"
+        }
+    });
 }
 ```
 
@@ -480,26 +501,26 @@ As "Signin with Apple" is only supported since iOS 13 you should show the accord
 In Angular do sth like
 
 ```typescript
-import { Component, OnInit } from '@angular/core';
-import { Device, DeviceInfo } from '@capacitor/device';
-import { GenericOAuth2 } from '@capacitor-community/generic-oauth2';
+import {Component, OnInit} from '@angular/core';
+import {Device, DeviceInfo} from '@capacitor/device';
+import {GenericOAuth2} from '@capacitor-community/generic-oauth2';
 
 @Component({
-  templateUrl: './siwa.component.html',
+    templateUrl: './siwa.component.html',
 })
 export class SiwaComponent implements OnInit {
-  ios: boolean;
-  siwaSupported: boolean;
-  deviceInfo: DeviceInfo;
+    ios: boolean;
+    siwaSupported: boolean;
+    deviceInfo: DeviceInfo;
 
-  async ngOnInit() {
-    this.deviceInfo = await Device.getInfo();
-    this.ios = this.deviceInfo.platform === 'ios';
-    if (this.ios) {
-      const majorVersion: number = +this.deviceInfo.osVersion.split('.')[0];
-      this.siwaSupported = majorVersion >= 13;
+    async ngOnInit() {
+        this.deviceInfo = await Device.getInfo();
+        this.ios = this.deviceInfo.platform === 'ios';
+        if (this.ios) {
+            const majorVersion: number = +this.deviceInfo.osVersion.split('.')[0];
+            this.siwaSupported = majorVersion >= 13;
+        }
     }
-  }
 }
 ```
 
@@ -541,41 +562,43 @@ They share the same core features and therefore the plugin should work either wa
 
 ```typescript
 import {
-  OAuth2AuthenticateOptions,
-  GenericOAuth2,
+    OAuth2AuthenticateOptions,
+    GenericOAuth2,
 } from '@capacitor-community/generic-oauth2';
 
 export class AuthService {
-  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
-    return {
-      appId: environment.oauthAppId.azureBc2.appId,
-      authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
-      scope: 'https://graph.microsoft.com/User.Read', // See Azure Portal -> API permission
-      accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
-      resourceUrl: 'https://graph.microsoft.com/v1.0/me/',
-      responseType: 'code',
-      pkceEnabled: true,
-      logsEnabled: true,
-      web: {
-        redirectUrl: environment.redirectUrl,
-        windowOptions: 'height=600,left=0,top=0',
-      },
-      android: {
-        redirectUrl: 'msauth://{package-name}/{url-encoded-signature-hash}', // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
-      },
-      ios: {
-        pkceEnabled: true, // workaround for bug #111
-        redirectUrl: 'msauth.{package-name}://auth',
-      },
-    };
-  }
+    getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+        return {
+            appId: environment.oauthAppId.azureBc2.appId,
+            authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
+            scope: 'https://graph.microsoft.com/User.Read', // See Azure Portal -> API permission
+            accessTokenEndpoint: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/token`,
+            resourceUrl: 'https://graph.microsoft.com/v1.0/me/',
+            responseType: 'code',
+            pkceEnabled: true,
+            logsEnabled: true,
+            web: {
+                redirectUrl: environment.redirectUrl,
+                windowOptions: 'height=600,left=0,top=0',
+            },
+            android: {
+                redirectUrl: 'msauth://{package-name}/{url-encoded-signature-hash}', // See Azure Portal -> Authentication -> Android Configuration "Redirect URI"
+            },
+            ios: {
+                pkceEnabled: true, // workaround for bug #111
+                redirectUrl: 'msauth.{package-name}://auth',
+            },
+        };
+    }
 }
 ```
 
 ##### Custom Scopes
 
-If you need to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you might need
-to remove the `resourceUrl` parameter if your scopes are not included in the response. I can not give a clear advise on those Azure specifics.
+If you need to use **custom scopes** configured in "API permissions" and created in "Expose an API" in Azure Portal you
+might need
+to remove the `resourceUrl` parameter if your scopes are not included in the response. I can not give a clear advise on
+those Azure specifics.
 Try to experiment with the config until Azure includes everything you need in the response.
 
 <details>
@@ -584,7 +607,10 @@ Try to experiment with the config until Azure includes everything you need in th
 ```typescript
 import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
-  getAzureB2cOAuth2Options(): OAuth2AuthenticateOptions {
+getAzureB2cOAuth2Options()
+:
+OAuth2AuthenticateOptions
+{
     return {
         appId: environment.oauthAppId.azureBc2.appId,
         authorizationBaseUrl: `https://login.microsoftonline.com/${environment.oauthAppId.azureBc2.tenantId}/oauth2/v2.0/authorize`,
@@ -606,7 +632,7 @@ import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
             redirectUrl: "msauth.{package-name}://auth"
         }
     };
-  }
+}
 }
 ```
 
@@ -620,62 +646,64 @@ import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 ```typescript
 import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
-azureLogin() {
-  GenericOAuth2.authenticate({
-    appId: "xxxxxxxxx",
-    authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
-    accessTokenEndpoint: "",
-    scope: "openid offline_access https://tenantb2c.onmicrosoft.com/capacitor-api/demo.read",
-    responseType: "token",
-    web: {
-        redirectUrl: "http://localhost:8100/auth"
-    },
-    android: {
-        pkceEnabled: true,
-        responseType: "code",
-        redirectUrl: "com.tenant.app://oauth/auth", // Use the value from Azure config. Platform "Android"
-        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
-        handleResultOnNewIntent: true,
-        handleResultOnActivityResult: true
-    },
-    ios: {
-        pkceEnabled: true,
-        responseType: "code",
-        redirectUrl: "msauth.BUNDLE_ID://oauth", // Use the value from Azure config. Platform "iOS/Mac"
-        accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
-    }
-  });
+azureLogin()
+{
+    GenericOAuth2.authenticate({
+        appId: "xxxxxxxxx",
+        authorizationBaseUrl: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/authorize",
+        accessTokenEndpoint: "",
+        scope: "openid offline_access https://tenantb2c.onmicrosoft.com/capacitor-api/demo.read",
+        responseType: "token",
+        web: {
+            redirectUrl: "http://localhost:8100/auth"
+        },
+        android: {
+            pkceEnabled: true,
+            responseType: "code",
+            redirectUrl: "com.tenant.app://oauth/auth", // Use the value from Azure config. Platform "Android"
+            accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+            handleResultOnNewIntent: true,
+            handleResultOnActivityResult: true
+        },
+        ios: {
+            pkceEnabled: true,
+            responseType: "code",
+            redirectUrl: "msauth.BUNDLE_ID://oauth", // Use the value from Azure config. Platform "iOS/Mac"
+            accessTokenEndpoint: "https://tenantb2c.b2clogin.com/tfp/tenantb2c.onmicrosoft.com/B2C_1_SignUpAndSignIn/oauth2/v2.0/token",
+        }
+    });
 }
 ```
 
 ```typescript
 import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
-azureLogin() {
-  GenericOAuth2.authenticate({
-    appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
-    authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
-    accessTokenEndpoint: '',
-    scope: 'https://XXXXXXX.onmicrosoft.com/TestApi4/demo.read',
-    responseType: 'token',
-    web: {
-      redirectUrl: 'http://localhost:8100/'
-    },
-    android: {
-      pkceEnabled: true,
-      responseType: 'code',
-      redirectUrl: 'com.company.project://oauth/redirect',
-      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
-      handleResultOnNewIntent: true,
-      handleResultOnActivityResult: true
-    },
-    ios: {
-      pkceEnabled: true,
-      responseType: 'code',
-      redirectUrl: 'com.company.project://oauth',
-      accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
-    }
-  });
+azureLogin()
+{
+    GenericOAuth2.authenticate({
+        appId: 'XXXXXXXXXX-XXXXXXXXXX-XXXXXXXXX',
+        authorizationBaseUrl: 'https://TENANT.b2clogin.com/tfp/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web/oauth2/v2.0/authorize',
+        accessTokenEndpoint: '',
+        scope: 'https://XXXXXXX.onmicrosoft.com/TestApi4/demo.read',
+        responseType: 'token',
+        web: {
+            redirectUrl: 'http://localhost:8100/'
+        },
+        android: {
+            pkceEnabled: true,
+            responseType: 'code',
+            redirectUrl: 'com.company.project://oauth/redirect',
+            accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+            handleResultOnNewIntent: true,
+            handleResultOnActivityResult: true
+        },
+        ios: {
+            pkceEnabled: true,
+            responseType: 'code',
+            redirectUrl: 'com.company.project://oauth',
+            accessTokenEndpoint: 'https://TENANT.b2clogin.com/TENANT.onmicrosoft.com/B2C_1_policy-signin-signup-web',
+        }
+    });
 }
 ```
 
@@ -683,60 +711,65 @@ azureLogin() {
 
 #### Android
 
-If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in `AndroidManifest.xml`.
+If you have **only** Azure B2C as identity provider you have to add a new `intent-filter` to your main activity in
+`AndroidManifest.xml`.
 
 ```xml
 <!-- azure ad b2c -->
 <intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name"
+          android:path="@string/azure_b2c_signature_hash"/>
 </intent-filter>
 ```
 
-If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like in [#178](https://github.com/moberwasserlechner/capacitor-oauth2/issues/178)
+If you have **multiple** identity providers **or** your logins always ends in a `USER_CANCELLED` error like
+in [#178](https://github.com/capacitor-community/generic-oauth2/issues/178)
 you have to create an additional Activity in `AndroidManifest.xml`.
 
 These are both activities! Make sure to replace `com.company.project.MainActivity` with your real qualified class path!
 
 ```xml
+
 <activity
-      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
-      android:name="com.company.project.MainActivity"
-      android:label="@string/title_activity_main"
-      android:launchMode="singleTask"
-      android:theme="@style/AppTheme.NoActionBarLaunch">
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+        android:name="com.company.project.MainActivity"
+        android:label="@string/title_activity_main"
+        android:launchMode="singleTask"
+        android:theme="@style/AppTheme.NoActionBarLaunch">
 
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
+    <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+    </intent-filter>
 
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
-      </intent-filter>
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host"/>
+    </intent-filter>
 
-    </activity>
+</activity>
 
-    <activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host" />
-      </intent-filter>
+<activity android:name="net.openid.appauth.RedirectUriReceiverActivity" android:exported="true">
+<intent-filter>
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="@string/custom_url_scheme" android:host="@string/custom_host"/>
+</intent-filter>
 
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name" android:path="@string/azure_b2c_signature_hash" />
-      </intent-filter>
-    </activity>
+<intent-filter>
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="@string/azure_b2c_scheme" android:host="@string/package_name"
+          android:path="@string/azure_b2c_signature_hash"/>
+</intent-filter>
+</activity>
 ```
 
 Values for `android/app/src/main/res/values/string.xml`. Replace the example values!
@@ -754,19 +787,21 @@ See [Android Default Config](#android-default-config)
 
 #### iOS
 
-Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source Code. Note: XCode does not "like" files opened and changed externally.
+Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source Code. Note: XCode does not "like" files
+opened and changed externally.
 
 ```xml
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<!-- msauth.BUNDLE_ID -->
-				<string>msauth.com.yourcompany.yourproject</string>
-			</array>
-		</dict>
-	</array>
+
+<key>CFBundleURLTypes</key>
+<array>
+<dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+        <!-- msauth.BUNDLE_ID -->
+        <string>msauth.com.yourcompany.yourproject</string>
+    </array>
+</dict>
+</array>
 ```
 
 **Important:**
@@ -776,8 +811,8 @@ Open `Info.plist` in XCode by clicking right on that file -> Open as -> Source C
 
 #### Troubleshooting
 
-In case of problems please read [#91](https://github.com/moberwasserlechner/capacitor-oauth2/issues/91)
-and [#96](https://github.com/moberwasserlechner/capacitor-oauth2/issues/96)
+In case of problems please read [#91](https://github.com/capacitor-community/generic-oauth2/issues/91)
+and [#96](https://github.com/capacitor-community/generic-oauth2/issues/96)
 
 See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example) by @loonix.
 
@@ -788,35 +823,36 @@ See this [example repo](https://github.com/loonix/capacitor-oauth2-azure-example
 ```typescript
 import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
-googleLogin() {
+googleLogin()
+{
     GenericOAuth2.authenticate({
-      authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
-      accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
-      scope: "email profile",
-      resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
-      web: {
-        appId: environment.oauthAppId.google.web,
-        responseType: "token", // implicit flow
-        accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
-        redirectUrl: "http://localhost:4200",
-        windowOptions: "height=600,left=0,top=0"
-      },
-      android: {
-        appId: environment.oauthAppId.google.android,
-        responseType: "code", // if you configured a android app in google dev console the value must be "code"
-        redirectUrl: "com.companyname.appname:/" // package name from google dev console
-      },
-      ios: {
-        appId: environment.oauthAppId.google.ios,
-        responseType: "code", // if you configured a ios app in google dev console the value must be "code"
-        redirectUrl: "com.companyname.appname:/" // Bundle ID from google dev console
-      }
+        authorizationBaseUrl: "https://accounts.google.com/o/oauth2/auth",
+        accessTokenEndpoint: "https://www.googleapis.com/oauth2/v4/token",
+        scope: "email profile",
+        resourceUrl: "https://www.googleapis.com/userinfo/v2/me",
+        web: {
+            appId: environment.oauthAppId.google.web,
+            responseType: "token", // implicit flow
+            accessTokenEndpoint: "", // clear the tokenEndpoint as we know that implicit flow gets the accessToken from the authorizationRequest
+            redirectUrl: "http://localhost:4200",
+            windowOptions: "height=600,left=0,top=0"
+        },
+        android: {
+            appId: environment.oauthAppId.google.android,
+            responseType: "code", // if you configured a android app in google dev console the value must be "code"
+            redirectUrl: "com.companyname.appname:/" // package name from google dev console
+        },
+        ios: {
+            appId: environment.oauthAppId.google.ios,
+            responseType: "code", // if you configured a ios app in google dev console the value must be "code"
+            redirectUrl: "com.companyname.appname:/" // Bundle ID from google dev console
+        }
     }).then(resourceUrlResponse => {
-      // do sth e.g. check with your backend
+        // do sth e.g. check with your backend
     }).catch(reason => {
-      console.error("Google OAuth rejected", reason);
+        console.error("Google OAuth rejected", reason);
     });
-  }
+}
 ```
 
 #### Android
@@ -834,29 +870,30 @@ See [iOS Default Config](#ios-default-config)
 ```typescript
 import {GenericOAuth2} from "@capacitor-community/generic-oauth2";
 
-facebookLogin() {
+facebookLogin()
+{
     let fbApiVersion = "2.11";
     GenericOAuth2.authenticate({
-      appId: "YOUR_FACEBOOK_APP_ID",
-      authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
-      resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
-      web: {
-        responseType: "token",
-        redirectUrl: "http://localhost:4200",
-        windowOptions: "height=600,left=0,top=0"
-      },
-      android: {
-        customHandlerClass: "com.companyname.appname.YourAndroidFacebookOAuth2Handler",
-      },
-      ios: {
-        customHandlerClass: "App.YourIOsFacebookOAuth2Handler",
-      }
+        appId: "YOUR_FACEBOOK_APP_ID",
+        authorizationBaseUrl: "https://www.facebook.com/v" + fbApiVersion + "/dialog/oauth",
+        resourceUrl: "https://graph.facebook.com/v" + fbApiVersion + "/me",
+        web: {
+            responseType: "token",
+            redirectUrl: "http://localhost:4200",
+            windowOptions: "height=600,left=0,top=0"
+        },
+        android: {
+            customHandlerClass: "com.companyname.appname.YourAndroidFacebookOAuth2Handler",
+        },
+        ios: {
+            customHandlerClass: "App.YourIOsFacebookOAuth2Handler",
+        }
     }).then(resourceUrlResponse => {
-      // do sth e.g. check with your backend
+        // do sth e.g. check with your backend
     }).catch(reason => {
-      console.error("FB OAuth rejected", reason);
+        console.error("FB OAuth rejected", reason);
     });
-  }
+}
 ```
 
 **Android and iOS**
@@ -865,7 +902,8 @@ Since October 2018 Strict Mode for Redirect Urls is always on.
 
 > Use Strict Mode for Redirect URIs
 
-> Only allow redirects that use the Facebook SDK or that exactly match the Valid OAuth Redirect URIs. Strongly recommended.
+> Only allow redirects that use the Facebook SDK or that exactly match the Valid OAuth Redirect URIs. Strongly
+> recommended.
 
 Before that it was able to use `fb<your_app_id>:/authorize` in a Android or iOS app and get the accessToken.
 
@@ -877,34 +915,41 @@ To address this problem I created a integration with custom code in your app `cu
 
 #### Android
 
-See https://developers.facebook.com/docs/facebook-login/android/ for more background on how to configure Facebook in your Android app.
+See https://developers.facebook.com/docs/facebook-login/android/ for more background on how to configure Facebook in
+your Android app.
 
 1. Add `implementation 'com.facebook.android:facebook-login:4.36.0'` to `android/app/build.gradle` as dependency.
 
 2. Add to `string.xml`
 
 ```xml
-    <string name="facebook_app_id"><YOUR_FACEBOOK_APP_ID></string>
-    <string name="fb_login_protocol_scheme">fb<YOUR_FACEBOOK_APP_ID></string>
+
+<string name="facebook_app_id">
+    <YOUR_FACEBOOK_APP_ID>
+</string>
+<string name="fb_login_protocol_scheme">fb
+<YOUR_FACEBOOK_APP_ID>
+</string>
 ```
 
 3. Add to `AndroidManifest.xml`
 
 ```xml
+
 <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
 
 <activity android:name="com.facebook.FacebookActivity"
-  android:configChanges=
-    "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-  android:label="@string/app_name" />
+          android:configChanges=
+                  "keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+          android:label="@string/app_name"/>
 
 <activity android:name="com.facebook.CustomTabActivity" android:exported="true">
-  <intent-filter>
-    <action android:name="android.intent.action.VIEW" />
-    <category android:name="android.intent.category.DEFAULT" />
-    <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="@string/fb_login_protocol_scheme" />
-  </intent-filter>
+<intent-filter>
+    <action android:name="android.intent.action.VIEW"/>
+    <category android:name="android.intent.category.DEFAULT"/>
+    <category android:name="android.intent.category.BROWSABLE"/>
+    <data android:scheme="@string/fb_login_protocol_scheme"/>
+</intent-filter>
 </activity>
 ```
 
@@ -925,56 +970,57 @@ import com.facebook.login.LoginResult;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.community.genericoauth2.handler.AccessTokenCallback;
 import com.getcapacitor.community.genericoauth2.handler.OAuth2CustomHandler;
+
 import java.util.Collections;
 
 public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
 
-  @Override
-  public void getAccessToken(
-    Activity activity,
-    PluginCall pluginCall,
-    final AccessTokenCallback callback
-  ) {
-    AccessToken accessToken = AccessToken.getCurrentAccessToken();
-    if (AccessToken.isCurrentAccessTokenActive()) {
-      callback.onSuccess(accessToken.getToken());
-    } else {
-      LoginManager l = LoginManager.getInstance();
-      l.logInWithReadPermissions(
-        activity,
-        Collections.singletonList("public_profile")
-      );
-      l.setLoginBehavior(LoginBehavior.WEB_ONLY);
-      l.setDefaultAudience(DefaultAudience.NONE);
-      LoginManager
-        .getInstance()
-        .registerCallback(
-          ((MainActivity) activity).getCallbackManager(),
-          new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-              callback.onSuccess(loginResult.getAccessToken().getToken());
-            }
+    @Override
+    public void getAccessToken(
+            Activity activity,
+            PluginCall pluginCall,
+            final AccessTokenCallback callback
+    ) {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        if (AccessToken.isCurrentAccessTokenActive()) {
+            callback.onSuccess(accessToken.getToken());
+        } else {
+            LoginManager l = LoginManager.getInstance();
+            l.logInWithReadPermissions(
+                    activity,
+                    Collections.singletonList("public_profile")
+            );
+            l.setLoginBehavior(LoginBehavior.WEB_ONLY);
+            l.setDefaultAudience(DefaultAudience.NONE);
+            LoginManager
+                    .getInstance()
+                    .registerCallback(
+                            ((MainActivity) activity).getCallbackManager(),
+                            new FacebookCallback<LoginResult>() {
+                                @Override
+                                public void onSuccess(LoginResult loginResult) {
+                                    callback.onSuccess(loginResult.getAccessToken().getToken());
+                                }
 
-            @Override
-            public void onCancel() {
-              callback.onCancel();
-            }
+                                @Override
+                                public void onCancel() {
+                                    callback.onCancel();
+                                }
 
-            @Override
-            public void onError(FacebookException error) {
-              callback.onCancel();
-            }
-          }
-        );
+                                @Override
+                                public void onError(FacebookException error) {
+                                    callback.onCancel();
+                                }
+                            }
+                    );
+        }
     }
-  }
 
-  @Override
-  public boolean logout(Activity activity, PluginCall pluginCall) {
-    LoginManager.getInstance().logOut();
-    return true;
-  }
+    @Override
+    public boolean logout(Activity activity, PluginCall pluginCall) {
+        LoginManager.getInstance().logOut();
+        return true;
+    }
 }
 
 ```
@@ -984,31 +1030,31 @@ public class YourAndroidFacebookOAuth2Handler implements OAuth2CustomHandler {
 ```java
 public class MainActivity extends BridgeActivity {
 
-  private CallbackManager callbackManager;
+    private CallbackManager callbackManager;
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    // Initialize Facebook SDK
-    FacebookSdk.sdkInitialize(this.getApplicationContext());
-    callbackManager = CallbackManager.Factory.create();
-  }
-
-  @Override
-  protected void onActivityResult(
-    int requestCode,
-    int resultCode,
-    Intent data
-  ) {
-    super.onActivityResult(requestCode, resultCode, data);
-    if (callbackManager.onActivityResult(requestCode, resultCode, data)) {
-      return;
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Initialize Facebook SDK
+        FacebookSdk.sdkInitialize(this.getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
     }
-  }
 
-  public CallbackManager getCallbackManager() {
-    return callbackManager;
-  }
+    @Override
+    protected void onActivityResult(
+            int requestCode,
+            int resultCode,
+            Intent data
+    ) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (callbackManager.onActivityResult(requestCode, resultCode, data)) {
+            return;
+        }
+    }
+
+    public CallbackManager getCallbackManager() {
+        return callbackManager;
+    }
 }
 
 ```
@@ -1051,14 +1097,15 @@ end
 2. Add some Facebook configs to your `Info.plist`
 
 ```xml
+
 <key>CFBundleURLTypes</key>
 <array>
-  <dict>
+<dict>
     <key>CFBundleURLSchemes</key>
     <array>
-      <string>fb{your-app-id}</string>
+        <string>fb{your-app-id}</string>
     </array>
-  </dict>
+</dict>
 </array>
 <key>FacebookAppID</key>
 <string>{your-app-id}</string>
@@ -1066,10 +1113,10 @@ end
 <string>{your-app-name}</string>
 <key>LSApplicationQueriesSchemes</key>
 <array>
-  <string>fbapi</string>
-  <string>fb-messenger-share-api</string>
-  <string>fbauth2</string>
-  <string>fbshareextension</string>
+<string>fbapi</string>
+<string>fb-messenger-share-api</string>
+<string>fbauth2</string>
+<string>fbshareextension</string>
 </array>
 ```
 
@@ -1155,11 +1202,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ## Contribute
 
-See [Contribution Guidelines](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/.github/CONTRIBUTING.md).
+See [Contribution Guidelines](https://github.com/capacitor-community/generic-oauth2/blob/main/.github/CONTRIBUTING.md).
 
 ## License
 
-MIT. See [LICENSE](https://github.com/moberwasserlechner/capacitor-oauth2/blob/main/LICENSE).
+MIT. See [LICENSE](https://github.com/capacitor-community/generic-oauth2/blob/main/LICENSE).
 
 ## Disclaimer
 

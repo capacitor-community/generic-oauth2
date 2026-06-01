@@ -62,3 +62,12 @@ captures
 
 # Locally published versions
 capacitor-community-generic-oauth2-*.tgz
+
+/Packages
+xcuserdata/
+DerivedData/
+.swiftpm/configuration/registries.json
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.netrc
+Package.resolved
+/.build

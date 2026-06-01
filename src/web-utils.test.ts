@@ -207,7 +207,7 @@ describe('web options', () => {
       it('should get the code correctly', async () => {
         const spy = jest.spyOn(WebUtils, 'getCodeVerifier');
         const webOptions = await WebUtils.buildWebOptions(implicitFlowOptions);
-        expect(spy).toBeCalled();
+        expect(spy).toHaveBeenCalled();
         expect(webOptions.pkceCodeVerifier).toBe('DEMO_CODE');
       });
     });
@@ -216,7 +216,7 @@ describe('web options', () => {
         const spy = jest.spyOn(WebUtils, 'setCodeVerifier');
         const webOptions = await WebUtils.buildWebOptions(implicitFlowOptions);
         expect(webOptions.pkceCodeVerifier).toBeDefined();
-        expect(spy).toBeCalled();
+        expect(spy).toHaveBeenCalled();
       });
     });
   });
@@ -430,7 +430,7 @@ describe('implicit redirect authentication flow helpers', () => {
   it('should set code in session storage', () => {
     const code = 'DEMO_CODE';
     const codeSet = WebUtils.setCodeVerifier(code);
-    expect(window.sessionStorage.setItem).toBeCalledWith(
+    expect(window.sessionStorage.setItem).toHaveBeenCalledWith(
       `I_Capacitor_GenericOAuth2Plugin_PKCE`,
       code,
     );
@@ -442,7 +442,7 @@ describe('implicit redirect authentication flow helpers', () => {
     WebUtils.setCodeVerifier(code);
     const readCode = WebUtils.getCodeVerifier();
     expect(readCode).toBe(code);
-    expect(window.sessionStorage.getItem).toBeCalledWith(
+    expect(window.sessionStorage.getItem).toHaveBeenCalledWith(
       `I_Capacitor_GenericOAuth2Plugin_PKCE`,
     );
   });
@@ -450,14 +450,14 @@ describe('implicit redirect authentication flow helpers', () => {
   it("should get null if code doesn't exist in sessionStorage", () => {
     const readCode = WebUtils.getCodeVerifier();
     expect(readCode).toBeNull();
-    expect(window.sessionStorage.getItem).toBeCalledWith(
+    expect(window.sessionStorage.getItem).toHaveBeenCalledWith(
       `I_Capacitor_GenericOAuth2Plugin_PKCE`,
     );
   });
 
   it('should remove the code from sessionStorage', () => {
     WebUtils.clearCodeVerifier();
-    expect(window.sessionStorage.removeItem).toBeCalledWith(
+    expect(window.sessionStorage.removeItem).toHaveBeenCalledWith(
       `I_Capacitor_GenericOAuth2Plugin_PKCE`,
     );
   });
