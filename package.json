@@ -1,5 +1,5 @@
 {
-  "name": "@capacitor-community/generic-oauth2",
+  "name": "generic-oauth2",
   "version": "7.0.0",
   "description": "Capacitor OAuth 2 client plugin",
   "main": "dist/plugin.cjs.js",
@@ -17,18 +17,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/capacitor-community/generic-oauth2.git"
+    "url": "git+https://github.com/Davide255/generic-oauth2.git"
   },
-  "bugs": {
-    "url": "https://github.com/capacitor-community/generic-oauth2/issues"
-  },
-  "keywords": [
-    "capacitor",
-    "capacitor-plugin",
-    "oauth2",
-    "oauth2-client",
-    "social-login"
-  ],
   "scripts": {
     "verify": "npm run verify:ios && npm run verify:android && npm run verify:web",
     "verify:ios": "cd ios && pod install && xcodebuild -workspace Plugin.xcworkspace -scheme Plugin -destination generic/platform=iOS && cd ..",
