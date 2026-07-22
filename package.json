@@ -1,6 +1,6 @@
 {
   "name": "@capacitor-community/generic-oauth2",
-  "version": "7.1.0",
+  "version": "7.1.0-capacitor8",
   "description": "Capacitor OAuth 2 client plugin",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
