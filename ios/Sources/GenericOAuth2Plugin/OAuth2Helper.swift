@@ -16,7 +16,7 @@ public class OAuth2Helper {
         redirectURI: String,
         scope: String,
         responseType: String,
-        responseMode: String,
+        responseMode: String?,
         codeChallengeMethod: String
     ) throws(AuthError) -> AuthorizationRequest {
         guard var components = URLComponents(string: authorizationEndpoint) else {
@@ -40,11 +40,14 @@ public class OAuth2Helper {
             URLQueryItem(name: "client_id", value: clientId),
             URLQueryItem(name: "redirect_uri", value: redirectURI),
             URLQueryItem(name: "response_type", value: responseType),
-            URLQueryItem(name: "response_mode", value: responseMode),
             URLQueryItem(name: "scope", value: scope),
             URLQueryItem(name: "state", value: state),
             URLQueryItem(name: "nonce", value: hashedNonce)
         ])
+
+        if let responseMode {
+            queryItems.append(URLQueryItem(name: "response_mode", value: responseMode))
+        }
 
         if codeChallengeMethod != "S256" {
             // Currently, only S256 code challenge method is supported.
@@ -115,8 +118,12 @@ public class OAuth2Helper {
             throw AuthError.invalidCallback
         }
 
-        // Check for errors in the callback
+        // Check for errors in the callback.
         if let error = queryItems.first(where: { $0.name == "error" })?.value {
+            // Include the optional human-readable `error_description` when the provider sends one.
+            if let errorDescription = queryItems.first(where: { $0.name == "error_description" })?.value {
+                throw AuthError.providerError("\(error): \(errorDescription)")
+            }
             throw AuthError.providerError(error)
         }
 
@@ -147,8 +154,20 @@ public class OAuth2Helper {
             throw AuthError.invalidUrl
         }
 
+        // OAuth 2.0 requires TLS on the token endpoint — the request body
+        // contains the authorization code and PKCE verifier. `http` is
+        // allowed for loopback hosts only, to ease local development.
+        // (App Transport Security usually blocks plain http anyway, but apps
+        // can carve exceptions; this keeps the guarantee independent of app
+        // configuration and yields a clearer error.)
+        let isLoopback = url.host == "localhost" || url.host == "127.0.0.1"
+        guard url.scheme == "https" || (url.scheme == "http" && isLoopback) else {
+            throw AuthError.insecureUrl
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = 30 // Matches the Android implementation.
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
@@ -194,7 +213,19 @@ public class OAuth2Helper {
             let decoder = JSONDecoder()
             return try decoder.decode(TokenResponse.self, from: data)
         } catch {
-            throw AuthError.tokenExchangeFailed("Decoding response failed: \(error.localizedDescription). Payload: \(dataString)")
+            // Don't echo the full payload here.
+            // A 2xx doesn't necessarily mean that the response also contains an `id_token`.
+            // That could happen if for example the `openid` scope is missing.
+            // So the payload may contain LIVE tokens (e.g. `access_token`, `refresh_token`).
+            // Reporting only the JSON keys keeps the error diagnosable without leaking credentials into JS, logs, or crash reporters.
+            // The non-2xx branch above keeps the full payload, because error responses don't (or shouldn't) carry credentials.
+            let keys: String
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                keys = json.keys.sorted().joined(separator: ", ")
+            } else {
+                throw AuthError.tokenExchangeFailed("Decoding response failed: \(error.localizedDescription). Additionally, decoding the keys failed.")
+            }
+            throw AuthError.tokenExchangeFailed("Decoding response failed: \(error.localizedDescription). Response contained keys: \(keys)")
         }
     }
 
@@ -236,9 +267,12 @@ struct TokenResponse: Decodable {
 
 enum AuthError: LocalizedError {
     case invalidUrl
+    case insecureUrl
     case invalidCallback
     case invalidCodeChallengeMethod
     case invalidParams
+    case missingCallback
+    case httpsCallbackUnavailable
     case providerError(String)
     case missingState
     case invalidState
@@ -252,9 +286,12 @@ enum AuthError: LocalizedError {
     var errorDescription: String {
         switch self {
         case .invalidUrl: return "Invalid URL constructed."
+        case .insecureUrl: return "`tokenEndpoint` must use https (http is allowed for localhost only)."
         case .invalidCallback: return "Invalid callback URL format."
         case .invalidCodeChallengeMethod: return "Invalid `codeChallengeMethod` passed. Currently only `S256` is supported."
         case .invalidParams: return "Invalid params."
+        case .missingCallback: return "Either `callbackScheme` or `callbackHttps` must be provided."
+        case .httpsCallbackUnavailable: return "`callbackHttps` is not supported on this OS version (requires iOS 17.4+ / macOS 14.4+) and no `callbackScheme` fallback was provided."
         case .providerError(let msg): return "Provider returned an error: \(msg)"
         case .missingState: return "State missing in callback."
         case .invalidState: return "State doesn't match."

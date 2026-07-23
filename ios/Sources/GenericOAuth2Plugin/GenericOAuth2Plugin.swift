@@ -25,6 +25,14 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticati
 
     private var currentFlow: PendingFlow?
 
+    // NOTE: `currentFlow` is touched from two threads without
+    // synchronization: Capacitor invokes `authenticate` on its plugin queue,
+    // while the session completion handler runs on the main thread.
+    // Single-flight per session keeps the races benign (worst realistic
+    // case: a spurious `authInProgress` for an `authenticate` racing a
+    // just-finished flow). If this ever needs to be airtight, confine all
+    // `currentFlow` access to the main queue.
+
     struct AuthenticateCallbackHttpsParams: Decodable {
         let host: String
         let path: String
@@ -36,15 +44,19 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticati
         let redirectURI: String
         let scope: String
         let tokenEndpoint: String
-        let callbackScheme: String
+        // At least one of `callbackScheme` / `callbackHttps` must be provided.
+        // Learn more about this in the docs.
+        let callbackScheme: String?
         let callbackHttps: AuthenticateCallbackHttpsParams?
         let responseType: String
-        let responseMode: String
+        // Optional. When omitted, the parameter is left off the authorization URL entirely and thus the provider's default applies.
+        let responseMode: String?
         let codeChallengeMethod: String
 
-        // Ask the system not to share cookies/website data with Safari,
-        // which also suppresses the "wants to use X to sign in" prompt
-        // and forces a fresh login. Defaults to false.
+        // Ask the browser to use an ephemeral session that doesn't share cookies/website data between the authentication session and the user's normal browser session.
+        // This is best-effort: browsers that don't support ephemeral browsing ignore the hint.
+        // Consequently, this forces a fresh login.
+        // On iOS this also suppresses the "AppName wants to use example.com to sign in" prompt.
         let preferEphemeralBrowsing: Bool?
 
         // swiftlint:disable nesting
@@ -71,6 +83,11 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticati
             options = try call.decode(AuthenticateParams.self)
         } catch {
             call.reject(AuthError.invalidParams.errorDescription)
+            return
+        }
+
+        guard options.callbackScheme != nil || options.callbackHttps != nil else {
+            call.reject(AuthError.missingCallback.errorDescription)
             return
         }
 
@@ -109,10 +126,15 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticati
                         )
                     }
                 )
-            } else {
+            } else if let callbackScheme = options.callbackScheme {
+                // Also the fallback on iOS < 17.4 / macOS < 14.4 when
+                // `callbackHttps` was provided: the https callback API doesn't
+                // exist there, so we watch the custom scheme instead — the
+                // developer's `redirectUri` page is expected to redirect the
+                // user once more to `callbackScheme` on those versions.
                 authSession = ASWebAuthenticationSession(
                     url: authorizationRequest.url,
-                    callbackURLScheme: options.callbackScheme,
+                    callbackURLScheme: callbackScheme,
                     completionHandler: { [weak self] callbackURL, error in
                         self?.handleCallback(
                             call,
@@ -123,6 +145,16 @@ public class GenericOAuth2Plugin: CAPPlugin, CAPBridgedPlugin, ASWebAuthenticati
                         )
                     }
                 )
+            } else {
+                if #available(iOS 17.4, macOS 14.4, *), let callbackHttps = options.callbackHttps {
+                    // Only `callbackHttps` was provided.
+                    // But this OS version doesn't support https callbacks.
+                    throw AuthError.httpsCallbackUnavailable
+                } else {
+                    // Explicitly check for missing callback param,
+                    // in case anyone ever removes the early check above.
+                    throw AuthError.missingCallback
+                }
             }
 
             authSession.presentationContextProvider = self

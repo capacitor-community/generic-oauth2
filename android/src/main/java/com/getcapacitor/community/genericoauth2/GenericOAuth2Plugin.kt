@@ -28,6 +28,14 @@ class GenericOAuth2Plugin : Plugin() {
 
     private var currentFlow: PendingFlow? = null
 
+    // NOTE: `currentFlow` is touched from two threads without
+    // synchronization: Capacitor invokes `authenticate` on its plugin
+    // thread, while launcher results and `handleOnNewIntent` run on the main
+    // thread. Single-flight keeps the races benign (worst realistic case: a
+    // spurious `AuthInProgress` for an `authenticate` racing a just-finished
+    // flow). If this ever needs to be airtight, confine all `currentFlow`
+    // access to the main thread (e.g. via `bridge.executeOnMainThread`).
+
     private var launcher: ActivityResultLauncher<Intent>? = null
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -43,15 +51,19 @@ class GenericOAuth2Plugin : Plugin() {
         val redirectUri: String,
         val scope: String,
         val tokenEndpoint: String,
-        val callbackScheme: String,
+        // At least one of `callbackScheme` / `callbackHttps` must be provided.
+        // Learn more about this in the docs.
+        val callbackScheme: String?,
         val callbackHttps: AuthenticateCallbackHttpsParams?,
         val responseType: String,
-        val responseMode: String,
+        // Optional. When omitted, the parameter is left off the authorization URL entirely and thus the provider's default applies.
+        val responseMode: String?,
         val codeChallengeMethod: String,
 
-        // Ask the browser not to share cookies/website data,
-        // which forces a fresh login. Defaults to false.
-        // Best-effort: browsers that don't support ephemeral browsing ignore the hint.
+        // Ask the browser to use an ephemeral session that doesn't share cookies/website data between the authentication session and the user's normal browser session.
+        // This is best-effort: browsers that don't support ephemeral browsing ignore the hint.
+        // Consequently, this forces a fresh login.
+        // On iOS this also suppresses the "AppName wants to use example.com to sign in" prompt.
         val preferEphemeralBrowsing: Boolean
     )
 
@@ -78,8 +90,8 @@ class GenericOAuth2Plugin : Plugin() {
             return
         }
 
-        val launcher = this.launcher ?: run {
-            call.reject(AuthError.WebAuthFailed.errorDescription)
+        if (options.callbackScheme == null && options.callbackHttps == null) {
+            call.reject(AuthError.MissingCallback.errorDescription)
             return
         }
 
@@ -114,6 +126,11 @@ class GenericOAuth2Plugin : Plugin() {
             return
         }
 
+        val launcher = this.launcher ?: run {
+            call.reject(AuthError.WebAuthFailed.errorDescription)
+            return
+        }
+
         val authTabIntent = AuthTabIntent.Builder()
             .apply {
                 if (options.preferEphemeralBrowsing) {
@@ -130,10 +147,15 @@ class GenericOAuth2Plugin : Plugin() {
 
         try {
             val callbackHttps = options.callbackHttps
+            val callbackScheme = options.callbackScheme
             if (callbackHttps != null) {
                 authTabIntent.launch(launcher, authorizationRequest.url, callbackHttps.host, callbackHttps.path)
+            } else if (callbackScheme != null) {
+                authTabIntent.launch(launcher, authorizationRequest.url, callbackScheme)
             } else {
-                authTabIntent.launch(launcher, authorizationRequest.url, options.callbackScheme)
+                // Explicitly check for missing callback param,
+                // in case anyone ever removes the early check above.
+                throw AuthError.MissingCallback
             }
         } catch (e: Exception) {
             // No browser available, or launch failed.
@@ -227,10 +249,10 @@ class GenericOAuth2Plugin : Plugin() {
             redirectUri = call.getString("redirectUri") ?: return null,
             scope = call.getString("scope") ?: return null,
             tokenEndpoint = call.getString("tokenEndpoint") ?: return null,
-            callbackScheme = call.getString("callbackScheme") ?: return null,
+            callbackScheme = call.getString("callbackScheme"),
             callbackHttps = callbackHttps,
             responseType = call.getString("responseType") ?: return null,
-            responseMode = call.getString("responseMode") ?: return null,
+            responseMode = call.getString("responseMode"),
             codeChallengeMethod = call.getString("codeChallengeMethod") ?: return null,
             preferEphemeralBrowsing = call.getBoolean("preferEphemeralBrowsing") ?: false
         )

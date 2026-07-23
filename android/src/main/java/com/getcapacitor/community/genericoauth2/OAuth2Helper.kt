@@ -26,7 +26,7 @@ object OAuth2Helper {
         redirectUri: String,
         scope: String,
         responseType: String,
-        responseMode: String,
+        responseMode: String?,
         codeChallengeMethod: String
     ): AuthorizationRequest {
         val components = Uri.parse(authorizationEndpoint)
@@ -50,10 +50,13 @@ object OAuth2Helper {
             .appendQueryParameter("client_id", clientId)
             .appendQueryParameter("redirect_uri", redirectUri)
             .appendQueryParameter("response_type", responseType)
-            .appendQueryParameter("response_mode", responseMode)
             .appendQueryParameter("scope", scope)
             .appendQueryParameter("state", state)
             .appendQueryParameter("nonce", hashedNonce)
+
+        if (responseMode != null) {
+            builder.appendQueryParameter("response_mode", responseMode)
+        }
 
         if (codeChallengeMethod != "S256") {
             // Currently, only S256 code challenge method is supported.
@@ -120,8 +123,12 @@ object OAuth2Helper {
         //
         // On Android we get these semantics natively: `Uri.getQueryParameter` percent-decodes AND interprets '+' as a space (documented behavior)
 
-        // Check for errors in the callback
+        // Check for errors in the callback.
         callbackUrl.getQueryParameter("error")?.let { error ->
+            // Include the optional human-readable `error_description` when the provider sends one.
+            callbackUrl.getQueryParameter("error_description")?.let { errorDescription ->
+                throw AuthError.ProviderError("$error: $errorDescription")
+            }
             throw AuthError.ProviderError(error)
         }
 
@@ -161,6 +168,22 @@ object OAuth2Helper {
             throw AuthError.InvalidUrl
         }
 
+        // OAuth 2.0 requires TLS on the token endpoint — the request body
+        // contains the authorization code and PKCE verifier. `http` is
+        // allowed for loopback hosts only, to ease local development
+        // (10.0.2.2 is the Android emulator's alias for the host machine).
+        // Android 9+ blocks cleartext by default anyway, but apps can opt
+        // out via networkSecurityConfig; this keeps the guarantee
+        // independent of app configuration and yields a clearer error.
+        //
+        // This check also guarantees the `HttpURLConnection` cast below:
+        // for a non-http(s) protocol, that cast would throw an uncaught
+        // `ClassCastException` instead of a clean `AuthError`.
+        val isLoopback = url.host == "localhost" || url.host == "127.0.0.1" || url.host == "10.0.2.2"
+        if (!(url.protocol == "https" || (url.protocol == "http" && isLoopback))) {
+            throw AuthError.InsecureUrl
+        }
+
         // `client_secret` is omitted entirely on purpose.
         // Saving a `client_secret` in a public client is considered unsafe.
         // And clients using PKCE shouldn't be sending it anyway.
@@ -184,6 +207,10 @@ object OAuth2Helper {
             try {
                 connection.requestMethod = "POST"
                 connection.doOutput = true
+                // A token endpoint that redirects is a misconfiguration, and
+                // `HttpURLConnection`'s redirect handling can mangle the POST
+                // — fail loudly instead of following.
+                connection.instanceFollowRedirects = false
                 connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
                 connection.setRequestProperty("Accept", "application/json")
                 connection.connectTimeout = 30_000
@@ -209,7 +236,18 @@ object OAuth2Helper {
         return try {
             TokenResponse(idToken = JSONObject(dataString).getString("id_token"))
         } catch (e: Exception) {
-            throw AuthError.TokenExchangeFailed("Decoding response failed: ${e.message}. Payload: $dataString")
+            // Don't echo the full payload here.
+            // A 2xx doesn't necessarily mean that the response also contains an `id_token`.
+            // That could happen if for example the `openid` scope is missing.
+            // So the payload may contain LIVE tokens (e.g. `access_token`, `refresh_token`).
+            // Reporting only the JSON keys keeps the error diagnosable without leaking credentials into JS, logs, or crash reporters.
+            // The non-2xx branch above keeps the full payload, because error responses don't (or shouldn't) carry credentials.
+            val keys = try {
+                JSONObject(dataString).keys().asSequence().sorted().joinToString(", ")
+            } catch (e2: Exception) {
+                throw AuthError.TokenExchangeFailed("Decoding response failed: ${e.message}. Additionally, decoding the keys failed.")
+            }
+            throw AuthError.TokenExchangeFailed("Decoding response failed: ${e.message}. Response contained keys: $keys")
         }
     }
 
@@ -243,10 +281,14 @@ data class TokenResponse(
 
 sealed class AuthError(val errorDescription: String) : Exception(errorDescription) {
     object InvalidUrl : AuthError("Invalid URL constructed.")
+    object InsecureUrl : AuthError("`tokenEndpoint` must use https (http is allowed for localhost only).")
     object InvalidCallback : AuthError("Invalid callback URL format.")
     object InvalidCodeChallengeMethod :
         AuthError("Invalid `codeChallengeMethod` passed. Currently only `S256` is supported.")
     object InvalidParams : AuthError("Invalid params.")
+    object MissingCallback : AuthError("Either `callbackScheme` or `callbackHttps` must be provided.")
+    // NOTE: no `httpsCallbackUnavailable` equivalent here.
+    // On Android `callbackHttps` is supported on all versions.
     class ProviderError(msg: String) : AuthError("Provider returned an error: $msg")
     object MissingState : AuthError("State missing in callback.")
     object InvalidState : AuthError("State doesn't match.")
