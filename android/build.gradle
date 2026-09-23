@@ -48,20 +48,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_21
         targetCompatibility JavaVersion.VERSION_21
     }
+}
 
-    unitTestVariants.all {
-        it.mergedFlavor.manifestPlaceholders += [
-            appAuthRedirectScheme: "com.getcapacitor.community.genericoauth2app"
-        ]
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.unitTest?.manifestPlaceholders?.put("appAuthRedirectScheme", "com.getcapacitor.community.genericoauth2app")
     }
-
-//    testOptions {
-//        unitTests {
-//            all {
-//                include 'com.getcapacitor.community.genericoauth2'
-//            }
-//        }
-//    }
 }
 
 repositories {
