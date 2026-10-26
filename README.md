@@ -282,6 +282,30 @@ There are two options when configuring an OAuth 2 protocol:
 2. Other OAuth providers (e.g. Facebook) force developers to use their SDK. For these providers, you can implement a
    _Custom OAuth Handler_.
 
+### Process death while the user is in the browser
+
+Android may kill the app's process while the user is authenticating in the browser (low memory, aggressive battery
+savers). When the redirect comes back, the app starts in a new process and the original `authenticate()` promise no
+longer exists. The plugin rebuilds its state from the saved call and Capacitor delivers the result through the
+`appRestoredResult` event of `@capacitor/app`:
+
+```typescript
+import { App } from '@capacitor/app';
+
+App.addListener('appRestoredResult', (event) => {
+  if (event.pluginId !== 'GenericOAuth2' || event.methodName !== 'authenticate') {
+    return;
+  }
+  if (event.success) {
+    // event.data is the same object `authenticate()` would have resolved with
+  } else {
+    // event.error.message is e.g. 'USER_CANCELLED'
+  }
+});
+```
+
+Register the listener as early as possible in the app start-up.
+
 ### 1. Android Default Config
 
 > [!NOTE]
